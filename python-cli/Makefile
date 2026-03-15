@@ -1,44 +1,37 @@
 .PHONY: install lint typecheck format test test-cov cov-html cov-open run clean clean-all help
 
-VENV := .venv
-PYTHON := $(VENV)/bin/python
-PIP := $(VENV)/bin/pip
-
-## install: Create venv and install dependencies
+## install: Install dependencies with uv
 install:
-	python3 -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt
+	uv sync --all-extras
 
 ## run: Run CLI (usage: make run ARGS="hello World")
 run:
-	PYTHONPATH=src $(PYTHON) -m mycli.cli $(ARGS)
+	uv run mycli $(ARGS)
 
-## lint: Run ruff and pylint
+## lint: Run ruff linter
 lint:
-	$(VENV)/bin/ruff check .
-	$(VENV)/bin/pylint src/ --fail-under=8.0 || true
+	uv run ruff check .
 
 ## typecheck: Run mypy type checking
 typecheck:
-	$(VENV)/bin/mypy src/
+	uv run mypy src/
 
 ## format: Format code with ruff
 format:
-	$(VENV)/bin/ruff format .
-	$(VENV)/bin/ruff check --fix .
+	uv run ruff format .
+	uv run ruff check --fix .
 
 ## test: Run tests
 test:
-	PYTHONPATH=src $(VENV)/bin/pytest
+	uv run pytest
 
 ## test-cov: Run tests with coverage (terminal output)
 test-cov:
-	PYTHONPATH=src $(VENV)/bin/pytest --cov=src/mycli --cov-report=term-missing --cov-fail-under=80
+	uv run pytest --cov=src/mycli --cov-report=term-missing --cov-fail-under=80
 
 ## cov-html: Generate HTML coverage report
 cov-html:
-	PYTHONPATH=src $(VENV)/bin/pytest --cov=src/mycli --cov-report=html --cov-report=term
+	uv run pytest --cov=src/mycli --cov-report=html --cov-report=term
 	@echo "Coverage report: htmlcov/index.html"
 
 ## cov-open: Generate and open HTML coverage report
@@ -54,7 +47,7 @@ clean:
 
 ## clean-all: Remove everything including venv
 clean-all: clean
-	rm -rf $(VENV)
+	rm -rf .venv
 
 ## help: Show this help
 help:
