@@ -1,13 +1,18 @@
 # Python CLI Boilerplate
 
-Typer + ruff + mypy + pytest のPython CLIボイラープレート。
+uv + Typer + ruff + mypy + pytest のPython CLIボイラープレート。
 
 ## Features
 
+- **Package Manager**: [uv](https://docs.astral.sh/uv/) (10-100x faster than pip)
 - **CLI**: [Typer](https://typer.tiangolo.com/)
-- **Linter**: [ruff](https://docs.astral.sh/ruff/) + pylint
+- **Linter**: [ruff](https://docs.astral.sh/ruff/)
 - **Type Checker**: [mypy](https://mypy-lang.org/) (strict mode)
 - **Testing**: [pytest](https://pytest.org/) + coverage
+
+## Prerequisites
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ## Quick Start
 
@@ -26,9 +31,9 @@ make test
 
 ```bash
 make help        # Show all commands
-make install     # Create venv and install dependencies
+make install     # Install dependencies with uv
 make run         # Run CLI
-make lint        # Run ruff and pylint
+make lint        # Run ruff
 make typecheck   # Run mypy
 make format      # Format code
 make test        # Run tests
@@ -47,7 +52,6 @@ python-cli/
 │   └── test_cli.py
 ├── Makefile
 ├── pyproject.toml
-├── requirements.txt
 └── README.md
 ```
 
