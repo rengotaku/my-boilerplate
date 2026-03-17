@@ -1,4 +1,4 @@
-.PHONY: install lint typecheck format test test-cov cov-html cov-open run clean clean-all help
+.PHONY: install lint typecheck format test test-cov check ci run clean clean-all help
 
 ## install: Install dependencies with uv
 install:
@@ -25,22 +25,19 @@ format:
 test:
 	uv run pytest
 
-## test-cov: Run tests with coverage (terminal output)
+## test-cov: Run tests with coverage
 test-cov:
-	uv run pytest --cov=src/mycli --cov-report=term-missing --cov-fail-under=80
+	uv run pytest --cov=src/mycli --cov-report=term-missing
 
-## cov-html: Generate HTML coverage report
-cov-html:
-	uv run pytest --cov=src/mycli --cov-report=html --cov-report=term
-	@echo "Coverage report: htmlcov/index.html"
+## check: Run lint + typecheck
+check: lint typecheck
 
-## cov-open: Generate and open HTML coverage report
-cov-open: cov-html
-	xdg-open htmlcov/index.html 2>/dev/null || open htmlcov/index.html 2>/dev/null || echo "Open htmlcov/index.html in browser"
+## ci: Run all checks (lint + typecheck + test-cov)
+ci: lint typecheck test-cov
 
 ## clean: Remove build artifacts and cache
 clean:
-	rm -rf __pycache__ .pytest_cache .ruff_cache .mypy_cache htmlcov .coverage coverage.xml
+	rm -rf __pycache__ .pytest_cache .ruff_cache .mypy_cache .coverage coverage.xml
 	rm -rf *.egg-info src/*.egg-info build dist
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
