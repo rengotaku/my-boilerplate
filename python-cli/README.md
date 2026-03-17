@@ -38,6 +38,8 @@ make typecheck   # Run mypy
 make format      # Format code
 make test        # Run tests
 make test-cov    # Run tests with coverage
+make check       # Run lint + typecheck
+make ci          # Run all checks (lint + typecheck + test-cov)
 ```
 
 ## Project Structure

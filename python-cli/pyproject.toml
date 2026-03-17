@@ -54,22 +54,6 @@ ignore = [
 quote-style = "double"
 indent-style = "space"
 
-[tool.pylint.main]
-py-version = "3.11"
-jobs = 0
-load-plugins = []
-
-[tool.pylint.messages_control]
-disable = [
-    "missing-module-docstring",
-    "missing-class-docstring",
-    "missing-function-docstring",
-    "too-few-public-methods",
-]
-
-[tool.pylint.format]
-max-line-length = 88
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -81,6 +65,7 @@ branch = true
 relative_files = true
 
 [tool.coverage.report]
+fail_under = 80
 exclude_lines = [
     "pragma: no cover",
     "if __name__ == .__main__.:",
