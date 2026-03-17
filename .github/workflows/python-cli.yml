@@ -1,0 +1,44 @@
+name: python-cli CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python-cli/**'
+      - '.github/workflows/python-cli.yml'
+  pull_request:
+    paths:
+      - 'python-cli/**'
+      - '.github/workflows/python-cli.yml'
+
+defaults:
+  run:
+    working-directory: python-cli
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy src/
+
+      - name: Test
+        run: uv run pytest --cov=src/mycli --cov-report=term-missing
