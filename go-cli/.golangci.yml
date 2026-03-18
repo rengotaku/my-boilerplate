@@ -1,0 +1,23 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - gofumpt
+    - gocritic
+    - errcheck
+
+formatters:
+  enable:
+    - gofumpt
+
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

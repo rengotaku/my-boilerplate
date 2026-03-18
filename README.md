@@ -45,15 +45,16 @@ Collection of project boilerplates.
 
 | Name | Description |
 |------|-------------|
-| [python-cli](./python-cli) | Python CLI with Typer, ruff, mypy, pytest |
+| [python-cli](./python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
+| [go-cli](./go-cli) | Go CLI with Cobra, golangci-lint, go test |
 
 ## Roadmap
 
 | Priority | Template | Status |
 |----------|----------|--------|
 | - | python-cli | Done |
-| Next | go-cli | Planned |
-| Future | python-web | Planned |
+| - | go-cli | Done |
+| Next | python-web | Planned |
 | Future | go-web | Planned |
 
 ## Usage
