@@ -1,15 +1,16 @@
-version: "2"
+run:
+  timeout: 5m
 
 linters:
-  default: standard
   enable:
     - gofumpt
     - gocritic
     - errcheck
-
-formatters:
-  enable:
-    - gofumpt
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
 
 linters-settings:
   gocritic:
