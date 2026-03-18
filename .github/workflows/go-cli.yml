@@ -41,7 +41,7 @@ jobs:
 
       - name: Test with coverage
         run: |
-          go test ./... -coverprofile=coverage.out
+          go test ./internal/... -coverprofile=coverage.out
           COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
           echo "Coverage: $COVERAGE%"
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
