@@ -53,6 +53,7 @@ Collection of project boilerplates.
 | [go-cli](./go-cli) | Go CLI with Cobra, golangci-lint, go test |
 | [rust-cli](./rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
 | [go-rest-api](./go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
+| [go-graphql-api](./go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |
 
 ## Roadmap
 
