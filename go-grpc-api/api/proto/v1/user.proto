@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package api.v1;
+
+option go_package = "go-grpc-api/pkg/pb/v1;v1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// UserService provides CRUD operations for users.
+service UserService {
+  // ListUsers returns all users.
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  // GetUser returns a user by ID.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  // CreateUser creates a new user.
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  // UpdateUser updates an existing user.
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  // DeleteUser deletes a user by ID.
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+// User represents a user entity.
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// ListUsersRequest is the request message for ListUsers.
+message ListUsersRequest {}
+
+// ListUsersResponse is the response message for ListUsers.
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+// GetUserRequest is the request message for GetUser.
+message GetUserRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// GetUserResponse is the response message for GetUser.
+message GetUserResponse {
+  User user = 1;
+}
+
+// CreateUserRequest is the request message for CreateUser.
+message CreateUserRequest {
+  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  string email = 2 [(buf.validate.field).string.email = true];
+}
+
+// CreateUserResponse is the response message for CreateUser.
+message CreateUserResponse {
+  User user = 1;
+}
+
+// UpdateUserRequest is the request message for UpdateUser.
+message UpdateUserRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  string email = 3 [(buf.validate.field).string.email = true];
+}
+
+// UpdateUserResponse is the response message for UpdateUser.
+message UpdateUserResponse {
+  User user = 1;
+}
+
+// DeleteUserRequest is the request message for DeleteUser.
+message DeleteUserRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+// DeleteUserResponse is the response message for DeleteUser.
+message DeleteUserResponse {}
