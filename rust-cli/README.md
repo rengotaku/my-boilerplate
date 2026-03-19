@@ -12,7 +12,7 @@ Rust + clap + clippy の Rust CLI ボイラープレート。
 
 ## Prerequisites
 
-- [Rust](https://www.rust-lang.org/tools/install) 1.75+
+- [Rust](https://www.rust-lang.org/tools/install) 1.80+
 - [cargo-tarpaulin](https://github.com/xd009642/tarpaulin) (optional, for coverage)
 
 ## Quick Start
