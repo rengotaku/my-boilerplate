@@ -190,8 +190,8 @@ func TestUserService_ListUsers(t *testing.T) {
 	}
 
 	// Add users
-	svc.CreateUser("John Doe", "john@example.com")
-	svc.CreateUser("Jane Doe", "jane@example.com")
+	_, _ = svc.CreateUser("John Doe", "john@example.com")
+	_, _ = svc.CreateUser("Jane Doe", "jane@example.com")
 
 	users = svc.ListUsers()
 	if len(users) != 2 {

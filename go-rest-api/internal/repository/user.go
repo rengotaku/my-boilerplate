@@ -8,16 +8,16 @@ import (
 )
 
 type User struct {
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UserRepository struct {
-	mu    sync.RWMutex
 	users map[string]*User
+	mu    sync.RWMutex
 }
 
 func NewUserRepository() *UserRepository {

@@ -89,7 +89,7 @@ func TestHandler_GetUser(t *testing.T) {
 	h.Routes().ServeHTTP(createRec, createReq)
 
 	var created repository.User
-	json.NewDecoder(createRec.Body).Decode(&created)
+	_ = json.NewDecoder(createRec.Body).Decode(&created)
 
 	// Get the user
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users/"+created.ID, nil)
@@ -148,7 +148,7 @@ func TestHandler_UpdateUser(t *testing.T) {
 	h.Routes().ServeHTTP(createRec, createReq)
 
 	var created repository.User
-	json.NewDecoder(createRec.Body).Decode(&created)
+	_ = json.NewDecoder(createRec.Body).Decode(&created)
 
 	// Update the user
 	updateBody := `{"name": "Jane Doe", "email": "jane@example.com"}`
@@ -163,7 +163,7 @@ func TestHandler_UpdateUser(t *testing.T) {
 	}
 
 	var updated repository.User
-	json.NewDecoder(rec.Body).Decode(&updated)
+	_ = json.NewDecoder(rec.Body).Decode(&updated)
 
 	if updated.Name != "Jane Doe" {
 		t.Errorf("UpdateUser() name = %s, want Jane Doe", updated.Name)
@@ -196,7 +196,7 @@ func TestHandler_UpdateUser_InvalidBody(t *testing.T) {
 	h.Routes().ServeHTTP(createRec, createReq)
 
 	var created repository.User
-	json.NewDecoder(createRec.Body).Decode(&created)
+	_ = json.NewDecoder(createRec.Body).Decode(&created)
 
 	// Update with invalid body
 	updateBody := `{"name": "", "email": "invalid"}`
@@ -222,7 +222,7 @@ func TestHandler_DeleteUser(t *testing.T) {
 	h.Routes().ServeHTTP(createRec, createReq)
 
 	var created repository.User
-	json.NewDecoder(createRec.Body).Decode(&created)
+	_ = json.NewDecoder(createRec.Body).Decode(&created)
 
 	// Delete the user
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/"+created.ID, nil)
