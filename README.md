@@ -31,6 +31,9 @@ Collection of project boilerplates.
 | Type | Description |
 |------|-------------|
 | cli | コマンドラインツール |
+| rest-api | REST API |
+| graphql-api | GraphQL API |
+| grpc-api | gRPC API |
 | web | Web API / Webアプリ |
 
 ## Quality Gates (CI)
@@ -49,6 +52,7 @@ Collection of project boilerplates.
 | [python-cli](./python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
 | [go-cli](./go-cli) | Go CLI with Cobra, golangci-lint, go test |
 | [rust-cli](./rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
+| [go-rest-api](./go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
 
 ## Roadmap
 
