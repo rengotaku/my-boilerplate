@@ -35,11 +35,12 @@ Collection of project boilerplates.
 
 ## Quality Gates (CI)
 
-| Check | Python | Go |
-|-------|--------|-----|
-| Linting | ruff | golangci-lint |
-| Type checking | mypy | Go標準 |
-| Tests + Coverage | pytest --cov (80%+) | go test -cover (80%+) |
+| Check | Python | Go | Rust |
+|-------|--------|-----|------|
+| Linting | ruff | golangci-lint | clippy |
+| Type checking | mypy | Go標準 | Rust標準 |
+| Formatting | ruff format | gofmt | rustfmt |
+| Tests + Coverage | pytest --cov (80%+) | go test -cover (80%+) | cargo test (80%+) |
 
 ## Available Boilerplates
 
@@ -47,6 +48,7 @@ Collection of project boilerplates.
 |------|-------------|
 | [python-cli](./python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
 | [go-cli](./go-cli) | Go CLI with Cobra, golangci-lint, go test |
+| [rust-cli](./rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
 
 ## Roadmap
 
@@ -54,6 +56,7 @@ Collection of project boilerplates.
 |----------|----------|--------|
 | - | python-cli | Done |
 | - | go-cli | Done |
+| - | rust-cli | Done |
 | Next | python-web | Planned |
 | Future | go-web | Planned |
 
