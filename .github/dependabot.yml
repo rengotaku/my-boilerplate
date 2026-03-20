@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # Python (python-cli)
+  - package-ecosystem: "pip"
+    directory: "/python-cli"
+    schedule:
+      interval: "monthly"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "pytest*"
+
+  # Go (go-cli)
+  - package-ecosystem: "gomod"
+    directory: "/go-cli"
+    schedule:
+      interval: "monthly"
+
+  # Go (go-rest-api)
+  - package-ecosystem: "gomod"
+    directory: "/go-rest-api"
+    schedule:
+      interval: "monthly"
+
+  # Go (go-graphql-api)
+  - package-ecosystem: "gomod"
+    directory: "/go-graphql-api"
+    schedule:
+      interval: "monthly"
+
+  # Go (go-grpc-api)
+  - package-ecosystem: "gomod"
+    directory: "/go-grpc-api"
+    schedule:
+      interval: "monthly"
+
+  # Rust (rust-cli)
+  - package-ecosystem: "cargo"
+    directory: "/rust-cli"
+    schedule:
+      interval: "monthly"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
