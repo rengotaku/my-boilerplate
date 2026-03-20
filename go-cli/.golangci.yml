@@ -1,23 +1,28 @@
-run:
-  timeout: 5m
+version: "2"
 
 linters:
   enable:
     - gocritic
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
     - unused
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
 
-linters-settings:
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - mycli
 
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+run:
+  timeout: 5m
