@@ -23,7 +23,7 @@ jobs:
         rust-version: ["stable", "1.85"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Rust ${{ matrix.rust-version }}
         uses: dtolnay/rust-toolchain@master
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
