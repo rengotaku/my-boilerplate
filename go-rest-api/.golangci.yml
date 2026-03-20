@@ -10,12 +10,11 @@ linters:
     - misspell
     - unconvert
     - unparam
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  govet:
-    enable-all: true
+  settings:
+    errcheck:
+      check-type-assertions: true
+    govet:
+      enable-all: true
 
 formatters:
   enable:

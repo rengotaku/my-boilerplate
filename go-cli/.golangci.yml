@@ -8,13 +8,12 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-
-linters-settings:
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
 
 formatters:
   enable:
