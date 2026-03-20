@@ -36,6 +36,12 @@ updates:
     schedule:
       interval: "monthly"
 
+  # Go (go-ssr-web)
+  - package-ecosystem: "gomod"
+    directory: "/go-ssr-web"
+    schedule:
+      interval: "monthly"
+
   # Rust (rust-cli)
   - package-ecosystem: "cargo"
     directory: "/rust-cli"
