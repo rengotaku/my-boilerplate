@@ -6,3 +6,4 @@
 [2026-03-20 09:57:23] go test -coverprofile=coverage.out ./internal/... && go tool cover -func=coverage.out | tail -3
 [2026-03-20 09:59:26] rm -f /data/projects/my-boilerplate/go-ssr-web/coverage.out && git status
 [2026-03-20 09:59:30] rm -rf /data/projects/my-boilerplate/go-grpc-api/.claude && git add /data/projects/my-boilerplate/go-ssr-web /data/projects/my-boilerplate/.github/workflows/go-ssr-web.yml /data/projects/my-boilerplate/.github/dependabot.yml /data/projects/my-boilerplate/README.md
+[2026-03-20 10:23:42] git add -A && git commit -m "fix: update golangci-lint to v2 for Go 1.25 compatibility" && git push

@@ -81,3 +81,25 @@ import (
     directory: "/go-grpc-api"
     schedule:
     ...
+[2026-03-20 10:23:27] [Edit] /data/projects/my-boilerplate/.github/workflows/go-graphql-api.yml
+  - old:         go-version: ["1.21", "1.22"]...
+  + new:         go-version: ["1.24", "1.25"]...
+[2026-03-20 10:23:29] [Edit] /data/projects/my-boilerplate/.github/workflows/go-graphql-api.yml
+  - old:       - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v...
+  + new:       - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v...
+[2026-03-20 10:23:37] [Write] /data/projects/my-boilerplate/go-graphql-api/.golangci.yml (29 lines)
+  preview: version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    ...
