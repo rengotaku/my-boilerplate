@@ -20,15 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ["1.21", "1.22"]
+        go-version: ["1.22", "1.23"]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: go-ssr-web/go.sum
 
       - name: Install dependencies
         run: go mod download
