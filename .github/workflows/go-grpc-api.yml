@@ -1,0 +1,50 @@
+name: go-grpc-api CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-grpc-api/**'
+      - '.github/workflows/go-grpc-api.yml'
+  pull_request:
+    paths:
+      - 'go-grpc-api/**'
+      - '.github/workflows/go-grpc-api.yml'
+
+defaults:
+  run:
+    working-directory: go-grpc-api
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.23", "1.24"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.11
+          working-directory: go-grpc-api
+
+      - name: Test with coverage
+        run: |
+          go test ./internal/... -coverprofile=coverage.out
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below 80%"
+            exit 1
+          fi
