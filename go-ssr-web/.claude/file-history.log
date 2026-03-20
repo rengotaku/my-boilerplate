@@ -1,0 +1,83 @@
+[2026-03-20 09:56:03] [Edit] /data/projects/my-boilerplate/go-ssr-web/cmd/server/main.go
+  - old: //go:embed all:../../web/templates
+var templatesFS embed.FS
+
+//go:embed all:../../web/static
+var sta...
+  + new: //go:embed ../../web/templates ../../web/templates/users
+var templatesFS embed.FS
+
+//go:embed ../../...
+[2026-03-20 09:56:24] [Write] /data/projects/my-boilerplate/go-ssr-web/internal/handler/handler_test.go (169 lines)
+  preview: package handler
+
+import (
+	"html/template"
+	"io/fs"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"st...
+[2026-03-20 09:56:35] [Write] /data/projects/my-boilerplate/go-ssr-web/web/embed.go (7 lines)
+  preview: package web
+
+import "embed"
+
+//go:embed templates templates/users static static/css
+var FS embed.FS...
+[2026-03-20 09:56:39] [Edit] /data/projects/my-boilerplate/go-ssr-web/cmd/server/main.go
+  - old: package main
+
+import (
+	"context"
+	"embed"
+	"errors"
+	"html/template"
+	"io/fs"
+	"log/slog"
+	"net/htt...
+  + new: package main
+
+import (
+	"context"
+	"errors"
+	"html/template"
+	"io/fs"
+	"log/slog"
+	"net/http"
+	"os"...
+[2026-03-20 09:56:43] [Edit] /data/projects/my-boilerplate/go-ssr-web/cmd/server/main.go
+  - old: 	staticFiles, err := fs.Sub(staticFS, "web/static")...
+  + new: 	staticFiles, err := fs.Sub(web.FS, "static")...
+[2026-03-20 09:56:45] [Edit] /data/projects/my-boilerplate/go-ssr-web/cmd/server/main.go
+  - old: func loadTemplates() (*template.Template, error) {
+	return template.ParseFS(templatesFS,
+		"web/temp...
+  + new: func loadTemplates() (*template.Template, error) {
+	return template.ParseFS(web.FS,
+		"templates/bas...
+[2026-03-20 09:57:15] [Write] /data/projects/my-boilerplate/go-ssr-web/internal/handler/handler_test.go (163 lines)
+  preview: package handler
+
+import (
+	"html/template"
+	"io/fs"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"st...
+[2026-03-20 09:59:13] [Edit] /data/projects/my-boilerplate/README.md
+  - old: | [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |...
+  + new: | [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
+| [go-ssr-web](./go-...
+[2026-03-20 09:59:23] [Edit] /data/projects/my-boilerplate/.github/dependabot.yml
+  - old:   # Go (go-grpc-api)
+  - package-ecosystem: "gomod"
+    directory: "/go-grpc-api"
+    schedule:
+    ...
+  + new:   # Go (go-grpc-api)
+  - package-ecosystem: "gomod"
+    directory: "/go-grpc-api"
+    schedule:
+    ...

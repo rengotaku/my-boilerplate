@@ -1,0 +1,22 @@
+{{template "base" .}}
+
+{{define "content"}}
+<h1>New User</h1>
+
+{{if .Error}}
+<p class="error">{{.Error}}</p>
+{{end}}
+
+<form action="/users" method="POST">
+    <div>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" value="{{if .User}}{{.User.Name}}{{end}}" required>
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{if .User}}{{.User.Email}}{{end}}" required>
+    </div>
+    <button type="submit">Create</button>
+    <a href="/users">Cancel</a>
+</form>
+{{end}}

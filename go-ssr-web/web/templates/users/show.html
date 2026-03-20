@@ -1,0 +1,19 @@
+{{template "base" .}}
+
+{{define "content"}}
+<h1>{{.User.Name}}</h1>
+
+<dl>
+    <dt>Email</dt>
+    <dd>{{.User.Email}}</dd>
+    <dt>Created</dt>
+    <dd>{{.User.CreatedAt.Format "2006-01-02 15:04:05"}}</dd>
+    <dt>Updated</dt>
+    <dd>{{.User.UpdatedAt.Format "2006-01-02 15:04:05"}}</dd>
+</dl>
+
+<p>
+    <a href="/users/{{.User.ID}}/edit">Edit</a>
+    <a href="/users">Back to list</a>
+</p>
+{{end}}

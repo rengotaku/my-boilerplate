@@ -55,6 +55,7 @@ Collection of project boilerplates.
 | [go-rest-api](./go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
 | [go-graphql-api](./go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |
 | [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
+| [go-ssr-web](./go-ssr-web) | Go SSR Web with Chi, html/template |
 
 ## Roadmap
 
