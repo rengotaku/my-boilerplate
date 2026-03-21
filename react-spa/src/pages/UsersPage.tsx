@@ -15,24 +15,30 @@ export function UsersPage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
-    createUser.mutate({ name, email }, {
-      onSuccess: () => {
-        setName("");
-        setEmail("");
-      },
-    });
+    createUser.mutate(
+      { name, email },
+      {
+        onSuccess: () => {
+          setName("");
+          setEmail("");
+        },
+      }
+    );
   };
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser || !name || !email) return;
-    updateUser.mutate({ id: editingUser.id, input: { name, email } }, {
-      onSuccess: () => {
-        setEditingUser(null);
-        setName("");
-        setEmail("");
-      },
-    });
+    updateUser.mutate(
+      { id: editingUser.id, input: { name, email } },
+      {
+        onSuccess: () => {
+          setEditingUser(null);
+          setName("");
+          setEmail("");
+        },
+      }
+    );
   };
 
   const handleDelete = (id: string) => {
@@ -65,7 +71,10 @@ export function UsersPage() {
     <div>
       <h1>Users</h1>
 
-      <form onSubmit={editingUser ? handleUpdate : handleCreate} style={{ marginBottom: "1rem" }}>
+      <form
+        onSubmit={editingUser ? handleUpdate : handleCreate}
+        style={{ marginBottom: "1rem" }}
+      >
         <input
           type="text"
           placeholder="Name"
@@ -92,7 +101,10 @@ export function UsersPage() {
 
       {(createUser.isError || updateUser.isError || deleteUser.isError) && (
         <div style={{ color: "red", marginBottom: "1rem" }}>
-          Error: {createUser.error?.message || updateUser.error?.message || deleteUser.error?.message}
+          Error:{" "}
+          {createUser.error?.message ||
+            updateUser.error?.message ||
+            deleteUser.error?.message}
         </div>
       )}
 
@@ -100,21 +112,55 @@ export function UsersPage() {
         <table style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
             <tr>
-              <th style={{ textAlign: "left", padding: "0.5rem", borderBottom: "1px solid #ccc" }}>Name</th>
-              <th style={{ textAlign: "left", padding: "0.5rem", borderBottom: "1px solid #ccc" }}>Email</th>
-              <th style={{ textAlign: "left", padding: "0.5rem", borderBottom: "1px solid #ccc" }}>Actions</th>
+              <th
+                style={{
+                  textAlign: "left",
+                  padding: "0.5rem",
+                  borderBottom: "1px solid #ccc",
+                }}
+              >
+                Name
+              </th>
+              <th
+                style={{
+                  textAlign: "left",
+                  padding: "0.5rem",
+                  borderBottom: "1px solid #ccc",
+                }}
+              >
+                Email
+              </th>
+              <th
+                style={{
+                  textAlign: "left",
+                  padding: "0.5rem",
+                  borderBottom: "1px solid #ccc",
+                }}
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>{user.name}</td>
-                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>{user.email}</td>
                 <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
-                  <button onClick={() => startEdit(user)} style={{ marginRight: "0.5rem" }}>
+                  {user.name}
+                </td>
+                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                  {user.email}
+                </td>
+                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
+                  <button
+                    onClick={() => startEdit(user)}
+                    style={{ marginRight: "0.5rem" }}
+                  >
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(user.id)} disabled={deleteUser.isPending}>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    disabled={deleteUser.isPending}
+                  >
                     Delete
                   </button>
                 </td>
