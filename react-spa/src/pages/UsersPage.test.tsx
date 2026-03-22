@@ -53,7 +53,7 @@ describe("UsersPage", () => {
     });
   });
 
-  it("does not create user with empty fields", async () => {
+  it("shows validation errors for empty fields", async () => {
     const user = userEvent.setup();
     render(<UsersPage />);
 
@@ -62,8 +62,28 @@ describe("UsersPage", () => {
     });
 
     await user.click(screen.getByRole("button", { name: "Create" }));
-    // Form should not be cleared since create was not triggered
-    expect(screen.getByLabelText("Name")).toHaveValue("");
+
+    await waitFor(() => {
+      expect(screen.getByText("Name is required")).toBeInTheDocument();
+      expect(screen.getByText("Email is required")).toBeInTheDocument();
+    });
+  });
+
+  it("shows validation error for invalid email", async () => {
+    const user = userEvent.setup();
+    render(<UsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Name"), "Test User");
+    await user.type(screen.getByLabelText("Email"), "invalid-email");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Invalid email format")).toBeInTheDocument();
+    });
   });
 
   it("enters edit mode when Edit button is clicked", async () => {
