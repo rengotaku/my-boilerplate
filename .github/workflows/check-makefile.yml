@@ -1,0 +1,23 @@
+name: Check Makefile Targets
+
+on:
+  pull_request:
+    paths:
+      - "*/Makefile"
+      - "Makefile"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check server Makefiles for stop/status targets
+        run: |
+          SERVERS="go-rest-api go-graphql-api go-grpc-api go-ssr-web react-spa"
+          for dir in $SERVERS; do
+            if [ -f "$dir/Makefile" ]; then
+              grep -q "^stop:" "$dir/Makefile" || echo "::warning file=$dir/Makefile::Missing 'stop' target"
+              grep -q "^status:" "$dir/Makefile" || echo "::warning file=$dir/Makefile::Missing 'status' target"
+            fi
+          done

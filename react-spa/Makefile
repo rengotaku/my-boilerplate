@@ -1,4 +1,7 @@
-.PHONY: dev build preview lint format test test-watch test-coverage clean
+.PHONY: dev build preview stop status lint format test test-watch test-coverage clean
+
+# Variables
+PORT ?= 5173
 
 dev:
 	npm run dev
@@ -8,6 +11,12 @@ build:
 
 preview:
 	npm run preview
+
+stop:
+	@lsof -ti :$(PORT) | xargs kill 2>/dev/null || true
+
+status:
+	@lsof -i :$(PORT) >/dev/null 2>&1 && echo "react-spa: running (:$(PORT))" || echo "react-spa: stopped"
 
 lint:
 	npm run lint

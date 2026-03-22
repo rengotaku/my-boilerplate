@@ -67,6 +67,33 @@ Collection of project boilerplates.
 | Next | python-web | Planned |
 | Future | go-web | Planned |
 
+## Dev Server Management
+
+```bash
+# Check all servers
+make status
+
+# Stop all servers
+make stop-all
+```
+
+### Port Convention
+
+| Project | Port | Usage |
+|---------|------|-------|
+| go-rest-api | 8080 | REST API |
+| go-graphql-api | 8081 | GraphQL API |
+| go-grpc-api | 50051 | gRPC |
+| go-ssr-web | 8082 | SSR Web |
+| react-spa | 5173 | Vite dev |
+
+### New Project Checklist
+
+When adding a new server project:
+- [ ] Add `PORT`, `stop`, `status` targets to Makefile
+- [ ] Add to `SERVERS` in root Makefile
+- [ ] Update port convention table above
+
 ## Usage
 
 ```bash
