@@ -1,4 +1,17 @@
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks";
 import type { User } from "@/types";
 
@@ -60,117 +73,100 @@ export function UsersPage() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <Alert severity="error">Error: {error.message}</Alert>;
   }
 
-  return (
-    <div>
-      <h1>Users</h1>
+  const mutationError =
+    createUser.error?.message || updateUser.error?.message || deleteUser.error?.message;
 
-      <form
+  return (
+    <Box>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Users
+      </Typography>
+
+      <Box
+        component="form"
         onSubmit={editingUser ? handleUpdate : handleCreate}
-        style={{ marginBottom: "1rem" }}
+        sx={{ display: "flex", gap: 2, mb: 3, alignItems: "center" }}
       >
-        <input
-          type="text"
-          placeholder="Name"
+        <TextField
+          label="Name"
+          size="small"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ marginRight: "0.5rem" }}
         />
-        <input
+        <TextField
+          label="Email"
           type="email"
-          placeholder="Email"
+          size="small"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ marginRight: "0.5rem" }}
         />
-        <button type="submit" disabled={createUser.isPending || updateUser.isPending}>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={createUser.isPending || updateUser.isPending}
+        >
           {editingUser ? "Update" : "Create"}
-        </button>
+        </Button>
         {editingUser && (
-          <button type="button" onClick={cancelEdit} style={{ marginLeft: "0.5rem" }}>
+          <Button variant="outlined" onClick={cancelEdit}>
             Cancel
-          </button>
+          </Button>
         )}
-      </form>
+      </Box>
 
-      {(createUser.isError || updateUser.isError || deleteUser.isError) && (
-        <div style={{ color: "red", marginBottom: "1rem" }}>
-          Error:{" "}
-          {createUser.error?.message ||
-            updateUser.error?.message ||
-            deleteUser.error?.message}
-        </div>
+      {mutationError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Error: {mutationError}
+        </Alert>
       )}
 
       {users && users.length > 0 ? (
-        <table style={{ borderCollapse: "collapse", width: "100%" }}>
-          <thead>
-            <tr>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "0.5rem",
-                  borderBottom: "1px solid #ccc",
-                }}
-              >
-                Name
-              </th>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "0.5rem",
-                  borderBottom: "1px solid #ccc",
-                }}
-              >
-                Email
-              </th>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "0.5rem",
-                  borderBottom: "1px solid #ccc",
-                }}
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
-                  {user.name}
-                </td>
-                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
-                  {user.email}
-                </td>
-                <td style={{ padding: "0.5rem", borderBottom: "1px solid #eee" }}>
-                  <button
-                    onClick={() => startEdit(user)}
-                    style={{ marginRight: "0.5rem" }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    disabled={deleteUser.isPending}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Button size="small" onClick={() => startEdit(user)} sx={{ mr: 1 }}>
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={deleteUser.isPending}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       ) : (
-        <p>No users found.</p>
+        <Typography color="text.secondary">No users found.</Typography>
       )}
-    </div>
+    </Box>
   );
 }

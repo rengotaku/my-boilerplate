@@ -6,7 +6,7 @@ import { UsersPage } from "./UsersPage";
 describe("UsersPage", () => {
   it("displays loading state initially", () => {
     render(<UsersPage />);
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
   it("displays users list after loading", async () => {
@@ -44,12 +44,12 @@ describe("UsersPage", () => {
       expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
-    await user.type(screen.getByPlaceholderText("Name"), "New User");
-    await user.type(screen.getByPlaceholderText("Email"), "new@example.com");
+    await user.type(screen.getByLabelText("Name"), "New User");
+    await user.type(screen.getByLabelText("Email"), "new@example.com");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Name")).toHaveValue("");
+      expect(screen.getByLabelText("Name")).toHaveValue("");
     });
   });
 
@@ -63,7 +63,7 @@ describe("UsersPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Create" }));
     // Form should not be cleared since create was not triggered
-    expect(screen.getByPlaceholderText("Name")).toHaveValue("");
+    expect(screen.getByLabelText("Name")).toHaveValue("");
   });
 
   it("enters edit mode when Edit button is clicked", async () => {
@@ -77,8 +77,8 @@ describe("UsersPage", () => {
     const editButtons = screen.getAllByRole("button", { name: "Edit" });
     await user.click(editButtons[0]);
 
-    expect(screen.getByPlaceholderText("Name")).toHaveValue("John Doe");
-    expect(screen.getByPlaceholderText("Email")).toHaveValue("john@example.com");
+    expect(screen.getByLabelText("Name")).toHaveValue("John Doe");
+    expect(screen.getByLabelText("Email")).toHaveValue("john@example.com");
     expect(screen.getByRole("button", { name: "Update" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
   });
@@ -98,7 +98,7 @@ describe("UsersPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(screen.getByPlaceholderText("Name")).toHaveValue("");
+    expect(screen.getByLabelText("Name")).toHaveValue("");
     expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument();
   });
 
@@ -113,14 +113,14 @@ describe("UsersPage", () => {
     const editButtons = screen.getAllByRole("button", { name: "Edit" });
     await user.click(editButtons[0]);
 
-    const nameInput = screen.getByPlaceholderText("Name");
+    const nameInput = screen.getByLabelText("Name");
     await user.clear(nameInput);
     await user.type(nameInput, "Updated Name");
 
     await user.click(screen.getByRole("button", { name: "Update" }));
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Name")).toHaveValue("");
+      expect(screen.getByLabelText("Name")).toHaveValue("");
     });
   });
 

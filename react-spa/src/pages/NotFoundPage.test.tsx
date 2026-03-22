@@ -11,7 +11,8 @@ describe("NotFoundPage", () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText("404 - Page Not Found")).toBeInTheDocument();
+    expect(screen.getByText("404")).toBeInTheDocument();
+    expect(screen.getByText("Page Not Found")).toBeInTheDocument();
   });
 
   it("renders link to home", () => {

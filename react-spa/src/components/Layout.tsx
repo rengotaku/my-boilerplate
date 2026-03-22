@@ -1,17 +1,30 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link as RouterLink } from "react-router-dom";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
 
 export function Layout() {
   return (
-    <div className="app">
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/users">Users</Link>
-        </nav>
-      </header>
-      <main>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            React SPA
+          </Typography>
+          <Button color="inherit" component={RouterLink} to="/">
+            Home
+          </Button>
+          <Button color="inherit" component={RouterLink} to="/users">
+            Users
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
         <Outlet />
-      </main>
-    </div>
+      </Container>
+    </Box>
   );
 }
