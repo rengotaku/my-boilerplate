@@ -1,4 +1,4 @@
-.PHONY: install build run lint test test-cov check ci clean help
+.PHONY: install build run stop status lint test test-cov check ci clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -7,6 +7,7 @@
 BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
+PORT ?= 8080
 
 ## install: Download dependencies
 install:
@@ -19,6 +20,14 @@ build:
 ## run: Run the server
 run:
 	go run ./cmd/server
+
+## stop: Stop the server
+stop:
+	@lsof -ti :$(PORT) | xargs kill 2>/dev/null || true
+
+## status: Check if server is running
+status:
+	@lsof -i :$(PORT) >/dev/null 2>&1 && echo "go-rest-api: running (:$(PORT))" || echo "go-rest-api: stopped"
 
 ## lint: Run golangci-lint
 lint:
