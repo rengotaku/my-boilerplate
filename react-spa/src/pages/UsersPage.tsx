@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -13,6 +15,7 @@ import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks";
+import { userFormSchema, type UserFormData } from "@/schemas";
 import type { User } from "@/types";
 
 export function UsersPage() {
@@ -21,37 +24,44 @@ export function UsersPage() {
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email) return;
-    createUser.mutate(
-      { name, email },
-      {
-        onSuccess: () => {
-          setName("");
-          setEmail("");
-        },
-      }
-    );
-  };
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<UserFormData>({
+    resolver: zodResolver(userFormSchema),
+    defaultValues: { name: "", email: "" },
+  });
 
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingUser || !name || !email) return;
-    updateUser.mutate(
-      { id: editingUser.id, input: { name, email } },
-      {
+  useEffect(() => {
+    if (editingUser) {
+      setValue("name", editingUser.name);
+      setValue("email", editingUser.email);
+    }
+  }, [editingUser, setValue]);
+
+  const onSubmit = (data: UserFormData) => {
+    if (editingUser) {
+      updateUser.mutate(
+        { id: editingUser.id, input: data },
+        {
+          onSuccess: () => {
+            setEditingUser(null);
+            reset();
+          },
+        }
+      );
+    } else {
+      createUser.mutate(data, {
         onSuccess: () => {
-          setEditingUser(null);
-          setName("");
-          setEmail("");
+          reset();
         },
-      }
-    );
+      });
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -62,14 +72,11 @@ export function UsersPage() {
 
   const startEdit = (user: User) => {
     setEditingUser(user);
-    setName(user.name);
-    setEmail(user.email);
   };
 
   const cancelEdit = () => {
     setEditingUser(null);
-    setName("");
-    setEmail("");
+    reset();
   };
 
   if (isLoading) {
@@ -95,26 +102,28 @@ export function UsersPage() {
 
       <Box
         component="form"
-        onSubmit={editingUser ? handleUpdate : handleCreate}
-        sx={{ display: "flex", gap: 2, mb: 3, alignItems: "center" }}
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{ display: "flex", gap: 2, mb: 3, alignItems: "flex-start" }}
       >
         <TextField
+          {...register("name")}
           label="Name"
           size="small"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          error={!!errors.name}
+          helperText={errors.name?.message}
         />
         <TextField
+          {...register("email")}
           label="Email"
-          type="email"
           size="small"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          error={!!errors.email}
+          helperText={errors.email?.message}
         />
         <Button
           type="submit"
           variant="contained"
           disabled={createUser.isPending || updateUser.isPending}
+          sx={{ mt: errors.name || errors.email ? 0 : 0 }}
         >
           {editingUser ? "Update" : "Create"}
         </Button>
