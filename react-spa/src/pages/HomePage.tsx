@@ -1,21 +1,53 @@
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Button from "@mui/material/Button";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 export function HomePage() {
+  const features = [
+    "Vite + TypeScript",
+    "React Router",
+    "TanStack Query (API state)",
+    "Zustand (UI state)",
+    "ky (HTTP client)",
+    "Vitest + Testing Library",
+    "Material UI",
+  ];
+
   return (
-    <div>
-      <h1>React SPA Boilerplate</h1>
-      <p>A minimal React SPA template with:</p>
-      <ul>
-        <li>Vite + TypeScript</li>
-        <li>React Router</li>
-        <li>TanStack Query (API state)</li>
-        <li>Zustand (UI state)</li>
-        <li>ky (HTTP client)</li>
-        <li>Vitest + Testing Library</li>
-      </ul>
-      <nav>
-        <Link to="/users">Users</Link>
-      </nav>
-    </div>
+    <Box>
+      <Typography variant="h4" component="h1" gutterBottom>
+        React SPA Boilerplate
+      </Typography>
+
+      <Card sx={{ maxWidth: 400, mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Features
+          </Typography>
+          <List dense disablePadding>
+            {features.map((feature) => (
+              <ListItem key={feature} disableGutters>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <CheckCircleOutlineIcon color="primary" fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary={feature} />
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </Card>
+
+      <Button variant="contained" component={RouterLink} to="/users">
+        Users
+      </Button>
+    </Box>
   );
 }
