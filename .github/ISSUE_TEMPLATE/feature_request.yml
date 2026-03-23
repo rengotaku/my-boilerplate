@@ -1,0 +1,64 @@
+name: Feature Request
+description: 新機能や改善の提案
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能提案ありがとうございます。以下の項目を記入してください。
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 種別
+      description: 提案の種類を選択してください
+      options:
+        - 新規ボイラープレート追加
+        - 既存ボイラープレートの改善
+        - ドキュメント改善
+        - CI/CD改善
+        - その他
+    validations:
+      required: true
+
+  - type: input
+    id: project
+    attributes:
+      label: 対象プロジェクト
+      description: 特定のボイラープレートに関する場合は記載
+      placeholder: "例: go-rest-api, react-spa, 新規"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 解決したい課題
+      description: どのような問題を解決したいですか？
+      placeholder: "〜ができない、〜が不便"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 提案する解決策
+      description: どのように解決すべきと考えますか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 代替案
+      description: 他に検討した方法があれば記載
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 参考リンク
+      description: 参考になるリポジトリやドキュメントがあれば記載
+    validations:
+      required: false

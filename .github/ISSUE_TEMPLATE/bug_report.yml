@@ -1,0 +1,75 @@
+name: Bug Report
+description: バグの報告
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。以下の項目をできるだけ詳しく記入してください。
+
+  - type: input
+    id: project
+    attributes:
+      label: 対象プロジェクト
+      description: どのボイラープレートで発生しましたか？
+      placeholder: "例: go-rest-api, react-spa"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: バグの概要
+      description: 何が起きましたか？
+      placeholder: 簡潔に説明してください
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現する手順を記載してください
+      placeholder: |
+        1. `make install` を実行
+        2. `make run` を実行
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      description: 本来どのように動作すべきですか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際にはどのように動作しましたか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境
+      description: 実行環境を記載してください
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Go: 1.22
+        - Node: 20.x
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: エラーログ
+      description: 関連するエラーメッセージやログがあれば貼り付けてください
+      render: shell
+    validations:
+      required: false
