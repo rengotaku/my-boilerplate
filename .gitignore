@@ -15,3 +15,6 @@ coverage.out
 # OS
 .DS_Store
 Thumbs.db
+
+.specify/
+specs/
