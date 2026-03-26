@@ -17,11 +17,12 @@ Common infrastructure files should be synced. API-specific implementations are i
 |------|-------------|
 | `vite.config.ts` | Vite build configuration |
 | `tsconfig.json` | TypeScript base config |
-| `tsconfig.app.json` | App TypeScript config |
 | `tsconfig.node.json` | Node TypeScript config |
-| `eslint.config.js` | ESLint configuration |
 | `.prettierrc` | Prettier configuration |
-| `.prettierignore` | Prettier ignore patterns |
+
+**Not synced (intentionally different):**
+- `tsconfig.app.json` - GraphQL variant includes "node" types for codegen tests
+- `eslint.config.js` - GraphQL variant ignores generated/ directory
 
 ### Testing
 

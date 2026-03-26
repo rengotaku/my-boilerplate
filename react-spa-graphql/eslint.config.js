@@ -7,7 +7,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "coverage", "src/graphql/generated"]),
   {
     files: ["**/*.{ts,tsx}"],
     ignores: ["**/*.test.{ts,tsx}", "**/test/**"],
