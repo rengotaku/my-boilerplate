@@ -157,7 +157,7 @@ describe("US2: useCreateUser フック", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       const { result } = renderHook(() => useCreateUser(), {
@@ -184,7 +184,7 @@ describe("US2: useCreateUser フック", () => {
       server.use(
         graphql.mutation("CreateUser", () => {
           return HttpResponse.error();
-        }),
+        })
       );
 
       const { result } = renderHook(() => useCreateUser(), {

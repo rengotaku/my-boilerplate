@@ -124,7 +124,7 @@ describe("US3: useDeleteUser フック", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       const { result } = renderHook(() => useDeleteUser(), {
@@ -156,7 +156,7 @@ describe("US3: useDeleteUser フック", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       const { result } = renderHook(() => useDeleteUser(), {

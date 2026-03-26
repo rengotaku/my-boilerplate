@@ -24,12 +24,7 @@ interface EditUserDialogProps {
   onSuccess?: () => void;
 }
 
-export function EditUserDialog({
-  open,
-  user,
-  onClose,
-  onSuccess,
-}: EditUserDialogProps) {
+export function EditUserDialog({ open, user, onClose, onSuccess }: EditUserDialogProps) {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 

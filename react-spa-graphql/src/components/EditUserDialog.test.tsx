@@ -43,7 +43,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       expect(screen.getByDisplayValue("John Doe")).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -91,15 +91,11 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
-      expect(
-        screen.getByRole("button", { name: /save|保存/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /delete|削除/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /save|保存/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /delete|削除/i })).toBeInTheDocument();
     });
   });
 
@@ -115,7 +111,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const nameInput = screen.getByLabelText(/name/i);
@@ -141,7 +137,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const nameInput = screen.getByLabelText(/name/i);
@@ -175,7 +171,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
               },
             },
           });
-        }),
+        })
       );
 
       render(
@@ -186,7 +182,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const nameInput = screen.getByLabelText(/name/i);
@@ -217,7 +213,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const nameInput = screen.getByLabelText(/name/i);
@@ -242,7 +238,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const emailInput = screen.getByLabelText(/email/i);
@@ -270,16 +266,14 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const deleteButton = screen.getByRole("button", { name: /delete|削除/i });
       await user.click(deleteButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/本当に削除しますか|are you sure/i),
-        ).toBeInTheDocument();
+        expect(screen.getByText(/本当に削除しますか|are you sure/i)).toBeInTheDocument();
       });
     });
 
@@ -294,7 +288,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       // 削除ボタンをクリック
@@ -304,7 +298,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
       // 確認ダイアログで「はい」をクリック
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: /confirm|はい|yes/i }),
+          screen.getByRole("button", { name: /confirm|はい|yes/i })
         ).toBeInTheDocument();
       });
 
@@ -329,7 +323,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       // 削除ボタンをクリック
@@ -339,7 +333,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
       // 確認ダイアログで「いいえ」をクリック
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: /cancel|いいえ|no/i }),
+          screen.getByRole("button", { name: /cancel|いいえ|no/i })
         ).toBeInTheDocument();
       });
 
@@ -369,7 +363,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       render(
@@ -380,7 +374,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const nameInput = screen.getByLabelText(/name/i);
@@ -409,7 +403,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       render(
@@ -420,7 +414,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       // 削除ボタンをクリック
@@ -430,7 +424,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
       // 確認ダイアログで「はい」をクリック
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: /confirm|はい|yes/i }),
+          screen.getByRole("button", { name: /confirm|はい|yes/i })
         ).toBeInTheDocument();
       });
 
@@ -460,7 +454,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       const cancelButton = screen.getByRole("button", { name: /cancel|キャンセル/i });
@@ -480,7 +474,7 @@ describe("US3: EditUserDialog コンポーネント", () => {
             onClose={mockOnClose}
             onSuccess={mockOnSuccess}
           />
-        </TestWrapper>,
+        </TestWrapper>
       );
 
       // MUI Dialog の backdrop をクリック

@@ -30,7 +30,7 @@ describe("US1: UsersPage - ローディング状態", () => {
     expect(
       screen.getByRole("progressbar") ||
         screen.getByText(/loading/i) ||
-        screen.getByText(/読み込み中/),
+        screen.getByText(/読み込み中/)
     ).toBeInTheDocument();
   });
 
@@ -61,16 +61,14 @@ describe("US1: UsersPage - エラー状態", () => {
             },
           ],
         });
-      }),
+      })
     );
 
     render(<UsersPage />);
 
     // エラーメッセージが表示されること
     await waitFor(() => {
-      expect(
-        screen.getByText(/エラー|error|失敗/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/エラー|error|失敗/i)).toBeInTheDocument();
     });
   });
 
@@ -79,16 +77,14 @@ describe("US1: UsersPage - エラー状態", () => {
     server.use(
       graphql.query("GetUsers", () => {
         return HttpResponse.error();
-      }),
+      })
     );
 
     render(<UsersPage />);
 
     // エラーメッセージが表示されること
     await waitFor(() => {
-      expect(
-        screen.getByText(/エラー|error|失敗/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/エラー|error|失敗/i)).toBeInTheDocument();
     });
   });
 
@@ -99,7 +95,7 @@ describe("US1: UsersPage - エラー状態", () => {
         return HttpResponse.json({
           errors: [{ message: "Internal server error" }],
         });
-      }),
+      })
     );
 
     render(<UsersPage />);
@@ -150,7 +146,7 @@ describe("US1: UsersPage - ユーザー一覧表示", () => {
         return HttpResponse.json({
           data: { users: [] },
         });
-      }),
+      })
     );
 
     render(<UsersPage />);
@@ -158,7 +154,7 @@ describe("US1: UsersPage - ユーザー一覧表示", () => {
     // 空状態のメッセージが表示されること
     await waitFor(() => {
       expect(
-        screen.getByText(/ユーザーがいません|no users|ユーザーなし/i),
+        screen.getByText(/ユーザーがいません|no users|ユーザーなし/i)
       ).toBeInTheDocument();
     });
   });
@@ -168,9 +164,7 @@ describe("US1: UsersPage - ユーザー一覧表示", () => {
 
     await waitFor(() => {
       // プレースホルダーメッセージが消えること（GraphQL 統合完了の証拠）
-      expect(
-        screen.queryByText(/GraphQL integration pending/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/GraphQL integration pending/)).not.toBeInTheDocument();
     });
   });
 });

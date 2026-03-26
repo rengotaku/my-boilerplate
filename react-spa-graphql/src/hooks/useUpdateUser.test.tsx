@@ -70,10 +70,7 @@ describe("US3: useUpdateUser フック", () => {
         wrapper: TestWrapper,
       });
 
-      let updatedUser:
-        | { id: string; name: string; email: string }
-        | null
-        | undefined;
+      let updatedUser: { id: string; name: string; email: string } | null | undefined;
 
       await act(async () => {
         const response = await result.current.updateUser("1", {
@@ -142,7 +139,7 @@ describe("US3: useUpdateUser フック", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       const { result } = renderHook(() => useUpdateUser(), {
@@ -151,7 +148,10 @@ describe("US3: useUpdateUser フック", () => {
 
       await act(async () => {
         try {
-          await result.current.updateUser("1", { name: "Error", email: "error@example.com" });
+          await result.current.updateUser("1", {
+            name: "Error",
+            email: "error@example.com",
+          });
         } catch {
           // エラーは result.current.error に設定される
         }
@@ -174,7 +174,7 @@ describe("US3: useUpdateUser フック", () => {
               },
             ],
           });
-        }),
+        })
       );
 
       const { result } = renderHook(() => useUpdateUser(), {
@@ -183,7 +183,10 @@ describe("US3: useUpdateUser フック", () => {
 
       await act(async () => {
         try {
-          await result.current.updateUser("999", { name: "Not Found", email: "notfound@example.com" });
+          await result.current.updateUser("999", {
+            name: "Not Found",
+            email: "notfound@example.com",
+          });
         } catch {
           // エラーを期待
         }
@@ -202,7 +205,10 @@ describe("US3: useUpdateUser フック", () => {
       });
 
       act(() => {
-        result.current.updateUser("1", { name: "Loading Test", email: "loading@example.com" });
+        result.current.updateUser("1", {
+          name: "Loading Test",
+          email: "loading@example.com",
+        });
       });
 
       await waitFor(() => {

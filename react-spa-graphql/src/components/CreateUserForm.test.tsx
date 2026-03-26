@@ -30,7 +30,7 @@ describe("US2: CreateUserForm - 基本レンダリング", () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     // 送信ボタンが存在すること
     expect(
-      screen.getByRole("button", { name: /create|作成|submit/i }),
+      screen.getByRole("button", { name: /create|作成|submit/i })
     ).toBeInTheDocument();
   });
 
@@ -109,7 +109,7 @@ describe("US2: CreateUserForm - フォーム送信", () => {
             },
           ],
         });
-      }),
+      })
     );
 
     const user = userEvent.setup();
@@ -122,7 +122,7 @@ describe("US2: CreateUserForm - フォーム送信", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/エラー|error|失敗|Email already exists/i),
+        screen.getByText(/エラー|error|失敗|Email already exists/i)
       ).toBeInTheDocument();
     });
   });
@@ -142,9 +142,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/name is required|名前は必須/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/name is required|名前は必須/i)).toBeInTheDocument();
     });
   });
 
@@ -158,9 +156,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/email is required|メールは必須/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/email is required|メールは必須/i)).toBeInTheDocument();
     });
   });
 
@@ -174,9 +170,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/invalid email|メールアドレスの形式/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/invalid email|メールアドレスの形式/i)).toBeInTheDocument();
     });
   });
 
@@ -189,12 +183,8 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/name is required|名前は必須/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/email is required|メールは必須/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/name is required|名前は必須/i)).toBeInTheDocument();
+      expect(screen.getByText(/email is required|メールは必須/i)).toBeInTheDocument();
     });
   });
 
@@ -216,7 +206,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
             },
           },
         });
-      }),
+      })
     );
 
     const user = userEvent.setup();
@@ -228,9 +218,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/name is required|名前は必須/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/name is required|名前は必須/i)).toBeInTheDocument();
     });
 
     // Mutation は呼ばれないこと
@@ -247,9 +235,7 @@ describe("US2: CreateUserForm - バリデーションエラー", () => {
     await user.click(screen.getByRole("button", { name: /create|作成|submit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/name is required|名前は必須/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/name is required|名前は必須/i)).toBeInTheDocument();
     });
 
     // 正しい値を入力して再送信
