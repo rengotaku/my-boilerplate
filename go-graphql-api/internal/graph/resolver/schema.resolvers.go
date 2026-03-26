@@ -7,7 +7,7 @@ package resolver
 
 import (
 	"context"
-	"fmt"
+
 	"go-graphql-api/internal/graph/generated"
 	"go-graphql-api/internal/graph/model"
 )
@@ -43,12 +43,12 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 
 // CreatedAt is the resolver for the createdAt field.
 func (r *userResolver) CreatedAt(ctx context.Context, obj *model.User) (string, error) {
-	panic(fmt.Errorf("not implemented: CreatedAt - createdAt"))
+	return obj.CreatedAt.Format("2006-01-02T15:04:05Z07:00"), nil
 }
 
 // UpdatedAt is the resolver for the updatedAt field.
 func (r *userResolver) UpdatedAt(ctx context.Context, obj *model.User) (string, error) {
-	panic(fmt.Errorf("not implemented: UpdatedAt - updatedAt"))
+	return obj.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
