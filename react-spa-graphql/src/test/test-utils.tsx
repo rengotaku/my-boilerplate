@@ -1,10 +1,13 @@
 import { render as rtlRender, type RenderOptions } from "@testing-library/react";
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink } from "@apollo/client";
 import { BrowserRouter } from "react-router-dom";
 import type { ReactNode, ReactElement } from "react";
 
 export function createTestApolloClient() {
   return new ApolloClient({
+    link: new HttpLink({
+      uri: "http://localhost/graphql",
+    }),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
