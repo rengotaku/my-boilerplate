@@ -1,4 +1,4 @@
-.PHONY: install build run stop status lint test test-cov check ci generate clean help
+.PHONY: install build run dev stop status lint test test-cov check ci generate clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -20,6 +20,10 @@ build:
 ## run: Run the server
 run:
 	go run ./cmd/server
+
+## dev: Run with hot reload (requires air: go install github.com/air-verse/air@latest)
+dev:
+	air
 
 ## stop: Stop the server
 stop:
