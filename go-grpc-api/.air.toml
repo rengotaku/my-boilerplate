@@ -1,0 +1,42 @@
+# Air configuration for hot reload development
+# https://github.com/air-verse/air
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Build command
+cmd = "go build -o ./bin/server ./cmd/server"
+# Binary to run
+entrypoint = "./bin/server"
+# Watch these extensions
+include_ext = ["go"]
+# Exclude directories
+exclude_dir = ["bin", "vendor", "tmp", "pkg/gen"]
+# Exclude files
+exclude_file = []
+# Exclude regex patterns
+exclude_regex = ["_test.go"]
+# Delay before rebuilding (ms)
+delay = 1000
+# Stop old binary before building
+stop_on_error = true
+# Send interrupt signal before killing
+send_interrupt = true
+# Delay after interrupt (ms)
+kill_delay = 500
+
+[log]
+# Show log time
+time = true
+
+[color]
+# Customize colors
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Delete tmp dir on exit
+clean_on_exit = true

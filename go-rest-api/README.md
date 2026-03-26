@@ -30,6 +30,18 @@ make run
 curl http://localhost:8080/health
 ```
 
+## Development (Hot Reload)
+
+```bash
+# Install Air (once)
+go install github.com/air-verse/air@latest
+
+# Run with hot reload
+make dev
+```
+
+Air will watch `.go` files and automatically rebuild/restart the server on changes.
+
 ## Commands
 
 ```bash
@@ -37,6 +49,7 @@ make help        # Show all commands
 make install     # Download dependencies
 make build       # Build the binary
 make run         # Run the server
+make dev         # Run with hot reload (requires air)
 make lint        # Run golangci-lint
 make test        # Run tests
 make test-cov    # Run tests with coverage
