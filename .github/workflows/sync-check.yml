@@ -1,0 +1,71 @@
+name: Sync Check
+
+on:
+  push:
+    paths:
+      - 'react-spa/**'
+      - 'react-spa-graphql/**'
+  pull_request:
+    paths:
+      - 'react-spa/**'
+      - 'react-spa-graphql/**'
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check synced files
+        run: |
+          # List of files that should be synced between react-spa and react-spa-graphql
+          SYNC_FILES=(
+            "vite.config.ts"
+            "tsconfig.json"
+            "tsconfig.app.json"
+            "tsconfig.node.json"
+            "eslint.config.js"
+            ".prettierrc"
+            ".prettierignore"
+            "vitest.config.ts"
+            "src/test/setup.ts"
+            "src/test/mocks/server.ts"
+            "src/theme/index.ts"
+            "src/components/Layout.tsx"
+            "src/pages/HomePage.tsx"
+            "src/pages/NotFoundPage.tsx"
+            "src/hooks/useUIStore.ts"
+          )
+
+          DRIFT_FOUND=false
+
+          for file in "${SYNC_FILES[@]}"; do
+            SPA_FILE="react-spa/$file"
+            GRAPHQL_FILE="react-spa-graphql/$file"
+
+            if [ ! -f "$SPA_FILE" ]; then
+              echo "::warning::Missing in react-spa: $file"
+              continue
+            fi
+
+            if [ ! -f "$GRAPHQL_FILE" ]; then
+              echo "::warning::Missing in react-spa-graphql: $file"
+              continue
+            fi
+
+            if ! diff -q "$SPA_FILE" "$GRAPHQL_FILE" > /dev/null 2>&1; then
+              echo "::error::Drift detected: $file"
+              echo "--- Diff for $file ---"
+              diff "$SPA_FILE" "$GRAPHQL_FILE" || true
+              echo ""
+              DRIFT_FOUND=true
+            fi
+          done
+
+          if [ "$DRIFT_FOUND" = true ]; then
+            echo ""
+            echo "::error::Synced files have drifted. Please sync the files between react-spa and react-spa-graphql."
+            exit 1
+          fi
+
+          echo "All synced files are in sync!"
