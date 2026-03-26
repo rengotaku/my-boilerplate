@@ -8,7 +8,7 @@ tmp_dir = "tmp"
 # Build command
 cmd = "go build -o ./bin/server ./cmd/server"
 # Binary to run
-bin = "./bin/server"
+entrypoint = "./bin/server"
 # Watch these extensions
 include_ext = ["go"]
 # Exclude directories
