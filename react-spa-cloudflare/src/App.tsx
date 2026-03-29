@@ -1,8 +1,7 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { Layout } from "@/components";
-import { HomePage, NotFoundPage } from "@/pages";
+import { AppRouter } from "@/router";
 import { theme } from "@/theme";
 
 function App() {
@@ -10,12 +9,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
+        <AppRouter />
       </BrowserRouter>
     </ThemeProvider>
   );

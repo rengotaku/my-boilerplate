@@ -11,17 +11,29 @@ describe("HomePage", () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText("React SPA Boilerplate")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "React SPA Boilerplate" })
+    ).toBeInTheDocument();
   });
 
-  it("renders navigation link to users", () => {
+  it("renders features section", () => {
     render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>
     );
 
-    const link = screen.getByRole("link", { name: "Users" });
-    expect(link).toHaveAttribute("href", "/users");
+    expect(screen.getByRole("heading", { name: "Features" })).toBeInTheDocument();
+  });
+
+  it("renders navigation link to about page", () => {
+    render(
+      <BrowserRouter>
+        <HomePage />
+      </BrowserRouter>
+    );
+
+    const link = screen.getByRole("link", { name: "About" });
+    expect(link).toHaveAttribute("href", "/about");
   });
 });

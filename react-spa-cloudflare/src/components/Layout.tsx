@@ -17,6 +17,9 @@ export function Layout() {
           <Button color="inherit" component={RouterLink} to="/">
             Home
           </Button>
+          <Button color="inherit" component={RouterLink} to="/about">
+            About
+          </Button>
         </Toolbar>
       </AppBar>
       <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
