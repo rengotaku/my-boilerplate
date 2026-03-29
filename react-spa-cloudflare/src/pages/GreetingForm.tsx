@@ -52,11 +52,7 @@ export function GreetingForm() {
         </Card>
       )}
 
-      <Box
-        component="form"
-        onSubmit={handleSubmit(onSubmit)}
-        sx={{ maxWidth: 400 }}
-      >
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 400 }}>
         <TextField
           {...register("name")}
           label="Your Name"

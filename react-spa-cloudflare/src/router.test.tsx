@@ -33,9 +33,7 @@ describe("AppRouter", () => {
       </MemoryRouter>
     );
 
-    expect(
-      screen.getByRole("heading", { name: /Greeting Demo/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Greeting Demo/i })).toBeInTheDocument();
   });
 
   it("renders greeting page with name parameter", () => {

@@ -1,12 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { Layout } from "@/components";
-import {
-  HomePage,
-  AboutPage,
-  GreetingForm,
-  GreetingPage,
-  NotFoundPage,
-} from "@/pages";
+import { HomePage, AboutPage, GreetingForm, GreetingPage, NotFoundPage } from "@/pages";
 
 export function AppRouter() {
   return (

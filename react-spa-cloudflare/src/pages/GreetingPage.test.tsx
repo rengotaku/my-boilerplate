@@ -16,9 +16,7 @@ const renderGreetingPage = (name: string) => {
 describe("GreetingPage", () => {
   it("displays greeting with name from URL", () => {
     renderGreetingPage("Takuya");
-    expect(
-      screen.getByRole("heading", { name: /Hello, Takuya!/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Hello, Takuya!/i })).toBeInTheDocument();
   });
 
   it("displays visit count", () => {
@@ -28,9 +26,7 @@ describe("GreetingPage", () => {
 
   it("renders back button", () => {
     renderGreetingPage("Test");
-    expect(
-      screen.getByRole("link", { name: /Try Another Name/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Try Another Name/i })).toBeInTheDocument();
   });
 
   it("handles URL-encoded names", () => {

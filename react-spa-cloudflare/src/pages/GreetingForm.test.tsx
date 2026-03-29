@@ -15,9 +15,7 @@ const renderGreetingForm = () => {
 describe("GreetingForm", () => {
   it("renders the heading", () => {
     renderGreetingForm();
-    expect(
-      screen.getByRole("heading", { name: /Greeting Demo/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Greeting Demo/i })).toBeInTheDocument();
   });
 
   it("renders name input field", () => {
@@ -27,9 +25,7 @@ describe("GreetingForm", () => {
 
   it("renders submit button", () => {
     renderGreetingForm();
-    expect(
-      screen.getByRole("button", { name: /Say Hello/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Say Hello/i })).toBeInTheDocument();
   });
 
   it("shows validation error for empty name", async () => {

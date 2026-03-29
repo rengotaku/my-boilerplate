@@ -33,12 +33,7 @@ export function GreetingPage() {
         </CardContent>
       </Card>
 
-      <Button
-        component={RouterLink}
-        to="/greeting"
-        variant="outlined"
-        size="large"
-      >
+      <Button component={RouterLink} to="/greeting" variant="outlined" size="large">
         Try Another Name
       </Button>
     </Box>
