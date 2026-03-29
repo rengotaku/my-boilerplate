@@ -1,6 +1,6 @@
-# React SPA Boilerplate
+# React SPA Cloudflare
 
-A minimal React SPA (Single Page Application) boilerplate for development.
+A standalone React SPA boilerplate optimized for Cloudflare Pages deployment.
 
 ## Tech Stack
 
@@ -9,25 +9,30 @@ A minimal React SPA (Single Page Application) boilerplate for development.
 | Build | Vite |
 | Language | TypeScript |
 | Routing | React Router |
-| API State | TanStack Query |
+| UI Framework | Material UI |
+| Form | React Hook Form + Zod |
 | UI State | Zustand |
-| HTTP Client | ky |
 | Linter | ESLint |
 | Formatter | Prettier |
 | Testing | Vitest + Testing Library |
+| Deployment | Cloudflare Pages |
 
 ## Project Structure
 
 ```
 src/
-├── api/           # API client and endpoints
-├── components/    # UI components
-├── hooks/         # Custom hooks (React Query, Zustand)
-├── pages/         # Page components
+├── components/    # UI components (Layout)
+├── pages/         # Page components (Home, About, 404, Form)
+├── schemas/       # Zod validation schemas
 ├── test/          # Test utilities
-├── types/         # TypeScript types
-├── App.tsx        # App entry with routing
+├── router.tsx     # React Router configuration
+├── theme.ts       # MUI theme
+├── App.tsx        # App entry with providers
 └── main.tsx       # React entry point
+
+public/
+├── _headers       # Cloudflare security headers
+└── _routes.json   # SPA routing configuration
 ```
 
 ## Getting Started
@@ -46,6 +51,42 @@ npm test
 npm run build
 ```
 
+## Deployment
+
+### Prerequisites
+
+1. Install Wrangler CLI:
+   ```bash
+   npm install -g wrangler
+   ```
+
+2. Login to Cloudflare:
+   ```bash
+   wrangler login
+   ```
+
+### Deploy to Production
+
+```bash
+make deploy
+```
+
+### Deploy Preview
+
+```bash
+make deploy-preview
+```
+
+### Manual Deployment
+
+```bash
+# Build
+npm run build
+
+# Deploy
+npx wrangler pages deploy dist --project-name=react-spa-cloudflare
+```
+
 ## Available Scripts
 
 | Command | Description |
@@ -61,21 +102,29 @@ npm run build
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run test:coverage` | Run tests with coverage |
 
-## Environment Variables
+## Make Targets
 
-Create `.env.local` for local development:
+| Target | Description |
+|--------|-------------|
+| `make dev` | Start development server |
+| `make build` | Build for production |
+| `make test` | Run tests |
+| `make deploy` | Deploy to Cloudflare Pages (production) |
+| `make deploy-preview` | Deploy to Cloudflare Pages (preview) |
+| `make clean` | Remove build artifacts |
 
-```
-VITE_API_BASE_URL=http://localhost:8080
-```
+## Cloudflare Pages Configuration
 
-## Backend Integration
+- `wrangler.toml` - Wrangler configuration for Pages deployment
+- `public/_routes.json` - SPA routing (all routes served by index.html)
+- `public/_headers` - Security headers (X-Frame-Options, CSP, etc.)
 
-This SPA is designed to work with:
-- `go-rest-api` - REST API backend
-- `go-graphql-api` - GraphQL API backend
+## Features
 
-## Notes
-
-- **Development only**: Deployment configuration (Dockerfile, CI/CD deploy) is out of scope
-- **No container environment**: Use local Node.js for development
+- React 19 with TypeScript
+- Client-side routing with React Router
+- Material UI 7 for components
+- Form validation with React Hook Form + Zod
+- Optimized for Cloudflare Pages edge deployment
+- Security headers pre-configured
+- CI/CD ready with GitHub Actions

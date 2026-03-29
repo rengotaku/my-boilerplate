@@ -1,0 +1,17 @@
+# Cloudflare Pages configuration
+# https://developers.cloudflare.com/pages/configuration/wrangler-configuration/
+
+name = "react-spa-cloudflare"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Environment-specific settings
+[env.production]
+name = "react-spa-cloudflare"
+
+[env.preview]
+name = "react-spa-cloudflare-preview"

@@ -1,4 +1,4 @@
-.PHONY: dev build preview stop status lint format test test-watch test-coverage clean
+.PHONY: dev build preview stop status lint format test test-watch test-coverage clean deploy deploy-preview
 
 # Variables
 PORT ?= 5173
@@ -44,3 +44,12 @@ clean:
 
 install:
 	npm install
+
+# Cloudflare Pages deployment
+deploy:
+	npm run build
+	npx wrangler pages deploy dist --project-name=react-spa-cloudflare
+
+deploy-preview:
+	npm run build
+	npx wrangler pages deploy dist --project-name=react-spa-cloudflare --branch=preview
