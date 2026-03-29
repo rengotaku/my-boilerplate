@@ -1,5 +1,6 @@
 {
   "name": "react-spa-cloudflare",
+  "description": "A standalone React SPA boilerplate optimized for Cloudflare Pages deployment",
   "private": true,
   "version": "0.0.0",
   "type": "module",
