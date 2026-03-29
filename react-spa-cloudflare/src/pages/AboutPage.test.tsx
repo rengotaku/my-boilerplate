@@ -31,8 +31,6 @@ describe("AboutPage", () => {
       </MemoryRouter>
     );
 
-    expect(
-      screen.getByRole("link", { name: "Back to Home" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Home" })).toBeInTheDocument();
   });
 });

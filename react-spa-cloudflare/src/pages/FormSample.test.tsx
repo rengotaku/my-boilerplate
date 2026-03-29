@@ -16,9 +16,7 @@ describe("FormSample", () => {
   it("renders the form heading", () => {
     renderFormSample();
 
-    expect(
-      screen.getByRole("heading", { name: /Contact Form/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Contact Form/i })).toBeInTheDocument();
   });
 
   it("renders all form fields", () => {
@@ -66,9 +64,7 @@ describe("FormSample", () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Success message should not appear with invalid data
-    expect(
-      screen.queryByText(/Thank you for your message/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Thank you for your message/i)).not.toBeInTheDocument();
   });
 
   it("shows validation error for short message", async () => {
@@ -109,9 +105,7 @@ describe("FormSample", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Thank you for your message/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Thank you for your message/i)).toBeInTheDocument();
     });
   });
 });

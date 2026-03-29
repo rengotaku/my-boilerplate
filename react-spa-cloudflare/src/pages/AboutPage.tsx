@@ -11,9 +11,9 @@ export function AboutPage() {
       </Typography>
 
       <Typography variant="body1" paragraph>
-        This is a React SPA boilerplate designed for deployment on Cloudflare
-        Pages. It includes a modern tech stack with TypeScript, Material UI,
-        and comprehensive testing setup.
+        This is a React SPA boilerplate designed for deployment on Cloudflare Pages. It
+        includes a modern tech stack with TypeScript, Material UI, and comprehensive
+        testing setup.
       </Typography>
 
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
@@ -21,9 +21,9 @@ export function AboutPage() {
       </Typography>
 
       <Typography variant="body1" paragraph>
-        This page demonstrates client-side routing. You can access this page
-        directly via URL or by navigating from the home page. The Cloudflare
-        Pages configuration ensures proper fallback routing for SPA navigation.
+        This page demonstrates client-side routing. You can access this page directly via
+        URL or by navigating from the home page. The Cloudflare Pages configuration
+        ensures proper fallback routing for SPA navigation.
       </Typography>
 
       <Button variant="contained" component={RouterLink} to="/">
