@@ -21,7 +21,7 @@ export function FormSample() {
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = (_data: ContactFormData) => {
+  const onSubmit = () => {
     setSubmitted(true);
     reset();
   };
