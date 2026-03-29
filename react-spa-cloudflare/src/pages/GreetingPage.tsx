@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -10,9 +10,11 @@ import { useGreetingStore } from "@/hooks/useGreetingStore";
 export function GreetingPage() {
   const { name } = useParams<{ name: string }>();
   const { visitCount, incrementVisit } = useGreetingStore();
+  const hasIncremented = useRef(false);
 
   useEffect(() => {
-    if (name) {
+    if (name && !hasIncremented.current) {
+      hasIncremented.current = true;
       incrementVisit(name);
     }
   }, [name, incrementVisit]);
