@@ -12,13 +12,10 @@ export function Layout() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            React SPA
+            React SPA Cloudflare
           </Typography>
           <Button color="inherit" component={RouterLink} to="/">
             Home
-          </Button>
-          <Button color="inherit" component={RouterLink} to="/users">
-            Users
           </Button>
         </Toolbar>
       </AppBar>

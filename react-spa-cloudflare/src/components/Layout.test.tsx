@@ -12,7 +12,6 @@ describe("Layout", () => {
     );
 
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Users" })).toBeInTheDocument();
   });
 
   it("renders header and main sections", () => {
@@ -34,6 +33,15 @@ describe("Layout", () => {
     );
 
     expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("href", "/users");
+  });
+
+  it("renders app title", () => {
+    render(
+      <MemoryRouter>
+        <Layout />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("React SPA Cloudflare")).toBeInTheDocument();
   });
 });
