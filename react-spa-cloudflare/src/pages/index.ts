@@ -1,4 +1,5 @@
 export { HomePage } from "./HomePage";
 export { AboutPage } from "./AboutPage";
-export { FormSample } from "./FormSample";
+export { GreetingForm } from "./GreetingForm";
+export { GreetingPage } from "./GreetingPage";
 export { NotFoundPage } from "./NotFoundPage";

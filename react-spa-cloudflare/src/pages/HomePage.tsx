@@ -54,8 +54,8 @@ export function HomePage() {
         <Button variant="contained" component={RouterLink} to="/about">
           About
         </Button>
-        <Button variant="outlined" component={RouterLink} to="/form">
-          Form Sample
+        <Button variant="outlined" component={RouterLink} to="/greeting">
+          Greeting Demo
         </Button>
       </Stack>
     </Box>
