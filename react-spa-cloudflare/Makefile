@@ -1,4 +1,4 @@
-.PHONY: dev build preview stop status lint format test test-watch test-coverage clean deploy deploy-preview
+.PHONY: dev build preview stop status lint format test test-watch test-coverage clean pages-create pages-login deploy deploy-preview
 
 # Variables
 PORT ?= 5173
@@ -44,6 +44,13 @@ clean:
 
 install:
 	npm install
+
+# Cloudflare Pages setup (run once)
+pages-login:
+	npx wrangler login
+
+pages-create:
+	npx wrangler pages project create react-spa-cloudflare --production-branch=main
 
 # Cloudflare Pages deployment
 deploy:
