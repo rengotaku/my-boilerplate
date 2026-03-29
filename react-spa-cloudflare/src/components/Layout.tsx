@@ -20,8 +20,8 @@ export function Layout() {
           <Button color="inherit" component={RouterLink} to="/about">
             About
           </Button>
-          <Button color="inherit" component={RouterLink} to="/form">
-            Form
+          <Button color="inherit" component={RouterLink} to="/greeting">
+            Greeting
           </Button>
         </Toolbar>
       </AppBar>

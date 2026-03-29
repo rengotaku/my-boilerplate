@@ -1,1 +1,3 @@
-export { contactSchema, type ContactFormData } from "./contactSchema";
+// Schema exports
+// Schemas are co-located with components for simplicity
+// Add shared schemas here if needed

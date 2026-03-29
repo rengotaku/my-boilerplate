@@ -26,6 +26,30 @@ describe("AppRouter", () => {
     expect(screen.getByRole("heading", { name: "About" })).toBeInTheDocument();
   });
 
+  it("renders greeting form on /greeting path", () => {
+    render(
+      <MemoryRouter initialEntries={["/greeting"]}>
+        <AppRouter />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole("heading", { name: /Greeting Demo/i })
+    ).toBeInTheDocument();
+  });
+
+  it("renders greeting page with name parameter", () => {
+    render(
+      <MemoryRouter initialEntries={["/greeting/TestUser"]}>
+        <AppRouter />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole("heading", { name: /Hello, TestUser!/i })
+    ).toBeInTheDocument();
+  });
+
   it("renders 404 page on unknown path", () => {
     render(
       <MemoryRouter initialEntries={["/unknown-path"]}>
