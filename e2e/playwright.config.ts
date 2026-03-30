@@ -15,8 +15,12 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
-      use: { browserName: "chromium" },
+      name: "react-spa-graphql",
+      testDir: "./react-spa-graphql",
+    },
+    {
+      name: "react-spa",
+      testDir: "./react-spa",
     },
   ],
   webServer: [
@@ -27,8 +31,22 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
+      command:
+        "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
+      url: "http://localhost:8081/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
       command: "cd ../react-spa-graphql && npm run build && npm run preview",
       url: "http://localhost:4173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
+      command:
+        "cd ../react-spa && VITE_API_BASE_URL=http://localhost:8081 npm run build && npm run preview -- --port 4174",
+      url: "http://localhost:4174",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },

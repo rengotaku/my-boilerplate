@@ -5,6 +5,8 @@ on:
     paths:
       - "react-spa-graphql/**"
       - "go-graphql-api/**"
+      - "react-spa/**"
+      - "go-rest-api/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - "react-spa-graphql/**"
       - "go-graphql-api/**"
+      - "react-spa/**"
+      - "go-rest-api/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 
@@ -25,19 +29,21 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.25"
-          cache-dependency-path: go-graphql-api/go.sum
+          cache-dependency-path: |
+            go-graphql-api/go.sum
+            go-rest-api/go.sum
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Install React SPA dependencies
+      - name: Install React SPA GraphQL dependencies
         working-directory: react-spa-graphql
         run: npm ci
 
-      - name: Build React SPA
-        working-directory: react-spa-graphql
-        run: npm run build
+      - name: Install React SPA dependencies
+        working-directory: react-spa
+        run: npm ci
 
       - name: Install E2E dependencies
         working-directory: e2e

@@ -21,6 +21,7 @@ make e2e
 | Directory | Description |
 |-----------|-------------|
 | `react-spa-graphql/` | react-spa-graphql ↔ go-graphql-api integration |
+| `react-spa/` | react-spa ↔ go-rest-api integration |
 
 ## Local Development
 
