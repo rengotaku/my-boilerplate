@@ -1,0 +1,62 @@
+name: E2E Integration Tests
+
+on:
+  pull_request:
+    paths:
+      - "react-spa-graphql/**"
+      - "go-graphql-api/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "react-spa-graphql/**"
+      - "go-graphql-api/**"
+      - "e2e/**"
+      - ".github/workflows/e2e.yml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: go-graphql-api/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install React SPA dependencies
+        working-directory: react-spa-graphql
+        run: npm ci
+
+      - name: Build React SPA
+        working-directory: react-spa-graphql
+        run: npm run build
+
+      - name: Install E2E dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: e2e
+        run: npx playwright test
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-test-results
+          path: |
+            e2e/test-results/
+            e2e/playwright-report/
+          retention-days: 7
