@@ -1,4 +1,5 @@
 import ky from "ky";
+import { logger } from "../lib/logger";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
@@ -14,10 +15,14 @@ export const apiClient = ky.create({
         if (response) {
           try {
             const body = await response.json();
-            error.message = (body as { message?: string }).message || error.message;
+            const message = (body as { message?: string }).message || error.message;
+            logger.error(`API ${response.url} failed: ${response.status}`, message);
+            error.message = message;
           } catch {
-            // ignore JSON parse error
+            logger.warn(`Failed to parse error response: ${response.url}`);
           }
+        } else {
+          logger.error("Network request failed", error.message);
         }
         return error;
       },
