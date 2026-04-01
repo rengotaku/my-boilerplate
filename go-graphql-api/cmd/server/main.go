@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/lmittmann/tint"
 
 	"go-graphql-api/internal/graph/generated"
 	"go-graphql-api/internal/graph/resolver"
@@ -41,8 +42,21 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
+	var logLevel slog.LevelVar
+	if l := os.Getenv("LOG_LEVEL"); l != "" {
+		_ = logLevel.UnmarshalText([]byte(l))
+	}
+
+	var logHandler slog.Handler
+	if os.Getenv("APP_ENV") == "production" {
+		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
+	} else {
+		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      &logLevel,
+			TimeFormat: time.Kitchen,
+		})
+	}
+	slog.SetDefault(slog.New(logHandler))
 
 	var cfg Config
 	if err := envconfig.Process("", &cfg); err != nil {

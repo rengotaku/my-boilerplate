@@ -12,4 +12,5 @@ require (
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/go-chi/cors v1.2.2 // indirect
+	github.com/lmittmann/tint v1.1.3 // indirect
 )
