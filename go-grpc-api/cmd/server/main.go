@@ -6,9 +6,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"buf.build/go/protovalidate"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/lmittmann/tint"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -24,8 +26,21 @@ type Config struct {
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
+	var logLevel slog.LevelVar
+	if l := os.Getenv("LOG_LEVEL"); l != "" {
+		_ = logLevel.UnmarshalText([]byte(l))
+	}
+
+	var logHandler slog.Handler
+	if os.Getenv("APP_ENV") == "production" {
+		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
+	} else {
+		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      &logLevel,
+			TimeFormat: time.Kitchen,
+		})
+	}
+	slog.SetDefault(slog.New(logHandler))
 
 	var cfg Config
 	if err := envconfig.Process("", &cfg); err != nil {
