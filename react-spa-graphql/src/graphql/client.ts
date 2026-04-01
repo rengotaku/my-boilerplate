@@ -5,15 +5,14 @@ import { logger } from "../lib/logger";
 const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
   if (graphQLErrors) {
     for (const err of graphQLErrors) {
-      logger.error(
-        `GraphQL ${operation.operationName} failed:`,
-        err.message,
-        err.path,
-      );
+      logger.error(`GraphQL ${operation.operationName} failed:`, err.message, err.path);
     }
   }
   if (networkError) {
-    logger.error(`GraphQL network error (${operation.operationName}):`, networkError.message);
+    logger.error(
+      `GraphQL network error (${operation.operationName}):`,
+      networkError.message
+    );
   }
 });
 
