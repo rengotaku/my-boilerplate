@@ -30,4 +30,7 @@ apply_rust_replacements() {
     sed -i "s|^BINARY_NAME := mycli|BINARY_NAME := ${name}|" "$dest/Makefile"
     info "Updated Makefile BINARY_NAME"
   fi
+
+  # Replace binary name in test files (assert_cmd's cargo_bin("mycli"))
+  find "$dest/tests" -name '*.rs' -exec sed -i "s|\"mycli\"|\"${name}\"|g" {} + 2>/dev/null || true
 }
