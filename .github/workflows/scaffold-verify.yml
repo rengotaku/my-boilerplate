@@ -1,0 +1,145 @@
+name: Scaffold Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/scaffold/**'
+      - 'go-rest-api/**'
+      - 'go-graphql-api/**'
+      - 'go-grpc-api/**'
+      - 'go-ssr-web/**'
+      - 'go-cli/**'
+      - 'react-spa/**'
+      - 'react-spa-graphql/**'
+      - 'react-spa-cloudflare/**'
+      - 'python-cli/**'
+      - 'rust-cli/**'
+      - '.github/workflows/scaffold-verify.yml'
+  pull_request:
+    paths:
+      - 'scripts/scaffold/**'
+      - 'go-rest-api/**'
+      - 'go-graphql-api/**'
+      - 'go-grpc-api/**'
+      - 'go-ssr-web/**'
+      - 'go-cli/**'
+      - 'react-spa/**'
+      - 'react-spa-graphql/**'
+      - 'react-spa-cloudflare/**'
+      - 'python-cli/**'
+      - 'rust-cli/**'
+      - '.github/workflows/scaffold-verify.yml'
+
+jobs:
+  scaffold-go:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - go-rest-api
+          - go-graphql-api
+          - go-grpc-api
+          - go-ssr-web
+          - go-cli
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.25"
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=${{ matrix.template }} \
+            dest=/tmp/test-${{ matrix.template }} \
+            name=test-${{ matrix.template }} \
+            module=github.com/test/test-${{ matrix.template }}
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-${{ matrix.template }}
+        run: |
+          go mod tidy
+          make ci
+
+  scaffold-react:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - react-spa
+          - react-spa-graphql
+          - react-spa-cloudflare
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=${{ matrix.template }} \
+            dest=/tmp/test-${{ matrix.template }} \
+            name=test-${{ matrix.template }}
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-${{ matrix.template }}
+        run: |
+          npm install
+          make ci
+
+  scaffold-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=python-cli \
+            dest=/tmp/test-python-cli \
+            name=test-python-cli
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-python-cli
+        run: |
+          uv sync --all-extras
+          make ci
+
+  scaffold-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=rust-cli \
+            dest=/tmp/test-rust-cli \
+            name=test-rust-cli
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-rust-cli
+        run: |
+          make ci

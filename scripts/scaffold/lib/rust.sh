@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Rust template replacements
+
+apply_rust_replacements() {
+  local dest="$1"
+  local template="$2"
+  local name="$3"
+
+  # Convert project name for Rust crate (hyphens -> underscores for lib name)
+  local crate_name="${name//-/_}"
+
+  # Replace Cargo.toml package name
+  if [[ -f "$dest/Cargo.toml" ]]; then
+    sed -i "s|^name = \"rust-cli\"|name = \"${name}\"|" "$dest/Cargo.toml"
+    # Replace bin name
+    sed -i "s|^name = \"mycli\"|name = \"${name}\"|" "$dest/Cargo.toml"
+    info "Updated Cargo.toml"
+  fi
+
+  # Replace command name in src/cli.rs
+  if [[ -f "$dest/src/cli.rs" ]]; then
+    sed -i "s|command(name = \"mycli\")|command(name = \"${name}\")|" "$dest/src/cli.rs"
+    # Replace crate import (rust_cli -> new crate name)
+    sed -i "s|use rust_cli::|use ${crate_name}::|g" "$dest/src/cli.rs"
+    info "Updated src/cli.rs"
+  fi
+
+  # Replace BINARY_NAME in Makefile
+  if [[ -f "$dest/Makefile" ]]; then
+    sed -i "s|^BINARY_NAME := mycli|BINARY_NAME := ${name}|" "$dest/Makefile"
+    info "Updated Makefile BINARY_NAME"
+  fi
+}
