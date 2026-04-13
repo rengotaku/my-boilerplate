@@ -1,4 +1,4 @@
-.PHONY: stop-all status e2e e2e-install help
+.PHONY: stop-all status e2e e2e-install scaffold help
 
 # Server projects (excludes CLI tools)
 SERVERS := go-rest-api go-graphql-api go-grpc-api go-ssr-web react-spa
@@ -19,6 +19,11 @@ e2e-install:
 ## e2e: Run E2E integration tests (starts servers automatically)
 e2e:
 	cd e2e && npx playwright test
+
+## scaffold: Generate standalone project from template (template= dest= name= [module=])
+scaffold:
+	@bash scripts/scaffold/scaffold.sh \
+		template='$(template)' dest='$(dest)' name='$(name)' module='$(module)'
 
 ## help: Show this help
 help:
