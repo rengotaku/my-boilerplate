@@ -6,46 +6,17 @@ on:
     paths:
       - 'go-cli/**'
       - '.github/workflows/go-cli.yml'
+      - '.github/workflows/go-ci.yml'
   pull_request:
     paths:
       - 'go-cli/**'
       - '.github/workflows/go-cli.yml'
-
-defaults:
-  run:
-    working-directory: go-cli
+      - '.github/workflows/go-ci.yml'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ["1.21", "1.22"]
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache-dependency-path: go-cli/go.sum
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.11
-          working-directory: go-cli
-
-      - name: Test with coverage
-        run: |
-          go test ./internal/... -coverprofile=coverage.out
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "Coverage: $COVERAGE%"
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "Coverage $COVERAGE% is below 80%"
-            exit 1
-          fi
+  ci:
+    uses: ./.github/workflows/go-ci.yml
+    with:
+      working-directory: go-cli
+      go-versions: '["1.21", "1.22"]'
+      test-paths: "./internal/..."
