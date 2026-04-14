@@ -125,8 +125,9 @@ copy_template() {
     find "$dest" -maxdepth 2 -name "$artifact" -exec rm -rf {} + 2>/dev/null || true
   done
 
-  # Remove .git if copied
+  # Remove .git and .claude if copied (symlinks to monorepo parent)
   rm -rf "$dest/.git"
+  rm -rf "$dest/.claude"
 
   # Remove monorepo-specific documentation
   rm -f "$dest/docs/SYNC_FILES.md"
