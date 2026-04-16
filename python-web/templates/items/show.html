@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }} - myweb{% endblock %}
+
+{% block content %}
+<div class="max-w-lg">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ item.name }}</h1>
+        <div class="space-x-2">
+            <a href="/items/{{ item.id }}/edit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                編集
+            </a>
+            <form method="post" action="/items/{{ item.id }}/delete" class="inline"
+                  x-data
+                  @submit.prevent="if(confirm('削除しますか？')) $el.submit()">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    削除
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 space-y-4">
+        <div>
+            <dt class="text-sm font-medium text-gray-500">ID</dt>
+            <dd class="text-gray-900 mt-1">{{ item.id }}</dd>
+        </div>
+        <div>
+            <dt class="text-sm font-medium text-gray-500">名前</dt>
+            <dd class="text-gray-900 mt-1">{{ item.name }}</dd>
+        </div>
+        <div>
+            <dt class="text-sm font-medium text-gray-500">説明</dt>
+            <dd class="text-gray-900 mt-1">{{ item.description or '（なし）' }}</dd>
+        </div>
+        <div>
+            <dt class="text-sm font-medium text-gray-500">作成日時</dt>
+            <dd class="text-gray-900 mt-1">{{ item.created_at }}</dd>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/" class="text-gray-500 hover:underline">← 一覧に戻る</a>
+    </div>
+</div>
+{% endblock %}

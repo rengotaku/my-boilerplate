@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}myweb{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <nav class="flex items-center justify-between">
+                <a href="/" class="text-xl font-bold text-gray-800">myweb</a>
+                <a href="/items/new" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    新規作成
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t mt-16 py-4 text-center text-gray-400 text-sm">
+        myweb - FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite
+    </footer>
+
+    <script src="/static/js/alpine.js" defer></script>
+</body>
+</html>
