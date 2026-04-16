@@ -50,7 +50,7 @@ build: _copy-alpine
 
 ## run: Run production server
 run: build
-	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
+	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT) --no-reload
 
 ## clean: Remove build artifacts and cache
 clean:
