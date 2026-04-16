@@ -74,7 +74,15 @@ help:
 # Internal targets
 _copy-alpine:
 	@mkdir -p static/js
-	cp node_modules/alpinejs/dist/cdn.min.js static/js/alpine.js
+	@if [ -f node_modules/alpinejs/dist/cdn.min.js ]; then \
+		cp node_modules/alpinejs/dist/cdn.min.js static/js/alpine.js; \
+	else \
+		echo "Warning: node_modules not found, skipping Alpine.js copy (run 'npm install' first)"; \
+	fi
 
 _build-assets: _copy-alpine
-	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css
+	@if command -v npx >/dev/null 2>&1 && [ -d node_modules ]; then \
+		npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css; \
+	else \
+		echo "Warning: npx/node_modules not found, skipping Tailwind CSS build (run 'npm install' first)"; \
+	fi

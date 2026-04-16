@@ -17,7 +17,7 @@ templates: Jinja2Templates | None = None
 
 
 def set_templates(tmpl: Jinja2Templates) -> None:
-    """テンプレートエンジンをルーターに注入する（app.py から呼ばれる）。"""
+    """テンプレートエンジンをルーターに注入する(app.py から呼ばれる)。"""
     global templates  # noqa: PLW0603
     templates = tmpl
 
@@ -44,7 +44,7 @@ async def index(
     request: Request,
     service: ItemService = Depends(get_item_service),
 ) -> HTMLResponse:
-    """トップページ（Item 一覧）."""
+    """トップページ(Item 一覧)."""
     assert templates is not None
     items = service.get_all_items()
     return templates.TemplateResponse(

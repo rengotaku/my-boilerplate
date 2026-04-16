@@ -53,6 +53,7 @@ select = [
 ignore = [
     "PLR0913",  # Too many arguments
     "PLR2004",  # Magic value comparison
+    "B008",     # FastAPI Depends() in argument defaults (standard FastAPI pattern)
 ]
 
 [tool.ruff.lint.per-file-ignores]

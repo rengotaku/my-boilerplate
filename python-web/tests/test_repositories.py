@@ -90,10 +90,10 @@ class TestItemFindAll:
         repo.create(name="フィールド確認", description="テスト説明")
         items = repo.find_all()
         item = items[0]
-        assert "id" in item.keys()
-        assert "name" in item.keys()
-        assert "description" in item.keys()
-        assert "created_at" in item.keys()
+        assert "id" in item
+        assert "name" in item
+        assert "description" in item
+        assert "created_at" in item
 
 
 class TestItemFindById:
@@ -218,7 +218,7 @@ class TestItemEdgeCases:
         assert "test" in item["name"]
 
     def test_create_special_chars(self, repo: ItemRepository) -> None:
-        """SQL 特殊文字を含む name で作成できる（SQL インジェクション防止）."""
+        """SQL 特殊文字を含む name で作成できる(SQL インジェクション防止)."""
         item_id = repo.create(
             name="Robert'; DROP TABLE items;--", description=""
         )

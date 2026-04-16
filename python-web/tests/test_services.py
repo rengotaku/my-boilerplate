@@ -1,6 +1,5 @@
 """サービス層テスト: ビジネスロジック、エラーハンドリング."""
 
-import sqlite3
 from unittest.mock import MagicMock
 
 import pytest

@@ -23,7 +23,7 @@ def get_connection(db_path: str = str(DB_PATH)) -> sqlite3.Connection:
 
 
 def init_db(db_path: str = str(DB_PATH)) -> None:
-    """データベーススキーマを初期化する（テーブルが存在しない場合のみ作成）。"""
+    """データベーススキーマを初期化する(テーブルが存在しない場合のみ作成)。"""
     conn = get_connection(db_path)
     try:
         conn.execute(CREATE_ITEMS_TABLE)

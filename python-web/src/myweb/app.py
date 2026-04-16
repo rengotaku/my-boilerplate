@@ -27,5 +27,5 @@ app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 # ルーター登録
 app.include_router(items_router)
 
-# DB 初期化（テーブルが存在しない場合のみ作成）
+# DB 初期化(テーブルが存在しない場合のみ作成)
 init_db()

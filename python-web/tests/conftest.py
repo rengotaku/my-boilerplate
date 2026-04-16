@@ -5,6 +5,7 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+
 from myweb.app import app
 from myweb.database import CREATE_ITEMS_TABLE
 from myweb.routes.items import get_db

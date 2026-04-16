@@ -46,13 +46,13 @@ class ItemService:
 
     def update_item(self, item_id: int, name: str, description: str) -> None:
         """アイテムを更新する。存在しない場合は ItemNotFoundError を発生させる。"""
-        # 存在確認（ItemNotFoundError を発生させる）
+        # 存在確認(ItemNotFoundError を発生させる)
         self.get_item(item_id)
         name, description = self._validate(name, description)
         self._repo.update(item_id, name=name, description=description)
 
     def delete_item(self, item_id: int) -> None:
         """アイテムを削除する。存在しない場合は ItemNotFoundError を発生させる。"""
-        # 存在確認（ItemNotFoundError を発生させる）
+        # 存在確認(ItemNotFoundError を発生させる)
         self.get_item(item_id)
         self._repo.delete(item_id)
