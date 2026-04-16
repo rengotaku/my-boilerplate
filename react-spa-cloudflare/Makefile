@@ -2,6 +2,7 @@
 
 # Variables
 PORT ?= 5173
+PROJECT_NAME := react-spa-cloudflare
 
 dev:
 	npm run dev
@@ -50,13 +51,13 @@ pages-login:
 	npx wrangler login
 
 pages-create:
-	npx wrangler pages project create react-spa-cloudflare --production-branch=main
+	npx wrangler pages project create $(PROJECT_NAME) --production-branch=main
 
 # Cloudflare Pages deployment
 deploy:
 	npm run build
-	npx wrangler pages deploy dist --project-name=react-spa-cloudflare
+	npx wrangler pages deploy dist --project-name=$(PROJECT_NAME)
 
 deploy-preview:
 	npm run build
-	npx wrangler pages deploy dist --project-name=react-spa-cloudflare --branch=preview
+	npx wrangler pages deploy dist --project-name=$(PROJECT_NAME) --branch=preview
