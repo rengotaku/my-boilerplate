@@ -110,8 +110,8 @@ transform_workflow() {
     next
   }
 
-  # Replace template name with project name in command strings
-  /--project-name=/ {
+  # Replace template name with project name in command strings and env variables
+  /--project-name=/ || /PROJECT_NAME:/ {
     gsub(template, name)
     print
     next
