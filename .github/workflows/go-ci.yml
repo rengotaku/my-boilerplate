@@ -1,0 +1,57 @@
+name: Go CI (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+        description: "Project directory (e.g., go-rest-api)"
+      go-versions:
+        required: true
+        type: string
+        description: 'JSON array of Go versions (e.g., ''["1.24", "1.25"]'')'
+      test-paths:
+        required: false
+        type: string
+        default: "./internal/..."
+        description: "Go test paths (e.g., ./internal/...)"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ${{ fromJSON(inputs.go-versions) }}
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ${{ inputs.working-directory }}/go.sum
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.11
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Test with coverage
+        run: |
+          go test ${{ inputs.test-paths }} -coverprofile=coverage.out
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below 80%"
+            exit 1
+          fi
