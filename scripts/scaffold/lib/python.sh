@@ -11,38 +11,59 @@ apply_python_replacements() {
 
   info "Python package name: $pkg_name"
 
+  # Determine the original package name based on the template
+  local orig_pkg
+  case "$template" in
+    python-cli) orig_pkg="mycli" ;;
+    python-web) orig_pkg="myweb" ;;
+    *) orig_pkg="mycli" ;;
+  esac
+
   # Replace pyproject.toml fields
   if [[ -f "$dest/pyproject.toml" ]]; then
     # Replace project name
-    sed -i "s|^name = \"mycli\"|name = \"${name}\"|" "$dest/pyproject.toml"
+    sed -i "s|^name = \"${orig_pkg}\"|name = \"${name}\"|" "$dest/pyproject.toml"
 
-    # Replace scripts entry
-    sed -i "s|^mycli = \"mycli\.|${pkg_name} = \"${pkg_name}.|" "$dest/pyproject.toml"
+    # Replace scripts entry (python-cli only)
+    sed -i "s|^${orig_pkg} = \"${orig_pkg}\.|${pkg_name} = \"${pkg_name}.|" "$dest/pyproject.toml"
 
     # Replace hatch build packages
-    sed -i "s|\"src/mycli\"|\"src/${pkg_name}\"|" "$dest/pyproject.toml"
+    sed -i "s|\"src/${orig_pkg}\"|\"src/${pkg_name}\"|g" "$dest/pyproject.toml"
 
     # Replace coverage source
-    sed -i "s|\"src/mycli\"|\"src/${pkg_name}\"|" "$dest/pyproject.toml"
+    sed -i "s|source = \[\"src/${orig_pkg}\"\]|source = [\"src/${pkg_name}\"]|g" "$dest/pyproject.toml"
 
     info "Updated pyproject.toml"
   fi
 
-  # Rename src/mycli/ directory
-  if [[ -d "$dest/src/mycli" ]]; then
-    mv "$dest/src/mycli" "$dest/src/${pkg_name}"
-    info "Renamed src/mycli -> src/${pkg_name}"
+  # Rename src/<orig_pkg>/ directory
+  if [[ -d "$dest/src/${orig_pkg}" ]]; then
+    mv "$dest/src/${orig_pkg}" "$dest/src/${pkg_name}"
+    info "Renamed src/${orig_pkg} -> src/${pkg_name}"
   fi
 
-  # Replace import references in .py files
-  find "$dest" -name '*.py' -exec sed -i "s|from mycli|from ${pkg_name}|g; s|import mycli|import ${pkg_name}|g" {} +
+  # Replace import references, string literals, and comments in .py files
+  find "$dest" -name '*.py' -exec sed -i \
+    "s|from ${orig_pkg}|from ${pkg_name}|g; \
+     s|import ${orig_pkg}|import ${pkg_name}|g; \
+     s|\"${orig_pkg}\"|\"${name}\"|g; \
+     s|'${orig_pkg}'|'${name}'|g; \
+     s|/${orig_pkg}/|/${pkg_name}/|g; \
+     s|${orig_pkg}\\.db|${pkg_name}.db|g; \
+     s|^\"\"\"${orig_pkg}|\"\"\"${name}|g" {} +
 
   # Replace references in Makefile
   if [[ -f "$dest/Makefile" ]]; then
-    sed -i "s|mycli|${pkg_name}|g" "$dest/Makefile"
+    sed -i "s|${orig_pkg}|${pkg_name}|g" "$dest/Makefile"
     info "Updated Makefile references"
   fi
 
   # Replace pytest coverage source in CI workflow references
-  find "$dest" -name '*.yml' -exec sed -i "s|--cov=src/mycli|--cov=src/${pkg_name}|g" {} + 2>/dev/null || true
+  find "$dest" -name '*.yml' -exec sed -i "s|--cov=src/${orig_pkg}|--cov=src/${pkg_name}|g" {} + 2>/dev/null || true
+
+  # python-web specific: replace package.json name field
+  if [[ "$template" == "python-web" && -f "$dest/package.json" ]]; then
+    sed -i "s|\"name\": \"${orig_pkg}\"|\"name\": \"${name}\"|" "$dest/package.json"
+    info "Updated package.json name"
+  fi
 }
