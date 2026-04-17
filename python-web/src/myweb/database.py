@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS items (
 
 def get_connection(db_path: str = str(DB_PATH)) -> sqlite3.Connection:
     """SQLite 接続を返す。row_factory を sqlite3.Row に設定する。"""
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
