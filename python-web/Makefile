@@ -13,9 +13,14 @@ install:
 
 ## dev: Start development server (uvicorn reload + Tailwind watch)
 dev: _build-assets
-	@echo "Starting Tailwind CSS watch + uvicorn dev server..."
-	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --watch &
-	uv run uvicorn myweb.app:app --reload --host 0.0.0.0 --port $(PORT)
+	@_port=$(PORT); \
+	if ! python3 -c "import socket; s=socket.socket(); s.bind(('',$$_port)); s.close()" 2>/dev/null; then \
+		_port=$$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()"); \
+		echo "Port $(PORT) is in use, using port $$_port instead"; \
+	fi; \
+	echo "Starting Tailwind CSS watch + uvicorn dev server on port $$_port..."; \
+	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --watch & \
+	uv run uvicorn myweb.app:app --reload --host 0.0.0.0 --port $$_port
 
 ## lint: Run ruff linter
 lint:
