@@ -50,7 +50,8 @@ apply_python_replacements() {
      s|'${orig_pkg}'|'${name}'|g; \
      s|/${orig_pkg}/|/${pkg_name}/|g; \
      s|${orig_pkg}\\.db|${pkg_name}.db|g; \
-     s|^\"\"\"${orig_pkg}|\"\"\"${name}|g" {} +
+     s|^\"\"\"${orig_pkg}|\"\"\"${name}|g; \
+     s|f\"${orig_pkg} |f\"${name} |g" {} +
 
   # Replace references in Makefile
   if [[ -f "$dest/Makefile" ]]; then

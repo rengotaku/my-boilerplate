@@ -96,8 +96,10 @@ class TestMakefileBuildTarget:
         assert css_output.exists()
 
     def test_minified_css_is_smaller_than_dev_css(self) -> None:
-        """minify 済み CSS が開発ビルドの 10% 以下であること.
+        """minify 済み CSS が開発ビルドより小さいこと.
 
+        Tailwind v4 では dev/prod 両方で未使用クラスが除去されるため、
+        minify による削減は空白・改行の除去のみ。
         npm/Node.js 環境が必要。
         """
         if not _npm_available():
@@ -134,9 +136,8 @@ class TestMakefileBuildTarget:
         prod_size = css_output.stat().st_size
         assert prod_size > 0
 
-        ratio = prod_size / dev_size
-        assert ratio <= 0.10, (
-            f"minify ratio {ratio:.1%} > 10%. "
+        assert prod_size < dev_size, (
+            f"minify 後のサイズが開発ビルド以上: "
             f"dev={dev_size}B, prod={prod_size}B"
         )
 
