@@ -1,0 +1,11 @@
+{
+  "name": "myweb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend dependencies for python-web boilerplate",
+  "dependencies": {
+    "alpinejs": "^3.14.0",
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

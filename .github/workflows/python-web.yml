@@ -1,0 +1,52 @@
+name: python-web CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python-web/**'
+      - '.github/workflows/python-web.yml'
+  pull_request:
+    paths:
+      - 'python-web/**'
+      - '.github/workflows/python-web.yml'
+
+defaults:
+  run:
+    working-directory: python-web
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: uv sync --all-extras
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy src/
+
+      - name: Test
+        run: uv run pytest --cov=src/myweb --cov-report=term-missing

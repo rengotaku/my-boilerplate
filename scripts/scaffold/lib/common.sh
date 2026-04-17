@@ -14,6 +14,7 @@ VALID_TEMPLATES=(
   react-spa-graphql
   react-spa-cloudflare
   python-cli
+  python-web
   rust-cli
 )
 
