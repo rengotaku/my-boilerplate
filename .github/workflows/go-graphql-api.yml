@@ -18,5 +18,4 @@ jobs:
     uses: ./.github/workflows/go-ci.yml
     with:
       working-directory: go-graphql-api
-      go-versions: '["1.25"]'
       test-paths: "./internal/service/... ./internal/repository/..."

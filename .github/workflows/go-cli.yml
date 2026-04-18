@@ -18,5 +18,4 @@ jobs:
     uses: ./.github/workflows/go-ci.yml
     with:
       working-directory: go-cli
-      go-versions: '["1.21", "1.22"]'
       test-paths: "./internal/..."

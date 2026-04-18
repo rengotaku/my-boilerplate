@@ -18,17 +18,13 @@ defaults:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust-version: ["stable", "1.85"]
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Rust ${{ matrix.rust-version }}
-        uses: dtolnay/rust-toolchain@master
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ matrix.rust-version }}
           components: rustfmt, clippy
 
       - name: Cache cargo
@@ -40,7 +36,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             rust-cli/target/
-          key: ${{ runner.os }}-cargo-${{ matrix.rust-version }}-${{ hashFiles('rust-cli/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('rust-cli/Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --check

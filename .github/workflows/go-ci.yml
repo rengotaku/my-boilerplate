@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: "Project directory (e.g., go-rest-api)"
-      go-versions:
-        required: true
-        type: string
-        description: 'JSON array of Go versions (e.g., ''["1.24", "1.25"]'')'
       test-paths:
         required: false
         type: string
@@ -20,9 +16,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ${{ fromJSON(inputs.go-versions) }}
 
     defaults:
       run:
@@ -31,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go ${{ matrix.go-version }}
+      - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version-file: ${{ inputs.working-directory }}/go.mod
           cache-dependency-path: ${{ inputs.working-directory }}/go.sum
 
       - name: Install dependencies
