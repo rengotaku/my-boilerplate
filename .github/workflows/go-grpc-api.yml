@@ -18,5 +18,4 @@ jobs:
     uses: ./.github/workflows/go-ci.yml
     with:
       working-directory: go-grpc-api
-      go-versions: '["1.24", "1.25"]'
       test-paths: "./internal/..."
