@@ -47,14 +47,13 @@ expand_go_reusable_workflow() {
   fi
 
   # Extract inputs from caller workflow
-  local go_versions test_paths
-  go_versions="$(grep "go-versions:" "$caller_src" | sed "s/.*go-versions: *'//" | sed "s/'$//")"
-  test_paths="$(grep "test-paths:" "$caller_src" | sed 's/.*test-paths: *"//' | sed 's/"$//')"
+  local test_paths
+  test_paths="$(grep "test-paths:" "$caller_src" 2>/dev/null | sed 's/.*test-paths: *"//' | sed 's/"$//' || true)"
   [[ -z "$test_paths" ]] && test_paths="./internal/..."
 
   # Generate standalone workflow from reusable template
   # Replace workflow_call inputs with extracted values and strip monorepo config
-  awk -v name="$name" -v go_versions="$go_versions" -v test_paths="$test_paths" '
+  awk -v name="$name" -v test_paths="$test_paths" '
   BEGIN {
     in_workflow_call = 0
     in_inputs = 0
@@ -85,7 +84,6 @@ expand_go_reusable_workflow() {
 
   # Replace input references with actual values
   {
-    gsub(/\$\{\{ fromJSON\(inputs\.go-versions\) \}\}/, go_versions)
     gsub(/\$\{\{ inputs\.working-directory \}\}/, ".")
     gsub(/\$\{\{ inputs\.test-paths \}\}/, test_paths)
   }
@@ -178,6 +176,13 @@ transform_workflow() {
 
   # Strip template prefix from cache-dependency-path
   /cache-dependency-path:/ {
+    gsub(template "/", "")
+    print
+    next
+  }
+
+  # Strip template prefix from node-version-file / python-version-file
+  /node-version-file:/ || /python-version-file:/ {
     gsub(template "/", "")
     print
     next
