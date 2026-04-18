@@ -1,4 +1,8 @@
-.PHONY: stop-all status e2e e2e-install scaffold help
+.PHONY: stop-all status e2e e2e-install e2e-update-snapshots scaffold help
+
+# Keep in sync with @playwright/test version in e2e/package-lock.json
+# and the container image tag in .github/workflows/e2e.yml.
+PLAYWRIGHT_IMAGE := mcr.microsoft.com/playwright:v1.58.2-noble
 
 # Server projects (excludes CLI tools)
 SERVERS := go-rest-api go-graphql-api go-grpc-api go-ssr-web react-spa
@@ -19,6 +23,10 @@ e2e-install:
 ## e2e: Run E2E integration tests (starts servers automatically)
 e2e:
 	cd e2e && npx playwright test
+
+## e2e-update-snapshots: Regenerate VRT baselines inside the Playwright container (matches CI pixels)
+e2e-update-snapshots:
+	PLAYWRIGHT_IMAGE=$(PLAYWRIGHT_IMAGE) ./scripts/e2e-update-snapshots.sh
 
 ## scaffold: Generate standalone project from template (template= dest= name= [module=])
 scaffold:
