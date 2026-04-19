@@ -1,4 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
+import { TailwindDemo } from "@/components";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -58,6 +59,8 @@ export function HomePage() {
           Greeting Demo
         </Button>
       </Stack>
+
+      <TailwindDemo />
     </Box>
   );
 }

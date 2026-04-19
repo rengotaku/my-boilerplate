@@ -1,4 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
+import { TailwindDemo } from "@/components";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -48,6 +49,8 @@ export function HomePage() {
       <Button variant="contained" component={RouterLink} to="/users">
         Users
       </Button>
+
+      <TailwindDemo />
     </Box>
   );
 }

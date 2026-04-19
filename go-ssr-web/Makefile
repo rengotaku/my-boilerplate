@@ -1,4 +1,4 @@
-.PHONY: install build run stop status lint test test-cov check ci clean help
+.PHONY: install build run stop status lint test test-cov check ci clean tailwind-install tailwind-build help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -8,13 +8,32 @@ BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8082
+TAILWIND_VERSION ?= v4.1.5
+TAILWIND_BIN := $(BIN_DIR)/tailwindcss
 
 ## install: Download dependencies
 install:
 	go mod download
 
-## build: Build the binary
-build:
+## tailwind-install: Download Tailwind CSS v4 standalone CLI (idempotent)
+tailwind-install:
+	@if [ -f $(TAILWIND_BIN) ]; then \
+		echo "tailwindcss already installed at $(TAILWIND_BIN)"; \
+	else \
+		mkdir -p $(BIN_DIR); \
+		echo "Downloading Tailwind CSS CLI $(TAILWIND_VERSION)..."; \
+		curl -sL "https://github.com/tailwindlabs/tailwindcss/releases/download/$(TAILWIND_VERSION)/tailwindcss-linux-x64" \
+			-o $(TAILWIND_BIN); \
+		chmod +x $(TAILWIND_BIN); \
+		echo "tailwindcss installed at $(TAILWIND_BIN)"; \
+	fi
+
+## tailwind-build: Build Tailwind CSS output (requires tailwind-install)
+tailwind-build: tailwind-install
+	$(TAILWIND_BIN) -i web/static/css/input.css -o web/static/css/output.css --minify
+
+## build: Build the binary and Tailwind CSS
+build: tailwind-build
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
 ## run: Run the server
