@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"html/template"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,8 +11,6 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
-	"io/fs"
-	"html/template"
 
 	"github.com/stretchr/testify/assert"
 
@@ -82,8 +82,8 @@ func TestTailwind_StaticIconServed(t *testing.T) {
 	template.Must(tmpl.New("users/edit.html").Parse(`<h1>Edit</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`))
 
 	staticFS := fstest.MapFS{
-		"css/style.css":      &fstest.MapFile{Data: []byte("body{}")},
-		"icons/rocket.svg":   &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-rocket"></svg>`)},
+		"css/style.css":    &fstest.MapFile{Data: []byte("body{}")},
+		"icons/rocket.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-rocket"></svg>`)},
 	}
 
 	h := NewHandler(svc, tmpl, fs.FS(staticFS))

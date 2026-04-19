@@ -2,7 +2,10 @@ import { Rocket } from "lucide-react";
 
 export function TailwindDemo() {
   return (
-    <div data-testid="tailwind-demo" className="mt-4 p-4 rounded-lg border border-gray-200">
+    <div
+      data-testid="tailwind-demo"
+      className="mt-4 p-4 rounded-lg border border-gray-200"
+    >
       <p className="text-sm font-semibold text-gray-700 mb-2">Tailwind + Lucide Demo</p>
       <button
         type="button"
