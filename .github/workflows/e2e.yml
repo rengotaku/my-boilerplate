@@ -6,6 +6,7 @@ on:
       - "react-spa-graphql/**"
       - "go-graphql-api/**"
       - "react-spa/**"
+      - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
@@ -15,6 +16,7 @@ on:
       - "react-spa-graphql/**"
       - "go-graphql-api/**"
       - "react-spa/**"
+      - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
@@ -22,7 +24,13 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    container:
+      # Matches @playwright/test version in e2e/package-lock.json.
+      # When bumping Playwright, update this tag and regenerate VRT baselines
+      # with `make e2e-update-snapshots` to keep pixels reproducible.
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v6
 
@@ -45,15 +53,15 @@ jobs:
         working-directory: react-spa
         run: npm ci
 
+      - name: Install React SPA Cloudflare dependencies
+        working-directory: react-spa-cloudflare
+        run: npm ci
+
       - name: Install E2E dependencies
         working-directory: e2e
         run: npm ci
 
-      - name: Install Playwright browsers
-        working-directory: e2e
-        run: npx playwright install --with-deps chromium
-
-      - name: Run E2E tests
+      - name: Run E2E tests (integration + VRT + a11y)
         working-directory: e2e
         run: npx playwright test
 

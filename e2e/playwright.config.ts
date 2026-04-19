@@ -1,4 +1,35 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
+
+const viewports = {
+  mobile: { width: 375, height: 667 },
+  tablet: { width: 768, height: 1024 },
+  desktop: { width: 1280, height: 800 },
+} as const;
+
+type Viewport = keyof typeof viewports;
+
+const makeVisualProjects = (template: string, baseURL: string) =>
+  (Object.keys(viewports) as Viewport[]).map((name) => ({
+    name: `${template}-visual-${name}`,
+    testDir: `./${template}`,
+    testMatch: /visual\.spec\.ts/,
+    use: {
+      ...devices["Desktop Chrome"],
+      baseURL,
+      viewport: viewports[name],
+    },
+  }));
+
+const makeFunctionalProject = (template: string, baseURL: string) => ({
+  name: template,
+  testDir: `./${template}`,
+  testIgnore: [/visual\.spec\.ts/],
+  use: {
+    ...devices["Desktop Chrome"],
+    baseURL,
+    viewport: viewports.desktop,
+  },
+});
 
 export default defineConfig({
   testDir: ".",
@@ -9,19 +40,24 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? "github" : "html",
   timeout: 30_000,
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+      caret: "hide",
+    },
+  },
   use: {
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
   projects: [
-    {
-      name: "react-spa-graphql",
-      testDir: "./react-spa-graphql",
-    },
-    {
-      name: "react-spa",
-      testDir: "./react-spa",
-    },
+    makeFunctionalProject("react-spa-graphql", "http://localhost:4173"),
+    makeFunctionalProject("react-spa", "http://localhost:4174"),
+    makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
+    ...makeVisualProjects("react-spa-graphql", "http://localhost:4173"),
+    ...makeVisualProjects("react-spa", "http://localhost:4174"),
+    ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
   ],
   webServer: [
     {
@@ -31,8 +67,7 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command:
-        "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
+      command: "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
       url: "http://localhost:8081/health",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
@@ -41,14 +76,21 @@ export default defineConfig({
       command: "cd ../react-spa-graphql && npm run build && npm run preview",
       url: "http://localhost:4173",
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 60_000,
     },
     {
       command:
         "cd ../react-spa && VITE_API_BASE_URL=http://localhost:8081 npm run build && npm run preview -- --port 4174",
       url: "http://localhost:4174",
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 60_000,
+    },
+    {
+      command:
+        "cd ../react-spa-cloudflare && npm run build && npm run preview -- --port 4175",
+      url: "http://localhost:4175",
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
     },
   ],
 });
