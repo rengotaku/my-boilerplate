@@ -21,6 +21,9 @@ jobs:
           # List of files that should be synced between react-spa and react-spa-graphql
           # Note: tsconfig.app.json intentionally differs (graphql needs "node" types)
           # Note: eslint.config.js intentionally differs (graphql ignores generated/)
+          # Note: Layout.tsx / HomePage.tsx / NotFoundPage.tsx / theme/index.ts は
+          #       Issue #84 (Tailwind 移行) 期間中 drift を許容。#93 (react-spa-graphql
+          #       の Tailwind 化) 完了後、sync リストに戻すか恒久除外を決定する。
           SYNC_FILES=(
             "vite.config.ts"
             "tsconfig.json"
@@ -29,10 +32,6 @@ jobs:
             "vitest.config.ts"
             "src/test/setup.ts"
             "src/test/mocks/server.ts"
-            "src/theme/index.ts"
-            "src/components/Layout.tsx"
-            "src/pages/HomePage.tsx"
-            "src/pages/NotFoundPage.tsx"
             "src/hooks/useUIStore.ts"
           )
 
