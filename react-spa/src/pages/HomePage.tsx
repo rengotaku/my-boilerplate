@@ -1,56 +1,46 @@
 import { Link as RouterLink } from "react-router-dom";
+import { CircleCheck } from "lucide-react";
+
 import { TailwindDemo } from "@/components";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Button from "@mui/material/Button";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const features = [
+  "Vite + TypeScript",
+  "React Router",
+  "TanStack Query (API state)",
+  "Zustand (UI state)",
+  "ky (HTTP client)",
+  "Vitest + Testing Library",
+  "Tailwind CSS + shadcn/ui",
+];
 
 export function HomePage() {
-  const features = [
-    "Vite + TypeScript",
-    "React Router",
-    "TanStack Query (API state)",
-    "Zustand (UI state)",
-    "ky (HTTP client)",
-    "Vitest + Testing Library",
-    "Material UI",
-  ];
-
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        React SPA Boilerplate
-      </Typography>
+    <div>
+      <h1 className="mb-6 text-3xl font-bold tracking-tight">React SPA Boilerplate</h1>
 
-      <Card sx={{ maxWidth: 400, mb: 3 }}>
+      <Card className="mb-6 max-w-md">
+        <CardHeader>
+          <CardTitle>Features</CardTitle>
+        </CardHeader>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Features
-          </Typography>
-          <List dense disablePadding>
+          <ul className="space-y-2">
             {features.map((feature) => (
-              <ListItem key={feature} disableGutters>
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <CheckCircleOutlineIcon color="primary" fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary={feature} />
-              </ListItem>
+              <li key={feature} className="flex items-center gap-2 text-sm">
+                <CircleCheck className="size-4 shrink-0 text-primary" />
+                <span>{feature}</span>
+              </li>
             ))}
-          </List>
+          </ul>
         </CardContent>
       </Card>
 
-      <Button variant="contained" component={RouterLink} to="/users">
-        Users
+      <Button asChild>
+        <RouterLink to="/users">Users</RouterLink>
       </Button>
 
       <TailwindDemo />
-    </Box>
+    </div>
   );
 }

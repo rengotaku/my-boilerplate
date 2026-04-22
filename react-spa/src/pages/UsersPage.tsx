@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2 } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks";
 import { userFormSchema, type UserFormData } from "@/schemas";
 import type { User } from "@/types";
@@ -81,101 +81,124 @@ export function UsersPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="mt-8 flex justify-center">
+        <Loader2
+          className="size-8 animate-spin text-primary"
+          aria-label="Loading"
+          role="progressbar"
+        />
+      </div>
     );
   }
 
   if (error) {
-    return <Alert severity="error">Error: {error.message}</Alert>;
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>Error: {error.message}</AlertDescription>
+      </Alert>
+    );
   }
 
   const mutationError =
     createUser.error?.message || updateUser.error?.message || deleteUser.error?.message;
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Users
-      </Typography>
+    <div>
+      <h1 className="mb-6 text-3xl font-bold tracking-tight">Users</h1>
 
-      <Box
-        component="form"
+      <form
         onSubmit={handleSubmit(onSubmit)}
-        sx={{ display: "flex", gap: 2, mb: 3, alignItems: "flex-start" }}
+        className="mb-6 flex flex-wrap items-start gap-3"
       >
-        <TextField
-          {...register("name")}
-          label="Name"
-          size="small"
-          error={!!errors.name}
-          helperText={errors.name?.message}
-        />
-        <TextField
-          {...register("email")}
-          label="Email"
-          size="small"
-          error={!!errors.email}
-          helperText={errors.email?.message}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={createUser.isPending || updateUser.isPending}
-          sx={{ mt: errors.name || errors.email ? 0 : 0 }}
-        >
+        <div className="flex flex-col">
+          <label
+            htmlFor="user-name"
+            className="mb-1 text-xs font-medium text-muted-foreground"
+          >
+            Name
+          </label>
+          <Input
+            id="user-name"
+            {...register("name")}
+            aria-invalid={!!errors.name}
+            className="w-48"
+          />
+          {errors.name && (
+            <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
+          )}
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="user-email"
+            className="mb-1 text-xs font-medium text-muted-foreground"
+          >
+            Email
+          </label>
+          <Input
+            id="user-email"
+            {...register("email")}
+            aria-invalid={!!errors.email}
+            className="w-64"
+          />
+          {errors.email && (
+            <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
+          )}
+        </div>
+        <Button type="submit" disabled={createUser.isPending || updateUser.isPending}>
           {editingUser ? "Update" : "Create"}
         </Button>
         {editingUser && (
-          <Button variant="outlined" onClick={cancelEdit}>
+          <Button type="button" variant="outline" onClick={cancelEdit}>
             Cancel
           </Button>
         )}
-      </Box>
+      </form>
 
       {mutationError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Error: {mutationError}
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>Error: {mutationError}</AlertDescription>
         </Alert>
       )}
 
       {users && users.length > 0 ? (
-        <TableContainer component={Paper}>
+        <div className="rounded-md border">
           <Table>
-            <TableHead>
+            <TableHeader>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            </TableHead>
+            </TableHeader>
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Button size="small" onClick={() => startEdit(user)} sx={{ mr: 1 }}>
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => handleDelete(user.id)}
-                      disabled={deleteUser.isPending}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => startEdit(user)}>
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(user.id)}
+                        disabled={deleteUser.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </div>
       ) : (
-        <Typography color="text.secondary">No users found.</Typography>
+        <p className="text-muted-foreground">No users found.</p>
       )}
-    </Box>
+    </div>
   );
 }
