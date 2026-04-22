@@ -49,6 +49,8 @@ make e2e-update-snapshots
 
 The script launches the same container CI uses, builds all three SPAs, and regenerates VRT baselines. Commit the resulting `*-snapshots/*.png` files.
 
+The container runs with `--user $(id -u):$(id -g)`, so generated files (snapshots, `node_modules`, `package-lock.json`) are owned by the host user — no `sudo` needed afterwards. If you have leftover root-owned files from before this change, remove them once with `sudo rm -rf` and rerun.
+
 ### Inspecting a failure
 
 ```bash
