@@ -1,66 +1,59 @@
 import { Link as RouterLink } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
+
 import { TailwindDemo } from "@/components";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+const FEATURES = [
+  "Vite 8 + TypeScript 5.9",
+  "React 19 + React Router",
+  "Tailwind CSS v4 + shadcn/ui",
+  "Zustand (state management)",
+  "React Hook Form + Zod (forms)",
+  "Vitest + Testing Library",
+  "Cloudflare Pages deployment",
+];
 
 export function HomePage() {
-  const features = [
-    "Vite 8 + TypeScript 5.9",
-    "React 19 + React Router",
-    "Material UI 7",
-    "Zustand (state management)",
-    "React Hook Form + Zod (forms)",
-    "Vitest + Testing Library",
-    "Cloudflare Pages deployment",
-  ];
-
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        React SPA Boilerplate
-      </Typography>
+    <div>
+      <h1 className="mb-3 text-3xl font-bold tracking-tight">React SPA Boilerplate</h1>
 
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <p className="mb-6 text-muted-foreground">
         A standalone SPA boilerplate optimized for Cloudflare Pages deployment.
-      </Typography>
+      </p>
 
-      <Card sx={{ maxWidth: 400, mb: 3 }}>
+      <Card className="mb-6 max-w-md">
+        <CardHeader>
+          <h2 className="text-lg font-semibold leading-none tracking-tight">Features</h2>
+        </CardHeader>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Features
-          </Typography>
-          <List dense disablePadding>
-            {features.map((feature) => (
-              <ListItem key={feature} disableGutters>
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <CheckCircleOutlineIcon color="primary" fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary={feature} />
-              </ListItem>
+          <ul className="space-y-2">
+            {FEATURES.map((feature) => (
+              <li key={feature} className="flex items-start gap-2 text-sm">
+                <CheckCircle
+                  size={16}
+                  className="mt-0.5 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <span>{feature}</span>
+              </li>
             ))}
-          </List>
+          </ul>
         </CardContent>
       </Card>
 
-      <Stack direction="row" spacing={2}>
-        <Button variant="contained" component={RouterLink} to="/about">
-          About
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <RouterLink to="/about">About</RouterLink>
         </Button>
-        <Button variant="outlined" component={RouterLink} to="/greeting">
-          Greeting Demo
+        <Button asChild variant="outline">
+          <RouterLink to="/greeting">Greeting Demo</RouterLink>
         </Button>
-      </Stack>
+      </div>
 
       <TailwindDemo />
-    </Box>
+    </div>
   );
 }
