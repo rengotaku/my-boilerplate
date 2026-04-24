@@ -1,10 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useGreetingStore } from "@/hooks/useGreetingStore";
 
 export function GreetingPage() {
@@ -22,22 +20,20 @@ export function GreetingPage() {
   const decodedName = name ? decodeURIComponent(name) : "Guest";
 
   return (
-    <Box sx={{ textAlign: "center" }}>
-      <Typography variant="h3" component="h1" gutterBottom>
-        Hello, {decodedName}!
-      </Typography>
+    <div className="text-center">
+      <h1 className="mb-4 text-4xl font-bold tracking-tight">Hello, {decodedName}!</h1>
 
-      <Card sx={{ maxWidth: 400, mx: "auto", my: 4 }}>
-        <CardContent>
-          <Typography variant="h6" color="text.secondary">
+      <Card className="mx-auto my-8 max-w-sm">
+        <CardContent className="p-6">
+          <p className="text-lg font-medium text-muted-foreground">
             You are visitor #{visitCount}
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
-      <Button component={RouterLink} to="/greeting" variant="outlined" size="large">
-        Try Another Name
+      <Button asChild variant="outline" size="lg">
+        <RouterLink to="/greeting">Try Another Name</RouterLink>
       </Button>
-    </Box>
+    </div>
   );
 }

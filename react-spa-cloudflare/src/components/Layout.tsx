@@ -1,33 +1,37 @@
-import { Outlet, Link as RouterLink } from "react-router-dom";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
+import { Outlet, NavLink } from "react-router-dom";
+
+import { cn } from "@/lib/utils";
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+    isActive
+      ? "bg-primary-foreground/15 text-primary-foreground"
+      : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+  );
 
 export function Layout() {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            React SPA Cloudflare
-          </Typography>
-          <Button color="inherit" component={RouterLink} to="/">
-            Home
-          </Button>
-          <Button color="inherit" component={RouterLink} to="/about">
-            About
-          </Button>
-          <Button color="inherit" component={RouterLink} to="/greeting">
-            Greeting
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="bg-primary text-primary-foreground shadow">
+        <div className="mx-auto flex h-14 max-w-5xl items-center px-4">
+          <span className="mr-6 text-lg font-semibold">React SPA Cloudflare</span>
+          <nav className="flex items-center gap-1">
+            <NavLink to="/" end className={navLinkClass}>
+              Home
+            </NavLink>
+            <NavLink to="/about" className={navLinkClass}>
+              About
+            </NavLink>
+            <NavLink to="/greeting" className={navLinkClass}>
+              Greeting
+            </NavLink>
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         <Outlet />
-      </Container>
-    </Box>
+      </main>
+    </div>
   );
 }

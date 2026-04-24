@@ -2,12 +2,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useGreetingStore } from "@/hooks/useGreetingStore";
 
 const nameSchema = z.object({
@@ -32,40 +30,46 @@ export function GreetingForm() {
     navigate(`/greeting/${encodeURIComponent(data.name)}`);
   };
 
+  const nameErrorId = errors.name ? "name-error" : undefined;
+
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Greeting Demo
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 3 }}>
+    <div>
+      <h1 className="mb-3 text-3xl font-bold tracking-tight">Greeting Demo</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Enter your name to receive a personalized greeting.
-      </Typography>
+      </p>
 
       {visitCount > 0 && (
-        <Card sx={{ mb: 3, bgcolor: "primary.light" }}>
-          <CardContent>
-            <Typography variant="body2" color="primary.contrastText">
+        <Card className="mb-6 bg-primary text-primary-foreground">
+          <CardContent className="p-4">
+            <p className="text-sm">
               Total visits: {visitCount}
               {lastVisitor && ` | Last visitor: ${lastVisitor}`}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       )}
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ maxWidth: 400 }}>
-        <TextField
-          {...register("name")}
-          label="Your Name"
-          fullWidth
-          margin="normal"
-          error={!!errors.name}
-          helperText={errors.name?.message}
-          autoFocus
-        />
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-          Say Hello
-        </Button>
-      </Box>
-    </Box>
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-sm space-y-4" noValidate>
+        <div className="space-y-1.5">
+          <label htmlFor="name" className="text-sm font-medium">
+            Your Name
+          </label>
+          <Input
+            id="name"
+            autoFocus
+            aria-invalid={errors.name ? "true" : "false"}
+            aria-describedby={nameErrorId}
+            {...register("name")}
+          />
+          {errors.name && (
+            <p id={nameErrorId} className="text-xs text-destructive">
+              {errors.name.message}
+            </p>
+          )}
+        </div>
+        <Button type="submit">Say Hello</Button>
+      </form>
+    </div>
   );
 }

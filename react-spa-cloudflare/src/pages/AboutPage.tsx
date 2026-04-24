@@ -1,34 +1,29 @@
 import { Link as RouterLink } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
+
+import { Button } from "@/components/ui/button";
 
 export function AboutPage() {
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        About
-      </Typography>
+    <div>
+      <h1 className="mb-3 text-3xl font-bold tracking-tight">About</h1>
 
-      <Typography variant="body1" paragraph>
+      <p className="mb-4 text-sm leading-relaxed">
         This is a React SPA boilerplate designed for deployment on Cloudflare Pages. It
-        includes a modern tech stack with TypeScript, Material UI, and comprehensive
-        testing setup.
-      </Typography>
+        includes a modern tech stack with TypeScript, Tailwind CSS, shadcn/ui, and a
+        comprehensive testing setup.
+      </p>
 
-      <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-        SPA Routing
-      </Typography>
+      <h2 className="mb-2 mt-6 text-xl font-semibold">SPA Routing</h2>
 
-      <Typography variant="body1" paragraph>
+      <p className="mb-6 text-sm leading-relaxed">
         This page demonstrates client-side routing. You can access this page directly via
         URL or by navigating from the home page. The Cloudflare Pages configuration
         ensures proper fallback routing for SPA navigation.
-      </Typography>
+      </p>
 
-      <Button variant="contained" component={RouterLink} to="/">
-        Back to Home
+      <Button asChild>
+        <RouterLink to="/">Back to Home</RouterLink>
       </Button>
-    </Box>
+    </div>
   );
 }
