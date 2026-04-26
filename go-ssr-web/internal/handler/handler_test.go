@@ -16,22 +16,28 @@ import (
 	"go-ssr-web/internal/service"
 )
 
+func makeTestTemplates() map[string]*template.Template {
+	parse := func(src string) *template.Template {
+		return template.Must(template.New("base").Parse(`{{define "base"}}` + src + `{{end}}`))
+	}
+	return map[string]*template.Template{
+		"index.html":       parse(`<h1>Home</h1>`),
+		"users/index.html": parse(`<h1>Users</h1>{{range .Users}}<p>{{.Name}}</p>{{end}}`),
+		"users/new.html":   parse(`<h1>New</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`),
+		"users/show.html":  parse(`<h1>{{.User.Name}}</h1>`),
+		"users/edit.html":  parse(`<h1>Edit</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`),
+	}
+}
+
 func setupTestHandler() *Handler {
 	repo := repository.NewUserRepository()
 	svc := service.NewUserService(repo)
-
-	// Simple templates for testing - each template is self-contained
-	tmpl := template.Must(template.New("index.html").Parse(`<h1>Home</h1>`))
-	template.Must(tmpl.New("users/index.html").Parse(`<h1>Users</h1>{{range .Users}}<p>{{.Name}}</p>{{end}}`))
-	template.Must(tmpl.New("users/new.html").Parse(`<h1>New</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`))
-	template.Must(tmpl.New("users/show.html").Parse(`<h1>{{.User.Name}}</h1>`))
-	template.Must(tmpl.New("users/edit.html").Parse(`<h1>Edit</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`))
 
 	staticFS := fstest.MapFS{
 		"css/style.css": &fstest.MapFile{Data: []byte("body{}")},
 	}
 
-	return NewHandler(svc, tmpl, fs.FS(staticFS))
+	return NewHandler(svc, makeTestTemplates(), fs.FS(staticFS))
 }
 
 func TestHandler_Index(t *testing.T) {
