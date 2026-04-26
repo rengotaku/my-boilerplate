@@ -2,7 +2,10 @@
 # Scaffold a standalone project from a monorepo template
 #
 # Usage:
-#   bash scripts/scaffold/scaffold.sh template=<name> dest=<path> name=<project-name> [module=<go-module>]
+#   bash scripts/scaffold/scaffold.sh template=<name> dest=<path> name=<project-name> [go-module-name=<go-module>]
+#
+# go-module-name は Go テンプレートのみで必須。`go.mod` の `module` 行に書かれる
+# モジュールパス（例: github.com/user/repo）を指定する。
 
 set -euo pipefail
 
@@ -23,7 +26,7 @@ for arg in "$@"; do
     template=*) template="${arg#template=}" ;;
     dest=*) dest="${arg#dest=}" ;;
     name=*) name="${arg#name=}" ;;
-    module=*) module="${arg#module=}" ;;
+    go-module-name=*) module="${arg#go-module-name=}" ;;
     *) die "Unknown argument: $arg" ;;
   esac
 done
@@ -39,15 +42,15 @@ validate_dest "$dest"
 
 family="$(detect_family "$template")"
 
-# Go templates require module=
+# Go templates require go-module-name= (the value written into go.mod's `module` line)
 if [[ "$family" == "go" ]]; then
-  [[ -z "$module" ]] && die "Go templates require module= argument (e.g., module=github.com/user/repo)"
+  [[ -z "$module" ]] && die "Go templates require go-module-name= argument (e.g., go-module-name=github.com/user/repo)"
   validate_module "$module"
 fi
 
-# Non-Go templates: warn if module is provided
+# Non-Go templates: warn if go-module-name is provided
 if [[ "$family" != "go" && -n "$module" ]]; then
-  warn "module= is ignored for $family templates"
+  warn "go-module-name= is ignored for $family templates"
   module=""
 fi
 
@@ -113,6 +116,9 @@ case "$family" in
     echo "  cd $dest"
     echo "  go mod tidy"
     echo "  make ci"
+    echo ""
+    echo "Publishing this module? Update go.mod's module line to a canonical path:"
+    echo "  go mod edit -module github.com/<user>/<repo>"
     ;;
   react)
     echo "  cd $dest"

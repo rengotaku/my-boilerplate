@@ -32,4 +32,18 @@ TypeScript 5.9, React 19: Follow standard conventions
 - 001-graphql-spa: Added TypeScript 5.9, React 19 + Apollo Client 3.x, @graphql-codegen/*, MUI 7, Zustand, React Hook Form, Zod
 
 <!-- MANUAL ADDITIONS START -->
+
+## テンプレートの利用方法
+
+ユーザーから「my-boilerplate の `<template>` を使って」と指示された場合、**構造だけ真似てゼロから書いてはいけない**。必ず `scripts/download.sh` でファイル一式を対象ディレクトリへ scaffold する（`download.sh` は scaffold を必ず実行する。opt-out は無い）。
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- <template> <dest>
+```
+
+`name` は `basename(<dest>)` から自動推定。Go テンプレートの `go.mod` も `basename(<dest>)` をローカル限定モジュール名で初期化するため、**公開する場合のみ** scaffold 完了後に `go mod edit -module github.com/<user>/<repo>` で書き換える（完了メッセージにも案内が出る）。
+
+理由: 構造模倣だと `envconfig` / 共通 logger / Makefile ターゲット等の既存資産が引き継がれず、ボイラープレートの恩恵が受けられない（#97 参照）。
+
 <!-- MANUAL ADDITIONS END -->

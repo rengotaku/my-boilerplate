@@ -96,12 +96,35 @@ When adding a new server project:
 
 ## Usage
 
+リポジトリをクローンせずに、テンプレートを 1 コマンドで scaffold 済みのスタンドアロンプロジェクトとして配置できます。**scaffold（placeholder 置換）は常時実行**で opt-out はありません。
+
 ```bash
-# Clone specific boilerplate
-cp -r python-cli ~/projects/my-new-project
-cd ~/projects/my-new-project
-make install
+# どのテンプレートも基本これだけ。`name` は <dest> から自動推定される
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-ssr-web ~/projects/my-new-app
 ```
+
+オプション:
+
+| Option | Description |
+|--------|-------------|
+| `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
+
+Go テンプレートの場合、`go.mod` の `module` 行は `basename(<dest>)`（ローカル限定モジュール）で初期化されます。**公開予定の場合**はスキャフォールド後に canonical path へ書き換えてください:
+
+```bash
+cd ~/projects/my-new-app
+go mod edit -module github.com/<user>/<repo>
+```
+
+環境変数で fork や別 ref を指定可能:
+
+```bash
+MY_BOILERPLATE_REPO=myorg/my-fork MY_BOILERPLATE_REF=v1.0.0 \
+  sh download.sh react-spa ~/projects/my-app
+```
+
+リポジトリをクローン済みなら直接 [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。`download.sh` はそれをラップして「リポジトリ未取得」状態から実行できるようにしたものです。
 
 ## License
 

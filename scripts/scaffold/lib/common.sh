@@ -107,11 +107,14 @@ validate_name() {
   fi
 }
 
-# Validate Go module path format
+# Validate Go module path format. Accepts both:
+#   - canonical path form (e.g., github.com/user/repo) for publishable modules
+#   - single-token form (e.g., my-app) for local-only modules
+# Both are valid `module` declarations in go.mod.
 validate_module() {
   local module="$1"
-  if [[ ! "$module" =~ ^[a-zA-Z0-9._-]+(/[a-zA-Z0-9._-]+)+$ ]]; then
-    die "Invalid module path: $module (expected format: github.com/<user>/<repo>)"
+  if [[ ! "$module" =~ ^[a-zA-Z0-9._-]+(/[a-zA-Z0-9._-]+)*$ ]]; then
+    die "Invalid module path: $module"
   fi
 }
 

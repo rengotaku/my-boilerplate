@@ -28,10 +28,10 @@ e2e:
 e2e-update-snapshots:
 	PLAYWRIGHT_IMAGE=$(PLAYWRIGHT_IMAGE) ./scripts/e2e-update-snapshots.sh
 
-## scaffold: Generate standalone project from template (template= dest= name= [module=])
+## scaffold: Generate standalone project from template (template= dest= name= [go-module-name=])
 scaffold:
 	@bash scripts/scaffold/scaffold.sh \
-		template='$(template)' dest='$(dest)' name='$(name)' module='$(module)'
+		template='$(template)' dest='$(dest)' name='$(name)' go-module-name='$(go-module-name)'
 
 ## help: Show this help
 help:
