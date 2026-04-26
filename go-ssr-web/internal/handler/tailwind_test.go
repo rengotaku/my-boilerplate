@@ -75,7 +75,7 @@ func TestTailwind_StaticIconServed(t *testing.T) {
 	svc := service.NewUserService(repo)
 
 	staticFS := fstest.MapFS{
-		"css/style.css":    &fstest.MapFile{Data: []byte("body{}")},
+		"css/output.css":   &fstest.MapFile{Data: []byte("body{}")},
 		"icons/rocket.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-rocket"></svg>`)},
 	}
 

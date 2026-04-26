@@ -36,8 +36,8 @@ tailwind-build: tailwind-install
 build: tailwind-build
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the server
-run:
+## run: Run the server (Tailwind CSS をビルドしてから起動)
+run: tailwind-build
 	go run ./cmd/server
 
 ## stop: Stop the server

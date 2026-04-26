@@ -1,19 +1,19 @@
 {{template "base" .}}
 
 {{define "content"}}
-<h1>{{.User.Name}}</h1>
+<h1 class="text-2xl font-bold mb-4">{{.User.Name}}</h1>
 
-<dl>
-    <dt>Email</dt>
+<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 mb-4">
+    <dt class="font-bold">Email</dt>
     <dd>{{.User.Email}}</dd>
-    <dt>Created</dt>
+    <dt class="font-bold">Created</dt>
     <dd>{{.User.CreatedAt.Format "2006-01-02 15:04:05"}}</dd>
-    <dt>Updated</dt>
+    <dt class="font-bold">Updated</dt>
     <dd>{{.User.UpdatedAt.Format "2006-01-02 15:04:05"}}</dd>
 </dl>
 
-<p>
-    <a href="/users/{{.User.ID}}/edit">Edit</a>
-    <a href="/users">Back to list</a>
+<p class="flex gap-4">
+    <a href="/users/{{.User.ID}}/edit" class="text-blue-600 hover:underline">Edit</a>
+    <a href="/users" class="text-blue-600 hover:underline">Back to list</a>
 </p>
 {{end}}
