@@ -162,15 +162,17 @@ class TestMakefileRunTarget:
         content = _read_makefile()
         assert "run:" in content or "run: build" in content
 
-    def test_run_target_uses_no_reload(self) -> None:
-        """run ターゲットが --no-reload を使用すること.
+    def test_run_target_does_not_enable_reload(self) -> None:
+        """run ターゲットが --reload を有効化しないこと.
 
         本番サーバーでは自動リロードを無効にする。
+        uvicorn 0.44 では --no-reload フラグは廃止 (デフォルトが非リロード)。
         """
+        import re as _re
         content = _read_makefile()
         run_section = _extract_target_section(content, "run")
-        assert "--no-reload" in run_section, (
-            "run target missing --no-reload. "
+        assert not _re.search(r"--reload(\s|$)", run_section), (
+            "run target で --reload が有効化されている。"
             f"section: {run_section}"
         )
 
@@ -208,13 +210,18 @@ class TestDevVsProductionDifferences:
     """開発モードと本番モードの違いが正しいこと."""
 
     def test_dev_uses_reload_run_does_not(self) -> None:
-        """dev は --reload あり、run は --no-reload."""
+        """dev は --reload あり、run は --reload を含まない.
+
+        uvicorn 0.44 で --no-reload は廃止されたので、run では --reload を
+        指定しないことで非リロード (デフォルト) 動作にする。
+        """
+        import re as _re
         content = _read_makefile()
         dev_section = _extract_target_section(content, "dev")
         run_section = _extract_target_section(content, "run")
 
         assert "--reload" in dev_section
-        assert "--no-reload" in run_section
+        assert not _re.search(r"--reload(\s|$)", run_section)
 
     def test_dev_uses_tailwind_watch_build_uses_minify(self) -> None:
         """dev は Tailwind watch、build は minify."""

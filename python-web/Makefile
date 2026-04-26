@@ -8,6 +8,7 @@ PORT ?= 8000
 
 ## install: Install Python and Node.js dependencies
 install:
+	@python3 scripts/check_venv.py || rm -rf .venv
 	uv sync --all-extras
 	npm install
 
@@ -55,7 +56,7 @@ build: _copy-alpine
 
 ## run: Run production server
 run: build
-	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT) --no-reload
+	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
 
 ## clean: Remove build artifacts and cache
 clean:
