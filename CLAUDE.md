@@ -35,12 +35,16 @@ TypeScript 5.9, React 19: Follow standard conventions
 
 ## テンプレートの利用方法
 
-ユーザーから「my-boilerplate の `<template>` を使って」と指示された場合、**構造だけ真似てゼロから書いてはいけない**。必ず `scripts/download.sh` でファイル一式を対象ディレクトリへコピーしてから着手する。
+ユーザーから「my-boilerplate の `<template>` を使って」と指示された場合、**構造だけ真似てゼロから書いてはいけない**。必ず `scripts/download.sh` でファイル一式を対象ディレクトリへ scaffold する（`download.sh` は scaffold を必ず実行する。opt-out は無い）。
 
 ```bash
-# プロジェクト名・モジュールパスを置換した状態でコピー
+# go-* テンプレート（--module 必須）
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- <template> <dest> --name=<dest-basename> [--module=<go-module>]
+  | sh -s -- <template> <dest> --module=<go-module>
+
+# それ以外（react / python / rust）。--name 省略時は basename(<dest>) が採用される
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- <template> <dest>
 ```
 
 理由: 構造模倣だと `envconfig` / 共通 logger / Makefile ターゲット等の既存資産が引き継がれず、ボイラープレートの恩恵が受けられない（#97 参照）。

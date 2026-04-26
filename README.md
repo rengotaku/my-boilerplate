@@ -96,34 +96,34 @@ When adding a new server project:
 
 ## Usage
 
-リポジトリをクローンせずに、テンプレート 1 つだけを任意のディレクトリへ取り出せます。
+リポジトリをクローンせずに、テンプレートを 1 コマンドで scaffold 済みのスタンドアロンプロジェクトとして配置できます。**scaffold（placeholder 置換）は常時実行**で opt-out はありません。
 
 ```bash
-# Plain copy（テンプレート名がソースに残る、最短）
+# React / Python / Rust テンプレート（--module 不要、name は dest の basename を採用）
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- go-ssr-web ~/projects/my-new-app
+  | sh -s -- react-spa ~/projects/my-new-app
 
-# Scaffolding 付き（プロジェクト名・モジュールパスを置換）
+# Go テンプレート（--module 必須）
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
   | sh -s -- go-ssr-web ~/projects/my-new-app \
-      --name=my-new-app --module=github.com/me/my-new-app
+      --module=github.com/me/my-new-app
 ```
 
 オプション:
 
 | Option | Description |
 |--------|-------------|
-| `--name=NAME` | プロジェクト名。指定すると placeholder を置換 |
-| `--module=MODULE` | Go モジュールパス。`go-*` テンプレート + scaffold 時は必須 |
+| `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
+| `--module=MODULE` | Go モジュールパス。`go-*` テンプレート時は必須 |
 
 環境変数で fork や別 ref を指定可能:
 
 ```bash
 MY_BOILERPLATE_REPO=myorg/my-fork MY_BOILERPLATE_REF=v1.0.0 \
-  sh download.sh go-ssr-web ~/projects/my-app
+  sh download.sh react-spa ~/projects/my-app
 ```
 
-詳細は [`scripts/download.sh --help`](./scripts/download.sh)。リポジトリをクローン済みなら従来通り [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。
+リポジトリをクローン済みなら直接 [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。`download.sh` はそれをラップして「リポジトリ未取得」状態から実行できるようにしたものです。
 
 ## License
 

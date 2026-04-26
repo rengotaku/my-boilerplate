@@ -1,18 +1,15 @@
 #!/bin/sh
-# download.sh - Fetch a my-boilerplate template into a target directory.
+# download.sh - Fetch a my-boilerplate template and scaffold it as a usable
+# standalone project at a target directory.
 #
 # This script does NOT require my-boilerplate to be cloned locally. It
-# downloads the tarball at the requested ref, extracts only the requested
-# template directory, and either:
+# downloads the tarball at the requested ref, extracts the requested template
+# directory, and **always** delegates to the bundled scripts/scaffold/scaffold.sh
+# which rewrites template-name placeholders (Makefile, HTML, Go module path,
+# package.json name, etc.) so the result is immediately usable.
 #
-#   1. (default) copies the template as-is. Strings like "go-ssr-web" remain
-#      embedded in Makefile / go.mod / etc. Useful for "I just want to look
-#      at the files".
-#
-#   2. (with --name and/or --module) delegates to the bundled
-#      scripts/scaffold/scaffold.sh which rewrites template-name placeholders
-#      (Makefile, HTML, Go module path, package.json name, etc.) so the
-#      extracted directory is immediately usable as a standalone project.
+# Scaffolding is mandatory; there is no plain-copy mode. The premise of this
+# tool is "create a new project from a boilerplate", not "fetch raw files".
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
@@ -25,23 +22,23 @@
 #   <dest>       Destination directory (must not exist; parent must exist).
 #
 # Optional:
-#   --name=NAME       Enables scaffolding. Replaces template-name placeholders
-#                     with NAME. Defaults to basename(<dest>) when --module
-#                     is given without --name.
-#   --module=MODULE   Go module path (e.g., github.com/user/repo). Required
-#                     for go-* templates whenever scaffolding is enabled.
+#   --name=NAME       Project name written into Makefile / package.json / etc.
+#                     Defaults to basename(<dest>).
+#
+# Required for go-* templates:
+#   --module=MODULE   Go module path (e.g., github.com/user/repo).
 #
 # Environment:
 #   MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate).
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
 # Examples:
-#   # Plain copy:
-#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
+#   # React / Python / Rust template (no --module needed):
+#   curl -sSL .../download.sh | sh -s -- react-spa ~/projects/my-app
 #
-#   # Full scaffolding (Go template):
+#   # Go template (--module required):
 #   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app \
-#     --name=my-app --module=github.com/me/my-app
+#     --module=github.com/me/my-app
 
 set -eu
 
@@ -122,26 +119,19 @@ esac
 parent=$(dirname "$dest")
 [ -d "$parent" ] || die "Parent directory does not exist: $parent"
 
-# Scaffold mode is enabled by --name and/or --module. In that mode the bundled
-# scripts/scaffold/scaffold.sh is invoked to rewrite placeholders (Makefile /
-# HTML / Go module path / package.json name etc.) so the result is a usable
-# standalone project. Without those flags we just copy the directory as-is.
-do_scaffold="no"
-if [ -n "$name" ] || [ -n "$module" ]; then
-  do_scaffold="yes"
-  [ -z "$name" ] && name=$(basename "$dest")
-fi
+# Scaffolding is mandatory. Auto-derive the project name from <dest> if not
+# explicitly provided; require --module for go-* templates upfront so the user
+# learns about the missing flag before the network round-trip.
+[ -z "$name" ] && name=$(basename "$dest")
 
 case "$template" in
   go-*)
-    if [ "$do_scaffold" = "yes" ] && [ -z "$module" ]; then
-      die "Go template '$template' requires --module=<path> when scaffolding"
-    fi
+    [ -z "$module" ] && die "Go template '$template' requires --module=<path>"
     ;;
 esac
 
-if [ "$do_scaffold" = "yes" ] && ! command -v bash >/dev/null 2>&1; then
-  die "bash is required for scaffolding (re-run without --name/--module for plain copy)"
+if ! command -v bash >/dev/null 2>&1; then
+  die "bash is required to run the bundled scripts/scaffold/scaffold.sh"
 fi
 
 tmpdir=$(mktemp -d)
@@ -162,8 +152,7 @@ tar -xzf "$tmpdir/repo.tar.gz" -C "$tmpdir"
 extracted=$(find "$tmpdir" -maxdepth 1 -type d -name 'my-boilerplate-*' | head -n1)
 [ -d "$extracted" ] || die "Extraction failed: tarball did not contain expected top-level directory"
 
-src="$extracted/$template"
-if [ ! -d "$src" ]; then
+if [ ! -d "$extracted/$template" ]; then
   # Build the available-template list dynamically from the extracted tarball
   # so it stays accurate as templates are added / renamed / removed. Filter
   # by the documented naming convention "<language>-<type>".
@@ -176,22 +165,16 @@ if [ ! -d "$src" ]; then
   die "Template '$template' not found at ${REPO}@${REF}. Available: $available"
 fi
 
-if [ "$do_scaffold" = "yes" ]; then
-  info "Scaffolding $template -> $dest (name=$name${module:+ module=$module})"
-  if [ -n "$module" ]; then
-    bash "$extracted/scripts/scaffold/scaffold.sh" \
-      "template=$template" "dest=$dest" "name=$name" "module=$module"
-  else
-    bash "$extracted/scripts/scaffold/scaffold.sh" \
-      "template=$template" "dest=$dest" "name=$name"
-  fi
+# Always invoke scaffold.sh. It rewrites template-name placeholders (Makefile /
+# HTML / Go module path / package.json name etc.) so the resulting directory
+# is a usable standalone project.
+info "Scaffolding $template -> $dest (name=$name${module:+ module=$module})"
+if [ -n "$module" ]; then
+  bash "$extracted/scripts/scaffold/scaffold.sh" \
+    "template=$template" "dest=$dest" "name=$name" "module=$module"
 else
-  info "Copying $template -> $dest (plain copy, no placeholder substitution)"
-  cp -R "$src" "$dest"
-  rm -f "$dest/docs/SYNC_FILES.md"
-  rmdir "$dest/docs" 2>/dev/null || true
-  warn "Project name '$template' is still embedded in source files."
-  warn "Re-run with --name (and --module for Go) to substitute placeholders."
+  bash "$extracted/scripts/scaffold/scaffold.sh" \
+    "template=$template" "dest=$dest" "name=$name"
 fi
 
 info "Done: $dest"
