@@ -97,8 +97,8 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      command:
-        "cd ../go-ssr-web && make tailwind-build && PORT=8085 go run ./cmd/server",
+      command: "../go-ssr-web/scripts/run-with-tailwind.sh",
+      env: { PORT: "8085" },
       url: "http://localhost:8085/",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
