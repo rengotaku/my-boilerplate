@@ -96,12 +96,34 @@ When adding a new server project:
 
 ## Usage
 
+リポジトリをクローンせずに、テンプレート 1 つだけを任意のディレクトリへ取り出せます。
+
 ```bash
-# Clone specific boilerplate
-cp -r python-cli ~/projects/my-new-project
-cd ~/projects/my-new-project
-make install
+# Plain copy（テンプレート名がソースに残る、最短）
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-ssr-web ~/projects/my-new-app
+
+# Scaffolding 付き（プロジェクト名・モジュールパスを置換）
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-ssr-web ~/projects/my-new-app \
+      --name=my-new-app --module=github.com/me/my-new-app
 ```
+
+オプション:
+
+| Option | Description |
+|--------|-------------|
+| `--name=NAME` | プロジェクト名。指定すると placeholder を置換 |
+| `--module=MODULE` | Go モジュールパス。`go-*` テンプレート + scaffold 時は必須 |
+
+環境変数で fork や別 ref を指定可能:
+
+```bash
+MY_BOILERPLATE_REPO=myorg/my-fork MY_BOILERPLATE_REF=v1.0.0 \
+  sh download.sh go-ssr-web ~/projects/my-app
+```
+
+詳細は [`scripts/download.sh --help`](./scripts/download.sh)。リポジトリをクローン済みなら従来通り [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。
 
 ## License
 
