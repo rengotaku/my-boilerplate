@@ -55,9 +55,11 @@ export default defineConfig({
     makeFunctionalProject("react-spa-graphql", "http://localhost:4173"),
     makeFunctionalProject("react-spa", "http://localhost:4174"),
     makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
+    makeFunctionalProject("go-ssr-web", "http://localhost:8085"),
     ...makeVisualProjects("react-spa-graphql", "http://localhost:4173"),
     ...makeVisualProjects("react-spa", "http://localhost:4174"),
     ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
+    ...makeVisualProjects("go-ssr-web", "http://localhost:8085"),
   ],
   webServer: [
     {
@@ -91,6 +93,12 @@ export default defineConfig({
       url: "http://localhost:4175",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
+    },
+    {
+      command: "cd ../go-ssr-web && PORT=8085 go run ./cmd/server",
+      url: "http://localhost:8085/",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
     },
   ],
 });
