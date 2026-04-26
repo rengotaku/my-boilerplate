@@ -13,11 +13,11 @@ import (
 
 type Handler struct {
 	userSvc   *service.UserService
-	templates *template.Template
+	templates map[string]*template.Template
 	staticFS  fs.FS
 }
 
-func NewHandler(userSvc *service.UserService, templates *template.Template, staticFS fs.FS) *Handler {
+func NewHandler(userSvc *service.UserService, templates map[string]*template.Template, staticFS fs.FS) *Handler {
 	return &Handler{
 		userSvc:   userSvc,
 		templates: templates,
@@ -49,8 +49,13 @@ func (h *Handler) Routes() http.Handler {
 }
 
 func (h *Handler) render(w http.ResponseWriter, name string, data any) {
+	t, ok := h.templates[name]
+	if !ok {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
+	if err := t.ExecuteTemplate(w, "base", data); err != nil {
 		http.Error(w, "Template error", http.StatusInternalServerError)
 	}
 }

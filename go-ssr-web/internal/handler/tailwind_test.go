@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"html/template"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -75,18 +74,12 @@ func TestTailwind_StaticIconServed(t *testing.T) {
 	repo := repository.NewUserRepository()
 	svc := service.NewUserService(repo)
 
-	tmpl := template.Must(template.New("index.html").Parse(`<h1>Home</h1>`))
-	template.Must(tmpl.New("users/index.html").Parse(`<h1>Users</h1>{{range .Users}}<p>{{.Name}}</p>{{end}}`))
-	template.Must(tmpl.New("users/new.html").Parse(`<h1>New</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`))
-	template.Must(tmpl.New("users/show.html").Parse(`<h1>{{.User.Name}}</h1>`))
-	template.Must(tmpl.New("users/edit.html").Parse(`<h1>Edit</h1>{{if .Error}}<p class="error">{{.Error}}</p>{{end}}`))
-
 	staticFS := fstest.MapFS{
 		"css/style.css":    &fstest.MapFile{Data: []byte("body{}")},
 		"icons/rocket.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-rocket"></svg>`)},
 	}
 
-	h := NewHandler(svc, tmpl, fs.FS(staticFS))
+	h := NewHandler(svc, makeTestTemplates(), fs.FS(staticFS))
 
 	req := httptest.NewRequest(http.MethodGet, "/static/icons/rocket.svg", nil)
 	rec := httptest.NewRecorder()

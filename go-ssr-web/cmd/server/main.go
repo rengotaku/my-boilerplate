@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
@@ -97,10 +98,25 @@ func main() {
 	slog.Info("server stopped")
 }
 
-func loadTemplates() (*template.Template, error) {
-	return template.ParseFS(web.FS,
-		"templates/base.html",
-		"templates/index.html",
-		"templates/users/*.html",
-	)
+// loadTemplates builds a per-page template set so each page gets its own
+// "content" definition. A single shared set causes {{define "content"}} to be
+// overwritten by the last-parsed file, breaking all but the final page.
+func loadTemplates() (map[string]*template.Template, error) {
+	pages := []struct{ name, path string }{
+		{"index.html", "templates/index.html"},
+		{"users/index.html", "templates/users/index.html"},
+		{"users/new.html", "templates/users/new.html"},
+		{"users/show.html", "templates/users/show.html"},
+		{"users/edit.html", "templates/users/edit.html"},
+	}
+
+	m := make(map[string]*template.Template, len(pages))
+	for _, p := range pages {
+		t, err := template.ParseFS(web.FS, "templates/base.html", p.path)
+		if err != nil {
+			return nil, fmt.Errorf("loading template %s: %w", p.name, err)
+		}
+		m[p.name] = t
+	}
+	return m, nil
 }
