@@ -62,7 +62,7 @@ jobs:
             template=${{ matrix.template }} \
             dest=/tmp/test-${{ matrix.template }} \
             name=test-${{ matrix.template }} \
-            module=github.com/test/test-${{ matrix.template }}
+            go-module-name=github.com/test/test-${{ matrix.template }}
 
       - name: Verify scaffolded project
         working-directory: /tmp/test-${{ matrix.template }}

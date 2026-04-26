@@ -99,14 +99,14 @@ When adding a new server project:
 リポジトリをクローンせずに、テンプレートを 1 コマンドで scaffold 済みのスタンドアロンプロジェクトとして配置できます。**scaffold（placeholder 置換）は常時実行**で opt-out はありません。
 
 ```bash
-# React / Python / Rust テンプレート（--module 不要、name は dest の basename を採用）
+# React / Python / Rust テンプレート（--go-module-name 不要、name は dest の basename を採用）
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
   | sh -s -- react-spa ~/projects/my-new-app
 
-# Go テンプレート（--module 必須）
+# Go テンプレート（--go-module-name 必須）
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
   | sh -s -- go-ssr-web ~/projects/my-new-app \
-      --module=github.com/me/my-new-app
+      --go-module-name=github.com/me/my-new-app
 ```
 
 オプション:
@@ -114,7 +114,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--module=MODULE` | Go モジュールパス。`go-*` テンプレート時は必須 |
+| `--go-module-name=MODULE` | `go.mod` の `module` 行に書かれるパス。`go-*` テンプレート時は必須 |
 
 環境変数で fork や別 ref を指定可能:
 

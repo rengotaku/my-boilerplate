@@ -13,7 +13,7 @@
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-#     | sh -s -- <template> <dest> [--name=NAME] [--module=MODULE]
+#     | sh -s -- <template> <dest> [--name=NAME] [--go-module-name=MODULE]
 #
 # Required:
 #   <template>   Template directory name (e.g., go-ssr-web, react-spa).
@@ -22,23 +22,24 @@
 #   <dest>       Destination directory (must not exist; parent must exist).
 #
 # Optional:
-#   --name=NAME       Project name written into Makefile / package.json / etc.
-#                     Defaults to basename(<dest>).
+#   --name=NAME              Project name written into Makefile /
+#                            package.json / etc. Defaults to basename(<dest>).
 #
 # Required for go-* templates:
-#   --module=MODULE   Go module path (e.g., github.com/user/repo).
+#   --go-module-name=MODULE  The value written into go.mod's `module` line
+#                            (e.g., github.com/user/repo).
 #
 # Environment:
 #   MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate).
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
 # Examples:
-#   # React / Python / Rust template (no --module needed):
+#   # React / Python / Rust template (no --go-module-name needed):
 #   curl -sSL .../download.sh | sh -s -- react-spa ~/projects/my-app
 #
-#   # Go template (--module required):
+#   # Go template (--go-module-name required):
 #   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app \
-#     --module=github.com/me/my-app
+#     --go-module-name=github.com/me/my-app
 
 set -eu
 
@@ -67,7 +68,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: download.sh <template> <dest> [--name=NAME] [--module=MODULE]
+Usage: download.sh <template> <dest> [--name=NAME] [--go-module-name=MODULE]
 
 See https://github.com/rengotaku/my-boilerplate#usage for full documentation.
 Run with an unknown <template> to see the currently available list.
@@ -86,7 +87,7 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     --name=*) name="${1#--name=}" ;;
-    --module=*) module="${1#--module=}" ;;
+    --go-module-name=*) module="${1#--go-module-name=}" ;;
     --*) die "Unknown option: $1 (see --help)" ;;
     *)
       if [ -z "$template" ]; then
@@ -120,13 +121,13 @@ parent=$(dirname "$dest")
 [ -d "$parent" ] || die "Parent directory does not exist: $parent"
 
 # Scaffolding is mandatory. Auto-derive the project name from <dest> if not
-# explicitly provided; require --module for go-* templates upfront so the user
-# learns about the missing flag before the network round-trip.
+# explicitly provided; require --go-module-name for go-* templates upfront so
+# the user learns about the missing flag before the network round-trip.
 [ -z "$name" ] && name=$(basename "$dest")
 
 case "$template" in
   go-*)
-    [ -z "$module" ] && die "Go template '$template' requires --module=<path>"
+    [ -z "$module" ] && die "Go template '$template' requires --go-module-name=<path> (e.g., --go-module-name=github.com/user/repo)"
     ;;
 esac
 
@@ -168,10 +169,10 @@ fi
 # Always invoke scaffold.sh. It rewrites template-name placeholders (Makefile /
 # HTML / Go module path / package.json name etc.) so the resulting directory
 # is a usable standalone project.
-info "Scaffolding $template -> $dest (name=$name${module:+ module=$module})"
+info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module})"
 if [ -n "$module" ]; then
   bash "$extracted/scripts/scaffold/scaffold.sh" \
-    "template=$template" "dest=$dest" "name=$name" "module=$module"
+    "template=$template" "dest=$dest" "name=$name" "go-module-name=$module"
 else
   bash "$extracted/scripts/scaffold/scaffold.sh" \
     "template=$template" "dest=$dest" "name=$name"
