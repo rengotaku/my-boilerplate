@@ -99,11 +99,11 @@ When adding a new server project:
 リポジトリをクローンせずに、テンプレートを 1 コマンドで scaffold 済みのスタンドアロンプロジェクトとして配置できます。**scaffold（placeholder 置換）は常時実行**で opt-out はありません。
 
 ```bash
-# React / Python / Rust テンプレート（--go-module-name 不要、name は dest の basename を採用）
+# どのテンプレートも基本これだけ。`name` も `go-module-name` も <dest> から自動推定される
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- react-spa ~/projects/my-new-app
+  | sh -s -- go-ssr-web ~/projects/my-new-app
 
-# Go テンプレート（--go-module-name 必須）
+# 公開予定の Go プロジェクトは module パスを明示的に指定
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
   | sh -s -- go-ssr-web ~/projects/my-new-app \
       --go-module-name=github.com/me/my-new-app
@@ -114,7 +114,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--go-module-name=MODULE` | `go.mod` の `module` 行に書かれるパス。`go-*` テンプレート時は必須 |
+| `--go-module-name=MODULE` | `go.mod` の `module` 行に書かれる値。省略時は `basename(<dest>)`（ローカル限定モジュール）。公開する場合は `github.com/<user>/<repo>` のような canonical path を明示 |
 
 環境変数で fork や別 ref を指定可能:
 

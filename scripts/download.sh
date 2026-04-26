@@ -24,20 +24,22 @@
 # Optional:
 #   --name=NAME              Project name written into Makefile /
 #                            package.json / etc. Defaults to basename(<dest>).
-#
-# Required for go-* templates:
-#   --go-module-name=MODULE  The value written into go.mod's `module` line
-#                            (e.g., github.com/user/repo).
+#   --go-module-name=MODULE  Value written into go.mod's `module` line for
+#                            go-* templates. Defaults to basename(<dest>),
+#                            which produces a local-only module suitable for
+#                            prototyping. Pass an explicit canonical path
+#                            (e.g., github.com/user/repo) when you intend to
+#                            publish the project.
 #
 # Environment:
 #   MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate).
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
 # Examples:
-#   # React / Python / Rust template (no --go-module-name needed):
-#   curl -sSL .../download.sh | sh -s -- react-spa ~/projects/my-app
+#   # Defaults — name and go-module-name both derived from <dest>:
+#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
 #
-#   # Go template (--go-module-name required):
+#   # Override go-module-name for a publishable module:
 #   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app \
 #     --go-module-name=github.com/me/my-app
 
@@ -120,14 +122,14 @@ esac
 parent=$(dirname "$dest")
 [ -d "$parent" ] || die "Parent directory does not exist: $parent"
 
-# Scaffolding is mandatory. Auto-derive the project name from <dest> if not
-# explicitly provided; require --go-module-name for go-* templates upfront so
-# the user learns about the missing flag before the network round-trip.
+# Scaffolding is mandatory. Auto-derive missing flags from <dest> so a single
+# positional argument is enough for the common case. Users who plan to publish
+# a Go module should pass --go-module-name=<canonical-path> explicitly.
 [ -z "$name" ] && name=$(basename "$dest")
 
 case "$template" in
   go-*)
-    [ -z "$module" ] && die "Go template '$template' requires --go-module-name=<path> (e.g., --go-module-name=github.com/user/repo)"
+    [ -z "$module" ] && module=$(basename "$dest")
     ;;
 esac
 
