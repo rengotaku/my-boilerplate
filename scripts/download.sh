@@ -1,17 +1,53 @@
 #!/bin/sh
-# download.sh - Download a my-boilerplate template to a target directory.
+# download.sh - Fetch a my-boilerplate template into a target directory.
+#
+# This script does NOT require my-boilerplate to be cloned locally. It
+# downloads the tarball at the requested ref, extracts only the requested
+# template directory, and either:
+#
+#   1. (default) copies the template as-is. Strings like "go-ssr-web" remain
+#      embedded in Makefile / go.mod / etc. Useful for "I just want to look
+#      at the files".
+#
+#   2. (with --name and/or --module) delegates to the bundled
+#      scripts/scaffold/scaffold.sh which rewrites template-name placeholders
+#      (Makefile, HTML, Go module path, package.json name, etc.) so the
+#      extracted directory is immediately usable as a standalone project.
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-#     | sh -s -- <template> <dest> [options]
+#     | sh -s -- <template> <dest> [--name=NAME] [--module=MODULE]
+#
+# Required:
+#   <template>   Template directory name (e.g., go-ssr-web, react-spa).
+#                Validated against the actual contents of the downloaded
+#                tarball; an unknown name prints the available list.
+#   <dest>       Destination directory (must not exist; parent must exist).
+#
+# Optional:
+#   --name=NAME       Enables scaffolding. Replaces template-name placeholders
+#                     with NAME. Defaults to basename(<dest>) when --module
+#                     is given without --name.
+#   --module=MODULE   Go module path (e.g., github.com/user/repo). Required
+#                     for go-* templates whenever scaffolding is enabled.
+#
+# Environment:
+#   MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate).
+#   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
+#
+# Examples:
+#   # Plain copy:
+#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
+#
+#   # Full scaffolding (Go template):
+#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app \
+#     --name=my-app --module=github.com/me/my-app
 
 set -eu
 
 REPO="${MY_BOILERPLATE_REPO:-rengotaku/my-boilerplate}"
 REF="${MY_BOILERPLATE_REF:-main}"
 TARBALL_URL="https://github.com/${REPO}/archive/refs/heads/${REF}.tar.gz"
-
-VALID_TEMPLATES="go-cli go-rest-api go-graphql-api go-grpc-api go-ssr-web python-cli python-web react-spa react-spa-graphql react-spa-cloudflare rust-cli"
 
 if [ -t 2 ]; then
   RED=$(printf '\033[0;31m')
@@ -33,38 +69,11 @@ die() {
 }
 
 usage() {
-  cat <<EOF
-Usage: download.sh <template> <dest> [options]
+  cat <<'EOF'
+Usage: download.sh <template> <dest> [--name=NAME] [--module=MODULE]
 
-Templates:
-$(for t in $VALID_TEMPLATES; do echo "  - $t"; done)
-
-Arguments:
-  <template>   Template name from the list above
-  <dest>       Destination directory (must not exist; parent must exist)
-
-Options:
-  --name=NAME       Project name (enables placeholder substitution).
-                    Defaults to basename of <dest> when --module is given.
-  --module=MODULE   Go module path (e.g., github.com/user/repo).
-                    Required for go-* templates when scaffolding is enabled.
-  -h, --help        Show this help.
-
-Environment:
-  MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate)
-  MY_BOILERPLATE_REF   Override ref / branch / tag (default: main)
-
-Examples:
-  # Plain copy (template name remains embedded in source files):
-  sh download.sh go-ssr-web ~/projects/my-app
-
-  # Full scaffolding (Go template):
-  sh download.sh go-ssr-web ~/projects/my-app \\
-    --name=my-app --module=github.com/me/my-app
-
-  # Via curl:
-  curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \\
-    | sh -s -- go-ssr-web ~/projects/my-app
+See https://github.com/rengotaku/my-boilerplate#usage for full documentation.
+Run with an unknown <template> to see the currently available list.
 EOF
 }
 
@@ -81,7 +90,7 @@ while [ $# -gt 0 ]; do
       ;;
     --name=*) name="${1#--name=}" ;;
     --module=*) module="${1#--module=}" ;;
-    --*) die "Unknown option: $1 (use --help)" ;;
+    --*) die "Unknown option: $1 (see --help)" ;;
     *)
       if [ -z "$template" ]; then
         template="$1"
@@ -100,19 +109,23 @@ if [ -z "$template" ] || [ -z "$dest" ]; then
   exit 1
 fi
 
-valid=0
-for t in $VALID_TEMPLATES; do
-  if [ "$t" = "$template" ]; then
-    valid=1
-    break
-  fi
-done
-[ "$valid" -eq 1 ] || die "Invalid template: $template (use --help to list)"
+# Sanity-check the template token before hitting the network. The authoritative
+# validation happens after extraction (against the actual tarball contents) so
+# that template additions / renames / removals do not require editing this file.
+case "$template" in
+  *[!a-zA-Z0-9_-]* | "" | -*)
+    die "Invalid template name: $template"
+    ;;
+esac
 
 [ -e "$dest" ] && die "Destination already exists: $dest"
 parent=$(dirname "$dest")
 [ -d "$parent" ] || die "Parent directory does not exist: $parent"
 
+# Scaffold mode is enabled by --name and/or --module. In that mode the bundled
+# scripts/scaffold/scaffold.sh is invoked to rewrite placeholders (Makefile /
+# HTML / Go module path / package.json name etc.) so the result is a usable
+# standalone project. Without those flags we just copy the directory as-is.
 do_scaffold="no"
 if [ -n "$name" ] || [ -n "$module" ]; then
   do_scaffold="yes"
@@ -127,7 +140,7 @@ case "$template" in
     ;;
 esac
 
-if ! command -v bash >/dev/null 2>&1 && [ "$do_scaffold" = "yes" ]; then
+if [ "$do_scaffold" = "yes" ] && ! command -v bash >/dev/null 2>&1; then
   die "bash is required for scaffolding (re-run without --name/--module for plain copy)"
 fi
 
@@ -150,7 +163,18 @@ extracted=$(find "$tmpdir" -maxdepth 1 -type d -name 'my-boilerplate-*' | head -
 [ -d "$extracted" ] || die "Extraction failed: tarball did not contain expected top-level directory"
 
 src="$extracted/$template"
-[ -d "$src" ] || die "Template directory not found in tarball: $template"
+if [ ! -d "$src" ]; then
+  # Build the available-template list dynamically from the extracted tarball
+  # so it stays accurate as templates are added / renamed / removed. Filter
+  # by the documented naming convention "<language>-<type>".
+  available=$(
+    cd "$extracted" && \
+      find . -mindepth 1 -maxdepth 1 -type d \
+        \( -name 'go-*' -o -name 'python-*' -o -name 'react-*' -o -name 'rust-*' \) \
+        -exec basename {} \; | sort | tr '\n' ' '
+  )
+  die "Template '$template' not found at ${REPO}@${REF}. Available: $available"
+fi
 
 if [ "$do_scaffold" = "yes" ]; then
   info "Scaffolding $template -> $dest (name=$name${module:+ module=$module})"
