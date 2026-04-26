@@ -4,10 +4,7 @@
 - install ターゲットが壊れた .venv を自動復旧すること
 """
 
-import os
 import re
-import shutil
-import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -32,9 +29,11 @@ def _extract_target_section(content: str, target: str) -> str:
             section.append(line)
             continue
         if in_section:
-            if line.startswith("\t") or line.startswith("@"):
-                section.append(line)
-            elif line.strip() == "":
+            if (
+                line.startswith("\t")
+                or line.startswith("@")
+                or line.strip() == ""
+            ):
                 section.append(line)
             else:
                 break

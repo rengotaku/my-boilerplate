@@ -5,6 +5,7 @@ US4: 本番ビルドとデプロイ準備
 - make run で本番モードのサーバーが起動する
 """
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -168,10 +169,9 @@ class TestMakefileRunTarget:
         本番サーバーでは自動リロードを無効にする。
         uvicorn 0.44 では --no-reload フラグは廃止 (デフォルトが非リロード)。
         """
-        import re as _re
         content = _read_makefile()
         run_section = _extract_target_section(content, "run")
-        assert not _re.search(r"--reload(\s|$)", run_section), (
+        assert not re.search(r"--reload(\s|$)", run_section), (
             "run target で --reload が有効化されている。"
             f"section: {run_section}"
         )
@@ -215,13 +215,12 @@ class TestDevVsProductionDifferences:
         uvicorn 0.44 で --no-reload は廃止されたので、run では --reload を
         指定しないことで非リロード (デフォルト) 動作にする。
         """
-        import re as _re
         content = _read_makefile()
         dev_section = _extract_target_section(content, "dev")
         run_section = _extract_target_section(content, "run")
 
         assert "--reload" in dev_section
-        assert not _re.search(r"--reload(\s|$)", run_section)
+        assert not re.search(r"--reload(\s|$)", run_section)
 
     def test_dev_uses_tailwind_watch_build_uses_minify(self) -> None:
         """dev は Tailwind watch、build は minify."""
