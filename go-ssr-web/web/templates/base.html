@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}} - Go SSR Web</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/output.css">
 </head>
-<body>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/users">Users</a>
+<body class="font-sans leading-relaxed text-gray-900 max-w-3xl mx-auto p-4">
+    <nav class="mb-8 pb-4 border-b border-gray-300 flex gap-4">
+        <a href="/" class="text-blue-600 hover:underline">Home</a>
+        <a href="/users" class="text-blue-600 hover:underline">Users</a>
     </nav>
     <main>
         {{template "content" .}}

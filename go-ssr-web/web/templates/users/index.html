@@ -1,27 +1,27 @@
 {{template "base" .}}
 
 {{define "content"}}
-<h1>Users</h1>
-<p><a href="/users/new">New User</a></p>
+<h1 class="text-2xl font-bold mb-4">Users</h1>
+<p class="mb-4"><a href="/users/new" class="text-blue-600 hover:underline">New User</a></p>
 
 {{if .Users}}
-<table>
+<table class="w-full border-collapse">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Actions</th>
+            <th class="text-left p-2 border-b border-gray-300">Name</th>
+            <th class="text-left p-2 border-b border-gray-300">Email</th>
+            <th class="text-left p-2 border-b border-gray-300">Actions</th>
         </tr>
     </thead>
     <tbody>
         {{range .Users}}
         <tr>
-            <td><a href="/users/{{.ID}}">{{.Name}}</a></td>
-            <td>{{.Email}}</td>
-            <td>
-                <a href="/users/{{.ID}}/edit">Edit</a>
-                <form action="/users/{{.ID}}/delete" method="POST" style="display:inline">
-                    <button type="submit" onclick="return confirm('Delete?')">Delete</button>
+            <td class="p-2 border-b border-gray-200"><a href="/users/{{.ID}}" class="text-blue-600 hover:underline">{{.Name}}</a></td>
+            <td class="p-2 border-b border-gray-200">{{.Email}}</td>
+            <td class="p-2 border-b border-gray-200">
+                <a href="/users/{{.ID}}/edit" class="text-blue-600 hover:underline mr-2">Edit</a>
+                <form action="/users/{{.ID}}/delete" method="POST" class="inline">
+                    <button type="submit" onclick="return confirm('Delete?')" class="text-red-600 hover:underline cursor-pointer bg-transparent border-0 p-0">Delete</button>
                 </form>
             </td>
         </tr>
@@ -29,6 +29,6 @@
     </tbody>
 </table>
 {{else}}
-<p>No users found.</p>
+<p class="text-gray-700">No users found.</p>
 {{end}}
 {{end}}

@@ -34,7 +34,7 @@ func setupTestHandler() *Handler {
 	svc := service.NewUserService(repo)
 
 	staticFS := fstest.MapFS{
-		"css/style.css": &fstest.MapFile{Data: []byte("body{}")},
+		"css/output.css": &fstest.MapFile{Data: []byte("body{}")},
 	}
 
 	return NewHandler(svc, makeTestTemplates(), fs.FS(staticFS))
@@ -158,7 +158,7 @@ func TestHandler_UserDelete(t *testing.T) {
 func TestHandler_StaticFiles(t *testing.T) {
 	h := setupTestHandler()
 
-	req := httptest.NewRequest(http.MethodGet, "/static/css/style.css", nil)
+	req := httptest.NewRequest(http.MethodGet, "/static/css/output.css", nil)
 	rec := httptest.NewRecorder()
 
 	h.Routes().ServeHTTP(rec, req)
