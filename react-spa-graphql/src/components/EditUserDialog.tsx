@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { useDeleteUser } from "@/hooks/useDeleteUser";
 import { userFormSchema, type UserFormData } from "@/schemas";
@@ -88,86 +90,102 @@ export function EditUserDialog({ open, user, onClose, onSuccess }: EditUserDialo
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Edit User</DialogTitle>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) handleClose();
+      }}
+    >
       <DialogContent>
-        {mutationError && (
-          <Alert severity="error" sx={{ mb: 2, mt: 1 }}>
-            {mutationError}
-          </Alert>
-        )}
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+        </DialogHeader>
 
-        {showDeleteConfirm ? (
-          <Box sx={{ py: 2 }}>
-            <Alert severity="warning">
-              本当に削除しますか？この操作は取り消せません。
+        <div className="py-2">
+          {mutationError && (
+            <Alert variant="destructive" className="mb-4">
+              {mutationError}
             </Alert>
-          </Box>
-        ) : (
-          <Box
-            component="form"
-            id="edit-user-form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-          >
-            <TextField
-              {...register("name")}
-              label="Name"
-              fullWidth
-              error={!!errors.name}
-              helperText={errors.name?.message}
-              disabled={loading}
-            />
-            <TextField
-              {...register("email")}
-              label="Email"
-              fullWidth
-              error={!!errors.email}
-              helperText={errors.email?.message}
-              disabled={loading}
-            />
-          </Box>
-        )}
+          )}
+
+          {showDeleteConfirm ? (
+            <Alert className="py-4">本当に削除しますか？この操作は取り消せません。</Alert>
+          ) : (
+            <form
+              id="edit-user-form"
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-4"
+            >
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-name" className="text-sm font-medium">
+                  Name
+                </label>
+                <Input
+                  id="edit-name"
+                  {...register("name")}
+                  aria-describedby={errors.name ? "edit-name-error" : undefined}
+                  disabled={loading}
+                />
+                {errors.name && (
+                  <p id="edit-name-error" className="text-sm text-destructive">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="edit-email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="edit-email"
+                  {...register("email")}
+                  aria-describedby={errors.email ? "edit-email-error" : undefined}
+                  disabled={loading}
+                />
+                {errors.email && (
+                  <p id="edit-email-error" className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+            </form>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          {showDeleteConfirm ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+                Confirm
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={loading}
+              >
+                Delete
+              </Button>
+              <div className="flex-1" />
+              <Button variant="outline" onClick={handleClose} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" form="edit-user-form" disabled={loading}>
+                Save
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        {showDeleteConfirm ? (
-          <>
-            <Button onClick={() => setShowDeleteConfirm(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDelete}
-              color="error"
-              variant="contained"
-              disabled={loading}
-            >
-              Confirm
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              onClick={() => setShowDeleteConfirm(true)}
-              color="error"
-              disabled={loading}
-            >
-              Delete
-            </Button>
-            <Box sx={{ flex: 1 }} />
-            <Button onClick={handleClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              form="edit-user-form"
-              variant="contained"
-              disabled={loading}
-            >
-              Save
-            </Button>
-          </>
-        )}
-      </DialogActions>
     </Dialog>
   );
 }

@@ -477,10 +477,10 @@ describe("US3: EditUserDialog コンポーネント", () => {
         </TestWrapper>
       );
 
-      // MUI Dialog の backdrop をクリック
-      const backdrop = document.querySelector(".MuiBackdrop-root");
-      if (backdrop) {
-        await user.click(backdrop);
+      // Radix UI Dialog の overlay をクリック
+      const overlay = document.querySelector('[data-slot="dialog-overlay"]');
+      if (overlay) {
+        await user.click(overlay);
       }
 
       await waitFor(() => {

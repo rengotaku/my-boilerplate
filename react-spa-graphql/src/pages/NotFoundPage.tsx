@@ -1,23 +1,17 @@
 import { Link as RouterLink } from "react-router-dom";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
+import { Button } from "@/components/ui/button";
 
 export function NotFoundPage() {
   return (
-    <Box sx={{ textAlign: "center", mt: 8 }}>
-      <Typography variant="h3" component="h1" gutterBottom>
-        404
-      </Typography>
-      <Typography variant="h5" color="text.secondary" gutterBottom>
-        Page Not Found
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="text-center mt-16">
+      <h1 className="text-5xl font-bold mb-4">404</h1>
+      <h2 className="text-2xl text-muted-foreground mb-2">Page Not Found</h2>
+      <p className="text-muted-foreground mb-6">
         The page you are looking for does not exist.
-      </Typography>
-      <Button variant="contained" component={RouterLink} to="/">
-        Go to Home
+      </p>
+      <Button asChild>
+        <RouterLink to="/">Go to Home</RouterLink>
       </Button>
-    </Box>
+    </div>
   );
 }

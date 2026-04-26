@@ -1,17 +1,15 @@
 import { useState } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
+import { Loader2, Pencil } from "lucide-react";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useUsers } from "@/hooks";
 import { CreateUserForm, EditUserDialog } from "@/components";
 
@@ -24,47 +22,51 @@ export function UsersPage() {
   } | null>(null);
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Users
-      </Typography>
+    <div>
+      <h1 className="text-3xl font-bold mb-6">Users</h1>
 
       <CreateUserForm />
 
       {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
-        </Box>
+        <div className="flex justify-center mt-8">
+          <Loader2
+            className="h-8 w-8 animate-spin"
+            role="progressbar"
+            aria-label="Loading"
+          />
+        </div>
       )}
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert variant="destructive" className="mb-4">
           エラー: {error.message}
         </Alert>
       )}
 
       {!loading && !error && users && users.length === 0 && (
-        <Typography color="text.secondary">ユーザーがいません</Typography>
+        <p className="text-muted-foreground">ユーザーがいません</p>
       )}
 
       {!loading && !error && users && users.length > 0 && (
-        <TableContainer component={Paper}>
+        <div className="border rounded-md">
           <Table>
-            <TableHead>
+            <TableHeader>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            </TableHead>
+            </TableHeader>
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
+                  <TableCell className="text-right">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="edit"
                       onClick={() =>
                         setEditingUser({
                           id: user.id,
@@ -72,16 +74,15 @@ export function UsersPage() {
                           email: user.email,
                         })
                       }
-                      aria-label="edit"
                     >
-                      <EditIcon />
-                    </IconButton>
+                      <Pencil />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </div>
       )}
 
       {editingUser && (
@@ -91,6 +92,6 @@ export function UsersPage() {
           onClose={() => setEditingUser(null)}
         />
       )}
-    </Box>
+    </div>
   );
 }
