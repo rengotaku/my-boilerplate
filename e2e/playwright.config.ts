@@ -55,11 +55,13 @@ export default defineConfig({
     makeFunctionalProject("react-spa-graphql", "http://localhost:4173"),
     makeFunctionalProject("react-spa", "http://localhost:4174"),
     makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
-    makeFunctionalProject("go-ssr-web", "http://localhost:8085"),
     ...makeVisualProjects("react-spa-graphql", "http://localhost:4173"),
     ...makeVisualProjects("react-spa", "http://localhost:4174"),
     ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
+    // go-ssr-web: visual before functional to capture empty-state snapshots
+    // before CRUD tests create users that would overflow the mobile table
     ...makeVisualProjects("go-ssr-web", "http://localhost:8085"),
+    makeFunctionalProject("go-ssr-web", "http://localhost:8085"),
   ],
   webServer: [
     {
