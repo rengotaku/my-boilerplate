@@ -99,14 +99,9 @@ When adding a new server project:
 リポジトリをクローンせずに、テンプレートを 1 コマンドで scaffold 済みのスタンドアロンプロジェクトとして配置できます。**scaffold（placeholder 置換）は常時実行**で opt-out はありません。
 
 ```bash
-# どのテンプレートも基本これだけ。`name` も `go-module-name` も <dest> から自動推定される
+# どのテンプレートも基本これだけ。`name` は <dest> から自動推定される
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
   | sh -s -- go-ssr-web ~/projects/my-new-app
-
-# 公開予定の Go プロジェクトは module パスを明示的に指定
-curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- go-ssr-web ~/projects/my-new-app \
-      --go-module-name=github.com/me/my-new-app
 ```
 
 オプション:
@@ -114,7 +109,13 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--go-module-name=MODULE` | `go.mod` の `module` 行に書かれる値。省略時は `basename(<dest>)`（ローカル限定モジュール）。公開する場合は `github.com/<user>/<repo>` のような canonical path を明示 |
+
+Go テンプレートの場合、`go.mod` の `module` 行は `basename(<dest>)`（ローカル限定モジュール）で初期化されます。**公開予定の場合**はスキャフォールド後に canonical path へ書き換えてください:
+
+```bash
+cd ~/projects/my-new-app
+go mod edit -module github.com/<user>/<repo>
+```
 
 環境変数で fork や別 ref を指定可能:
 

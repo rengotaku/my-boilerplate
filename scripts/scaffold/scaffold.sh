@@ -116,6 +116,9 @@ case "$family" in
     echo "  cd $dest"
     echo "  go mod tidy"
     echo "  make ci"
+    echo ""
+    echo "Publishing this module? Update go.mod's module line to a canonical path:"
+    echo "  go mod edit -module github.com/<user>/<repo>"
     ;;
   react)
     echo "  cd $dest"

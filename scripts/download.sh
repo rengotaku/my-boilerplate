@@ -13,7 +13,7 @@
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-#     | sh -s -- <template> <dest> [--name=NAME] [--go-module-name=MODULE]
+#     | sh -s -- <template> <dest> [--name=NAME]
 #
 # Required:
 #   <template>   Template directory name (e.g., go-ssr-web, react-spa).
@@ -22,26 +22,21 @@
 #   <dest>       Destination directory (must not exist; parent must exist).
 #
 # Optional:
-#   --name=NAME              Project name written into Makefile /
-#                            package.json / etc. Defaults to basename(<dest>).
-#   --go-module-name=MODULE  Value written into go.mod's `module` line for
-#                            go-* templates. Defaults to basename(<dest>),
-#                            which produces a local-only module suitable for
-#                            prototyping. Pass an explicit canonical path
-#                            (e.g., github.com/user/repo) when you intend to
-#                            publish the project.
+#   --name=NAME  Project name written into Makefile / package.json / etc.
+#                Defaults to basename(<dest>).
+#
+# Go templates: the `module` line in go.mod is auto-set to basename(<dest>),
+# producing a local-only module suitable for prototyping. If you plan to
+# publish the project, edit go.mod after scaffolding:
+#   go mod edit -module github.com/<user>/<repo>
+# The Next steps message printed by scaffold.sh repeats this hint.
 #
 # Environment:
 #   MY_BOILERPLATE_REPO  Override repo (default: rengotaku/my-boilerplate).
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
-# Examples:
-#   # Defaults — name and go-module-name both derived from <dest>:
+# Example:
 #   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
-#
-#   # Override go-module-name for a publishable module:
-#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app \
-#     --go-module-name=github.com/me/my-app
 
 set -eu
 
@@ -70,7 +65,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: download.sh <template> <dest> [--name=NAME] [--go-module-name=MODULE]
+Usage: download.sh <template> <dest> [--name=NAME]
 
 See https://github.com/rengotaku/my-boilerplate#usage for full documentation.
 Run with an unknown <template> to see the currently available list.
@@ -80,7 +75,6 @@ EOF
 template=""
 dest=""
 name=""
-module=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -89,7 +83,6 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     --name=*) name="${1#--name=}" ;;
-    --go-module-name=*) module="${1#--go-module-name=}" ;;
     --*) die "Unknown option: $1 (see --help)" ;;
     *)
       if [ -z "$template" ]; then
@@ -122,15 +115,15 @@ esac
 parent=$(dirname "$dest")
 [ -d "$parent" ] || die "Parent directory does not exist: $parent"
 
-# Scaffolding is mandatory. Auto-derive missing flags from <dest> so a single
-# positional argument is enough for the common case. Users who plan to publish
-# a Go module should pass --go-module-name=<canonical-path> explicitly.
+# Scaffolding is mandatory. Auto-derive name from <dest> so a single positional
+# argument is enough for the common case. For go-* templates we also derive a
+# local-only module name; users who plan to publish should run
+# `go mod edit -module github.com/<user>/<repo>` after scaffolding.
 [ -z "$name" ] && name=$(basename "$dest")
 
+module=""
 case "$template" in
-  go-*)
-    [ -z "$module" ] && module=$(basename "$dest")
-    ;;
+  go-*) module=$(basename "$dest") ;;
 esac
 
 if ! command -v bash >/dev/null 2>&1; then
