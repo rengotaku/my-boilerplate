@@ -163,7 +163,10 @@ fi
 
 # Always invoke scaffold.sh. It rewrites template-name placeholders (Makefile /
 # HTML / Go module path / package.json name etc.) so the resulting directory
-# is a usable standalone project.
+# is a usable standalone project. Composite templates (those that ship a
+# `.compose.toml`, e.g. go-react-spa) read sibling templates from $extracted
+# during scaffolding, so the full tarball must remain available — do not
+# pre-trim it down to $extracted/$template here.
 info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module})"
 if [ -n "$module" ]; then
   bash "$extracted/scripts/scaffold/scaffold.sh" \

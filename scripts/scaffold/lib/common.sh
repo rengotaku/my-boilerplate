@@ -9,6 +9,7 @@ VALID_TEMPLATES=(
   go-graphql-api
   go-grpc-api
   go-ssr-web
+  go-react-spa
   go-cli
   react-spa
   react-spa-graphql
@@ -18,12 +19,14 @@ VALID_TEMPLATES=(
   rust-cli
 )
 
-# Artifacts to remove after copy
+# Artifacts to remove after copy.
+# NOTE: every entry is matched by `find -name <entry>` against the dest tree
+# (depth ≤ 2). Avoid generic words that collide with source paths — e.g.
+# `server` would also match Go templates' `cmd/server/` source directory.
 ARTIFACTS=(
   node_modules
   .venv
   target
-  server
   dist
   .vite
   bin
@@ -33,6 +36,8 @@ ARTIFACTS=(
   .ruff_cache
   coverage
   .coverage
+  coverage.out
+  tmp
 )
 
 # Colors
