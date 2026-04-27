@@ -1,4 +1,5 @@
 .PHONY: install build build-frontend run dev dev-server dev-frontend stop status \
+	compose compose-clean verify \
 	lint lint-frontend lint-fix format format-check \
 	test test-frontend test-cov test-watch coverage \
 	check ci clean help
@@ -11,14 +12,46 @@ COVERAGE_FILE := coverage.out
 PORT ?= 8080
 FRONTEND_PORT ?= 5174
 
-## install: Install Go modules and frontend deps
-install:
+# Composite-template config. See .compose.toml for the manifest.
+BASE_TEMPLATE_DIR ?= ../react-spa
+OVERLAY_DIR := frontend.overlay
+FRONTEND_DIR := frontend
+COMPOSED_MARKER := $(FRONTEND_DIR)/.composed
+PACKAGE_NAME := go-react-spa-frontend
+
+## install: Compose frontend, then install Go modules and frontend deps
+install: compose
 	go mod download
-	cd frontend && npm ci
+	cd $(FRONTEND_DIR) && npm ci
+
+## compose: Materialize frontend/ from base template + overlay
+compose: $(COMPOSED_MARKER)
+
+$(COMPOSED_MARKER): $(OVERLAY_DIR) $(BASE_TEMPLATE_DIR)
+	@if [ ! -d "$(BASE_TEMPLATE_DIR)" ]; then \
+		echo "ERROR: base template not found at $(BASE_TEMPLATE_DIR)"; exit 1; \
+	fi
+	@echo "[compose] base: $(BASE_TEMPLATE_DIR) -> $(FRONTEND_DIR)"
+	@rm -rf $(FRONTEND_DIR)
+	@mkdir -p $(FRONTEND_DIR)
+	@rsync -a \
+		--exclude 'node_modules' --exclude 'dist' --exclude 'coverage' \
+		--exclude '.claude' --exclude '.git' \
+		$(BASE_TEMPLATE_DIR)/ $(FRONTEND_DIR)/
+	@echo "[compose] overlay: $(OVERLAY_DIR) -> $(FRONTEND_DIR)"
+	@rsync -a $(OVERLAY_DIR)/ $(FRONTEND_DIR)/
+	@echo "[compose] post: package.json name -> $(PACKAGE_NAME)"
+	@node -e "const f='$(FRONTEND_DIR)/package.json';const fs=require('fs');const p=JSON.parse(fs.readFileSync(f,'utf8'));p.name='$(PACKAGE_NAME)';fs.writeFileSync(f,JSON.stringify(p,null,2)+'\n');"
+	@touch $(COMPOSED_MARKER)
+
+## compose-clean: Remove composed frontend/ tree
+compose-clean:
+	rm -rf $(FRONTEND_DIR)
 
 ## build-frontend: Build the React SPA into internal/static/dist
-build-frontend:
-	cd frontend && npm run build
+build-frontend: compose
+	cd $(FRONTEND_DIR) && npm run build
+	@touch internal/static/dist/.gitkeep
 
 ## build: Build the monolithic binary (frontend + Go embed)
 build: build-frontend
@@ -29,7 +62,7 @@ run:
 	./$(BIN_DIR)/$(BINARY_NAME)
 
 ## dev: Run Go (with hot reload via air, -tags dev) + Vite in parallel
-dev:
+dev: compose
 	$(MAKE) -j2 dev-server dev-frontend
 
 ## dev-server: Run Go server with hot reload (uses -tags dev so embed is bypassed)
@@ -38,7 +71,7 @@ dev-server:
 
 ## dev-frontend: Run Vite dev server (proxies /api to Go)
 dev-frontend:
-	cd frontend && npm run dev
+	cd $(FRONTEND_DIR) && npm run dev
 
 ## stop: Stop both Go and Vite dev servers
 stop:
@@ -55,28 +88,28 @@ lint:
 	golangci-lint run
 
 ## lint-frontend: Run frontend linter
-lint-frontend:
-	cd frontend && npm run lint
+lint-frontend: compose
+	cd $(FRONTEND_DIR) && npm run lint
 
 ## lint-fix: Auto-fix frontend lint issues
-lint-fix:
-	cd frontend && npm run lint:fix
+lint-fix: compose
+	cd $(FRONTEND_DIR) && npm run lint:fix
 
 ## format: Format frontend code
-format:
-	cd frontend && npm run format
+format: compose
+	cd $(FRONTEND_DIR) && npm run format
 
 ## format-check: Check frontend formatting
-format-check:
-	cd frontend && npm run format:check
+format-check: compose
+	cd $(FRONTEND_DIR) && npm run format:check
 
 ## test: Run Go tests
 test:
 	go test ./...
 
 ## test-frontend: Run frontend tests
-test-frontend:
-	cd frontend && npm run test
+test-frontend: compose
+	cd $(FRONTEND_DIR) && npm run test
 
 ## test-cov: Run Go tests with coverage
 test-cov:
@@ -84,12 +117,12 @@ test-cov:
 	go tool cover -func=$(COVERAGE_FILE)
 
 ## test-watch: Run frontend tests in watch mode
-test-watch:
-	cd frontend && npm run test:watch
+test-watch: compose
+	cd $(FRONTEND_DIR) && npm run test:watch
 
 ## coverage: Run frontend tests with coverage
-coverage:
-	cd frontend && npm run test:coverage
+coverage: compose
+	cd $(FRONTEND_DIR) && npm run test:coverage
 
 ## check: Run all linters and tests (Go + frontend)
 check: lint test lint-frontend test-frontend
@@ -97,9 +130,25 @@ check: lint test lint-frontend test-frontend
 ## ci: Run lint + test (Go uses coverage; frontend uses normal test)
 ci: lint test-cov lint-frontend test-frontend
 
-## clean: Remove all build artifacts and caches
+## verify: Smoke-test the scaffold pathway by composing into a temp dir + running ci
+verify:
+	@tmp=$$(mktemp -d) && \
+		echo "[verify] staging into $$tmp" && \
+		rsync -a --exclude 'bin' --exclude 'tmp' --exclude '$(FRONTEND_DIR)' \
+			--exclude 'internal/static/dist/[!.]*' \
+			./ "$$tmp/go-react-spa/" && \
+		mkdir -p "$$tmp/react-spa" && \
+		rsync -a --exclude 'node_modules' --exclude 'dist' --exclude 'coverage' \
+			$(BASE_TEMPLATE_DIR)/ "$$tmp/react-spa/" && \
+		$(MAKE) -C "$$tmp/go-react-spa" BASE_TEMPLATE_DIR=../react-spa compose && \
+		$(MAKE) -C "$$tmp/go-react-spa" BASE_TEMPLATE_DIR=../react-spa install && \
+		$(MAKE) -C "$$tmp/go-react-spa" BASE_TEMPLATE_DIR=../react-spa ci && \
+		echo "[verify] ok" && rm -rf "$$tmp"
+
+## clean: Remove all build artifacts and caches (keeps composed frontend)
 clean:
-	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE) frontend/node_modules frontend/coverage
+	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE)
+	@if [ -d $(FRONTEND_DIR) ]; then rm -rf $(FRONTEND_DIR)/node_modules $(FRONTEND_DIR)/coverage; fi
 	find internal/static/dist -mindepth 1 ! -name '.gitkeep' -delete 2>/dev/null || true
 
 ## help: Show this help

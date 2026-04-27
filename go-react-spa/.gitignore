@@ -2,3 +2,7 @@ bin/
 tmp/
 *.exe
 coverage.out
+
+# `frontend/` is composed at build time from `react-spa` (base) + `frontend.overlay/`.
+# Tracking it would re-introduce the duplication this template was designed to avoid.
+frontend/

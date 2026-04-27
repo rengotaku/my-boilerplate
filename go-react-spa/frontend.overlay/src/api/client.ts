@@ -1,7 +1,9 @@
 import ky from "ky";
 import { logger } from "../lib/logger";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+// .env.production / .env.development set VITE_API_BASE_URL="" so prod (monolith)
+// and dev (Vite proxy) both use same-origin /api. Tests fall back to localhost:8080.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 export const apiClient = ky.create({
   prefixUrl: API_BASE_URL,

@@ -1,0 +1,24 @@
+# Composite-template manifest.
+#
+# go-react-spa builds its frontend by combining the standalone `react-spa`
+# template (base) with a small overlay that swaps in the monolith-specific
+# vite.config.ts, env files, and api client. This keeps a single source of
+# truth for the React SPA and makes monolith-only diffs reviewable.
+#
+# Consumers:
+#   - `make compose` (local dev): assembles `frontend/` from base + overlay.
+#   - `scripts/download.sh` / `scaffold.sh` (#114): same composition during
+#     scaffold so downstream users get the merged tree, not the manifest.
+
+[base]
+template = "react-spa"
+dest = "frontend"
+
+[overlay]
+src = "frontend.overlay"
+dest = "frontend"
+
+# Post-merge tweaks applied to the composed tree.
+# `name` patches package.json's "name" field (sed-equivalent).
+[post]
+package_name = "go-react-spa-frontend"
