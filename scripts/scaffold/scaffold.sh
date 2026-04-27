@@ -58,6 +58,15 @@ fi
 info "Copying template '$template' to '$dest'..."
 copy_template "$REPO_ROOT/$template" "$dest"
 
+# --- Composite-template merge (runs before family replacements so the
+#     materialized base tree is visible to subsequent steps). ---
+if [[ -f "$dest/.compose.toml" ]]; then
+  info "Composing template '$template' (manifest: .compose.toml)..."
+  # shellcheck source=lib/compose.sh
+  source "$SCRIPT_DIR/lib/compose.sh"
+  compose_template "$dest" "$REPO_ROOT" "$name"
+fi
+
 # --- CI workflow transformation (before family replacements so they can process CI files too) ---
 info "Transforming CI workflows..."
 source "$SCRIPT_DIR/lib/ci.sh"
@@ -114,8 +123,17 @@ echo "Next steps:"
 case "$family" in
   go)
     echo "  cd $dest"
-    echo "  go mod tidy"
-    echo "  make ci"
+    if [[ "$template" == "go-react-spa" ]]; then
+      # Composite template: `make install` runs `go mod download` + `npm ci`
+      # against the pre-composed frontend/, then `make build` produces a
+      # single Go binary embedding the SPA bundle.
+      echo "  make install"
+      echo "  make build"
+      echo "  ./bin/server"
+    else
+      echo "  go mod tidy"
+      echo "  make ci"
+    fi
     echo ""
     echo "Publishing this module? Update go.mod's module line to a canonical path:"
     echo "  go mod edit -module github.com/<user>/<repo>"
