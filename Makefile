@@ -5,7 +5,7 @@
 PLAYWRIGHT_IMAGE := mcr.microsoft.com/playwright:v1.58.2-noble
 
 # Server projects (excludes CLI tools)
-SERVERS := go-rest-api go-graphql-api go-grpc-api go-ssr-web react-spa
+SERVERS := go-rest-api go-graphql-api go-grpc-api go-ssr-web go-react-spa react-spa
 
 ## stop-all: Stop all dev servers
 stop-all:
