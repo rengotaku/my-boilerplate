@@ -183,7 +183,7 @@ jobs:
         working-directory: /tmp/test-${{ matrix.template }}
         run: |
           npm install
-          make lint format-check test-coverage build
+          make ci build
 
   scaffold-python:
     runs-on: ubuntu-latest

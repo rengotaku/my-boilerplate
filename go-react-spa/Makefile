@@ -1,7 +1,7 @@
-.PHONY: install build build-frontend run dev dev-server dev-frontend stop status \
+.PHONY: install build build-frontend run run-server run-frontend start stop status \
 	compose compose-clean verify \
 	lint lint-frontend lint-fix format format-check \
-	test test-frontend test-cov test-watch coverage \
+	test test-frontend test-cov test-watch test-cov-frontend \
 	check ci clean help
 
 .DEFAULT_GOAL := help
@@ -22,6 +22,7 @@ PACKAGE_NAME := go-react-spa-frontend
 ## install: Compose frontend, then install Go modules and frontend deps
 install: compose
 	go mod download
+	go install github.com/air-verse/air@latest
 	cd $(FRONTEND_DIR) && npm ci
 
 ## compose: Materialize frontend/ from base template + overlay
@@ -57,21 +58,21 @@ build-frontend: compose
 build: build-frontend
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the built monolithic binary
-run:
-	./$(BIN_DIR)/$(BINARY_NAME)
+## run: Start the local dev environment — Go (air, -tags dev) + Vite in parallel
+run: compose
+	$(MAKE) -j2 run-server run-frontend
 
-## dev: Run Go (with hot reload via air, -tags dev) + Vite in parallel
-dev: compose
-	$(MAKE) -j2 dev-server dev-frontend
-
-## dev-server: Run Go server with hot reload (uses -tags dev so embed is bypassed)
-dev-server:
+## run-server: Start the Go server with hot reload (-tags dev so embed is bypassed)
+run-server:
 	air
 
-## dev-frontend: Run Vite dev server (proxies /api to Go)
-dev-frontend:
+## run-frontend: Start the Vite dev server (proxies /api to Go)
+run-frontend:
 	cd $(FRONTEND_DIR) && npm run dev
+
+## start: Run the built monolithic binary (assumes `make build` already ran)
+start:
+	./$(BIN_DIR)/$(BINARY_NAME)
 
 ## stop: Stop both Go and Vite dev servers
 stop:
@@ -120,8 +121,8 @@ test-cov:
 test-watch: compose
 	cd $(FRONTEND_DIR) && npm run test:watch
 
-## coverage: Run frontend tests with coverage
-coverage: compose
+## test-cov-frontend: Run frontend tests with coverage
+test-cov-frontend: compose
 	cd $(FRONTEND_DIR) && npm run test:coverage
 
 ## check: Run all linters and tests (Go + frontend)
