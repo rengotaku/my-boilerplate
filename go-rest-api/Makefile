@@ -9,9 +9,10 @@ BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8080
 
-## install: Download dependencies
+## install: Download dependencies and dev tools
 install:
 	go mod download
+	go install github.com/air-verse/air@latest
 
 ## build: Build the binary
 build:
