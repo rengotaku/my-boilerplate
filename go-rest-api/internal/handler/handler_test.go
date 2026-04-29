@@ -29,7 +29,7 @@ func setupTestHandler(t *testing.T) *Handler {
 	db := testutil.NewTestDB(t)
 	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
-	return NewHandler(svc, testJWTSecret, 24*time.Hour)
+	return NewHandler(svc, testJWTSecret, 24*time.Hour, []string{"http://localhost:*"})
 }
 
 func registerUser(t *testing.T, h *Handler, name, email, password string) *model.User {

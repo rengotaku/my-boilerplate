@@ -3,6 +3,7 @@ package handler
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -13,13 +14,14 @@ import (
 )
 
 type Handler struct {
-	userService *service.UserService
-	jwtSecret   string
-	jwtTTL      time.Duration
+	userService    *service.UserService
+	jwtSecret      string
+	allowedOrigins []string
+	jwtTTL         time.Duration
 }
 
-func NewHandler(userService *service.UserService, jwtSecret string, jwtTTL time.Duration) *Handler {
-	return &Handler{userService: userService, jwtSecret: jwtSecret, jwtTTL: jwtTTL}
+func NewHandler(userService *service.UserService, jwtSecret string, jwtTTL time.Duration, allowedOrigins []string) *Handler {
+	return &Handler{userService: userService, jwtSecret: jwtSecret, jwtTTL: jwtTTL, allowedOrigins: allowedOrigins}
 }
 
 func (h *Handler) Routes() *gin.Engine {
@@ -27,12 +29,19 @@ func (h *Handler) Routes() *gin.Engine {
 
 	r.Use(gin.Recovery())
 	r.Use(slogLogger())
+	hasWildcard := false
+	for _, o := range h.allowedOrigins {
+		if strings.Contains(o, "*") {
+			hasWildcard = true
+			break
+		}
+	}
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:*"},
+		AllowOrigins:     h.allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
-		AllowWildcard:    true,
+		AllowWildcard:    hasWildcard,
 		MaxAge:           5 * time.Minute,
 	}))
 

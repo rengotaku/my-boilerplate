@@ -24,6 +24,7 @@ type Config struct {
 	Port            string        `env:"PORT,default=10080"`
 	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
 	JWTSecret       string        `env:"JWT_SECRET,default=change-me-in-production"`
+	AllowedOrigins  []string      `env:"ALLOWED_ORIGINS,default=http://localhost:*"`
 	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
 	JWTExpiry       time.Duration `env:"JWT_EXPIRY,default=24h"`
 }
@@ -65,7 +66,7 @@ func main() {
 
 	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
-	h := handler.NewHandler(svc, cfg.JWTSecret, cfg.JWTExpiry)
+	h := handler.NewHandler(svc, cfg.JWTSecret, cfg.JWTExpiry, cfg.AllowedOrigins)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
