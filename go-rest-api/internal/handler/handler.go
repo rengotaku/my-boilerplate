@@ -32,6 +32,7 @@ func (h *Handler) Routes() *gin.Engine {
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
+		AllowWildcard:    true,
 		MaxAge:           5 * time.Minute,
 	}))
 
