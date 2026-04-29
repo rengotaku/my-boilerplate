@@ -25,7 +25,7 @@ func TestGenerateToken(t *testing.T) {
 	assert.NotEmpty(t, token)
 }
 
-func newAuthRouter(secret string) *gin.Engine {
+func authRouter(secret string) *gin.Engine {
 	r := gin.New()
 	r.GET("/protected", middleware.Auth(secret), func(c *gin.Context) {
 		userID, _ := c.Get(middleware.UserIDKey)
@@ -40,14 +40,14 @@ func TestAuth(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		req.Header.Set("Authorization", "Bearer "+token)
 		rec := httptest.NewRecorder()
-		newAuthRouter(testSecret).ServeHTTP(rec, req)
+		authRouter(testSecret).ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
 	t.Run("missing header", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		rec := httptest.NewRecorder()
-		newAuthRouter(testSecret).ServeHTTP(rec, req)
+		authRouter(testSecret).ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 
@@ -55,7 +55,7 @@ func TestAuth(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		req.Header.Set("Authorization", "Token abc123")
 		rec := httptest.NewRecorder()
-		newAuthRouter(testSecret).ServeHTTP(rec, req)
+		authRouter(testSecret).ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 
@@ -64,16 +64,28 @@ func TestAuth(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		req.Header.Set("Authorization", "Bearer "+token)
 		rec := httptest.NewRecorder()
-		newAuthRouter(testSecret).ServeHTTP(rec, req)
+		authRouter(testSecret).ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 
 	t.Run("wrong secret", func(t *testing.T) {
-		token, _ := middleware.GenerateToken("user-abc", "other-secret", time.Hour)
+		const otherSecret = "other-secret"
+		token, _ := middleware.GenerateToken("user-abc", otherSecret, time.Hour)
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		req.Header.Set("Authorization", "Bearer "+token)
 		rec := httptest.NewRecorder()
-		newAuthRouter(testSecret).ServeHTTP(rec, req)
+		// token signed with otherSecret, router uses testSecret → should reject
+		authRouter(testSecret).ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	})
+
+	t.Run("custom secret matches", func(t *testing.T) {
+		const customSecret = "custom-secret"
+		token, _ := middleware.GenerateToken("user-xyz", customSecret, time.Hour)
+		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		rec := httptest.NewRecorder()
+		authRouter(customSecret).ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 }
