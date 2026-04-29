@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -29,6 +31,18 @@ type Config struct {
 	JWTExpiry       time.Duration `env:"JWT_EXPIRY,default=24h"`
 }
 
+func validateProductionConfig(cfg Config) error {
+	for _, origin := range cfg.AllowedOrigins {
+		if strings.Contains(origin, "localhost") || strings.Contains(origin, "*") {
+			return errors.New("ALLOWED_ORIGINS must not contain localhost or wildcards in production")
+		}
+	}
+	if cfg.JWTSecret == "change-me-in-production" {
+		return errors.New("JWT_SECRET must be changed from the default value in production")
+	}
+	return nil
+}
+
 func main() {
 	var logLevel slog.LevelVar
 	if l := os.Getenv("LOG_LEVEL"); l != "" {
@@ -49,6 +63,13 @@ func main() {
 	if err := envconfig.Process(ctx, &cfg); err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
+	}
+
+	if os.Getenv("APP_ENV") == "production" {
+		if err := validateProductionConfig(cfg); err != nil {
+			slog.Error("insecure production config", "error", err)
+			os.Exit(1)
+		}
 	}
 
 	db, err := gorm.Open(sqlite.Open(cfg.DatabaseDSN), &gorm.Config{
