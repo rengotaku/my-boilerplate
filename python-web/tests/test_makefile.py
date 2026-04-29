@@ -1,6 +1,6 @@
 """Makefile correctness tests.
 
-- run ターゲットの uvicorn フラグが現行 uvicorn で受理されること
+- serve ターゲットの uvicorn フラグが現行 uvicorn で受理されること
 - install ターゲットが壊れた .venv を自動復旧すること
 """
 
@@ -40,37 +40,37 @@ def _extract_target_section(content: str, target: str) -> str:
     return "\n".join(section)
 
 
-class TestRunTargetUvicornFlags:
-    """run ターゲットの uvicorn 起動フラグが現行 uvicorn で有効なこと."""
+class TestServeTargetUvicornFlags:
+    """serve ターゲットの uvicorn 起動フラグが現行 uvicorn で有効なこと."""
 
-    def test_run_target_does_not_use_no_reload(self) -> None:
-        """run は --no-reload を含まない (uvicorn 0.44 で削除済み)."""
-        run_section = _extract_target_section(_read_makefile(), "run")
-        assert "--no-reload" not in run_section, (
+    def test_serve_target_does_not_use_no_reload(self) -> None:
+        """serve は --no-reload を含まない (uvicorn 0.44 で削除済み)."""
+        serve_section = _extract_target_section(_read_makefile(), "serve")
+        assert "--no-reload" not in serve_section, (
             "uvicorn 0.44 では --no-reload が削除された (デフォルト = 非リロード)"
         )
 
-    def test_run_target_does_not_enable_reload(self) -> None:
-        """run は --reload を有効化しない (本番モード)."""
-        run_section = _extract_target_section(_read_makefile(), "run")
+    def test_serve_target_does_not_enable_reload(self) -> None:
+        """serve は --reload を有効化しない (本番モード)."""
+        serve_section = _extract_target_section(_read_makefile(), "serve")
         # --reload-xxx は許容、単独 --reload のみ NG
-        assert not re.search(r"--reload(\s|$)", run_section), (
-            f"run target で --reload が有効化されている: {run_section}"
+        assert not re.search(r"--reload(\s|$)", serve_section), (
+            f"serve target で --reload が有効化されている: {serve_section}"
         )
 
-    def test_run_target_uvicorn_flags_are_accepted_by_uvicorn(self) -> None:
-        """run ターゲットの uvicorn 引数を実バイナリで検証する.
+    def test_serve_target_uvicorn_flags_are_accepted_by_uvicorn(self) -> None:
+        """serve ターゲットの uvicorn 引数を実バイナリで検証する.
 
-        Makefile run セクションから uvicorn 行を抽出し、
+        Makefile serve セクションから uvicorn 行を抽出し、
         `<uvicorn> <args> --help` を実行してフラグエラーが出ないことを確認。
         """
         uvicorn_bin = PYTHON_WEB_DIR / ".venv" / "bin" / "uvicorn"
         if not uvicorn_bin.exists():
             pytest.skip(".venv/bin/uvicorn 未インストールのためスキップ")
 
-        run_section = _extract_target_section(_read_makefile(), "run")
-        match = re.search(r"uvicorn\s+([^\n]+)", run_section)
-        assert match, f"uvicorn 起動行が見つからない: {run_section}"
+        serve_section = _extract_target_section(_read_makefile(), "serve")
+        match = re.search(r"uvicorn\s+([^\n]+)", serve_section)
+        assert match, f"uvicorn 起動行が見つからない: {serve_section}"
 
         # 環境変数を展開: $(PORT) → 8000
         args_str = match.group(1).replace("$(PORT)", "8000")

@@ -17,7 +17,7 @@ make install
 ## Development
 
 ```bash
-make dev
+make run
 # Open http://localhost:8000
 ```
 
@@ -33,7 +33,7 @@ make ci          # Run lint + typecheck + test-cov
 
 ```bash
 make build       # Build production assets
-make run         # Start production server
+make serve       # Start production server (no reload)
 ```
 
 ## Project Structure

@@ -1,4 +1,4 @@
-.PHONY: install dev lint typecheck format test test-cov check ci build run clean clean-all help
+.PHONY: install run dev serve lint typecheck format test test-cov check ci build clean clean-all help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -12,8 +12,8 @@ install:
 	uv sync --all-extras
 	npm install
 
-## dev: Start development server (uvicorn reload + Tailwind watch)
-dev: _build-assets
+## run: Start development server (uvicorn --reload + Tailwind watch)
+run: _build-assets
 	@_port=$(PORT); \
 	if ! python3 -c "import socket; s=socket.socket(); s.bind(('',$$_port)); s.close()" 2>/dev/null; then \
 		_port=$$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()"); \
@@ -22,6 +22,9 @@ dev: _build-assets
 	echo "Starting Tailwind CSS watch + uvicorn dev server on port $$_port..."; \
 	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --watch & \
 	uv run uvicorn myweb.app:app --reload --host 0.0.0.0 --port $$_port
+
+## dev: Alias for `run` (kept for backward compatibility)
+dev: run
 
 ## lint: Run ruff linter
 lint:
@@ -54,8 +57,8 @@ ci: lint typecheck test-cov
 build: _copy-alpine
 	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --minify
 
-## run: Run production server
-run: build
+## serve: Start production server (no reload, after `make build`)
+serve: build
 	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
 
 ## clean: Remove build artifacts and cache

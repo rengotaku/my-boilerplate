@@ -2,7 +2,7 @@
 
 US4: 本番ビルドとデプロイ準備
 - make build で Tailwind CSS が minify される
-- make run で本番モードのサーバーが起動する
+- make serve で本番モードのサーバーが起動する
 """
 
 import re
@@ -155,80 +155,80 @@ class TestMakefileBuildTarget:
         assert "tailwindcss" in content
 
 
-class TestMakefileRunTarget:
-    """make run ターゲットの本番サーバー要件テスト."""
+class TestMakefileServeTarget:
+    """make serve ターゲットの本番サーバー要件テスト."""
 
-    def test_run_target_exists_in_makefile(self) -> None:
-        """Makefile に run ターゲットが定義されていること."""
+    def test_serve_target_exists_in_makefile(self) -> None:
+        """Makefile に serve ターゲットが定義されていること."""
         content = _read_makefile()
-        assert "run:" in content or "run: build" in content
+        assert "serve:" in content or "serve: build" in content
 
-    def test_run_target_does_not_enable_reload(self) -> None:
-        """run ターゲットが --reload を有効化しないこと.
+    def test_serve_target_does_not_enable_reload(self) -> None:
+        """serve ターゲットが --reload を有効化しないこと.
 
         本番サーバーでは自動リロードを無効にする。
         uvicorn 0.44 では --no-reload フラグは廃止 (デフォルトが非リロード)。
         """
         content = _read_makefile()
-        run_section = _extract_target_section(content, "run")
-        assert not re.search(r"--reload(\s|$)", run_section), (
-            "run target で --reload が有効化されている。"
-            f"section: {run_section}"
+        serve_section = _extract_target_section(content, "serve")
+        assert not re.search(r"--reload(\s|$)", serve_section), (
+            "serve target で --reload が有効化されている。"
+            f"section: {serve_section}"
         )
 
-    def test_run_target_depends_on_build(self) -> None:
-        """run ターゲットが build に依存していること."""
+    def test_serve_target_depends_on_build(self) -> None:
+        """serve ターゲットが build に依存していること."""
         content = _read_makefile()
         lines = content.split("\n")
         for line in lines:
-            if line.startswith("run:"):
+            if line.startswith("serve:"):
                 assert "build" in line
                 return
-        pytest.fail("run target not found")
+        pytest.fail("serve target not found")
 
-    def test_run_target_uses_uvicorn(self) -> None:
-        """run ターゲットが uvicorn を使用すること."""
+    def test_serve_target_uses_uvicorn(self) -> None:
+        """serve ターゲットが uvicorn を使用すること."""
         content = _read_makefile()
-        run_section = _extract_target_section(content, "run")
-        assert "uvicorn" in run_section
+        serve_section = _extract_target_section(content, "serve")
+        assert "uvicorn" in serve_section
 
-    def test_run_target_uses_configurable_port(self) -> None:
-        """run ターゲットが $(PORT) で設定可能なこと."""
+    def test_serve_target_uses_configurable_port(self) -> None:
+        """serve ターゲットが $(PORT) で設定可能なこと."""
         content = _read_makefile()
         assert "PORT" in content
-        run_section = _extract_target_section(content, "run")
-        assert "$(PORT)" in run_section
+        serve_section = _extract_target_section(content, "serve")
+        assert "$(PORT)" in serve_section
 
-    def test_run_target_binds_to_all_interfaces(self) -> None:
-        """run ターゲットが 0.0.0.0 にバインドすること."""
+    def test_serve_target_binds_to_all_interfaces(self) -> None:
+        """serve ターゲットが 0.0.0.0 にバインドすること."""
         content = _read_makefile()
-        run_section = _extract_target_section(content, "run")
-        assert "0.0.0.0" in run_section
+        serve_section = _extract_target_section(content, "serve")
+        assert "0.0.0.0" in serve_section
 
 
-class TestDevVsProductionDifferences:
-    """開発モードと本番モードの違いが正しいこと."""
+class TestRunVsServeDifferences:
+    """開発モード (run) と本番モード (serve) の違いが正しいこと."""
 
-    def test_dev_uses_reload_run_does_not(self) -> None:
-        """dev は --reload あり、run は --reload を含まない.
+    def test_run_uses_reload_serve_does_not(self) -> None:
+        """run は --reload あり、serve は --reload を含まない.
 
-        uvicorn 0.44 で --no-reload は廃止されたので、run では --reload を
+        uvicorn 0.44 で --no-reload は廃止されたので、serve では --reload を
         指定しないことで非リロード (デフォルト) 動作にする。
         """
         content = _read_makefile()
-        dev_section = _extract_target_section(content, "dev")
         run_section = _extract_target_section(content, "run")
+        serve_section = _extract_target_section(content, "serve")
 
-        assert "--reload" in dev_section
-        assert not re.search(r"--reload(\s|$)", run_section)
+        assert "--reload" in run_section
+        assert not re.search(r"--reload(\s|$)", serve_section)
 
-    def test_dev_uses_tailwind_watch_build_uses_minify(self) -> None:
-        """dev は Tailwind watch、build は minify."""
+    def test_run_uses_tailwind_watch_build_uses_minify(self) -> None:
+        """run は Tailwind watch、build は minify."""
         content = _read_makefile()
-        dev_section = _extract_target_section(content, "dev")
+        run_section = _extract_target_section(content, "run")
         build_section = _extract_target_section(content, "build")
 
-        assert "--watch" in dev_section
+        assert "--watch" in run_section
         assert "--minify" in build_section
 
 
