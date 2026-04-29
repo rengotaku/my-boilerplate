@@ -19,36 +19,30 @@ Go + gqlgen の GraphQL API ボイラープレート。
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install dependencies (also installs `air` for hot reload)
 make install
 
-# Run server
+# Run server with hot reload
 make run
 
 # Open GraphQL Playground
 open http://localhost:8080/
 ```
 
-## Development (Hot Reload)
+## Development
 
-```bash
-# Install Air (once)
-go install github.com/air-verse/air@latest
-
-# Run with hot reload
-make dev
-```
-
-Air will watch `.go` files and automatically rebuild/restart the server on changes.
+`make run` uses [air](https://github.com/air-verse/air) for hot reload. `make install`
+sets up `air` for you. Air watches `.go` files and automatically rebuilds/restarts
+the server on changes. To run the server once without hot reload, use `make start`.
 
 ## Commands
 
 ```bash
 make help        # Show all commands
-make install     # Download dependencies
+make install     # Download dependencies + install air
 make build       # Build the binary
-make run         # Run the server
-make dev         # Run with hot reload (requires air)
+make run         # Run the server with hot reload (development entry point)
+make start       # Run the server once without hot reload
 make lint        # Run golangci-lint
 make test        # Run tests
 make test-cov    # Run tests with coverage

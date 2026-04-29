@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci generate clean help
+.PHONY: install build run dev start stop status lint test test-cov check ci generate clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -9,21 +9,25 @@ BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8081
 
-## install: Download dependencies
+## install: Download dependencies and dev tools
 install:
 	go mod download
+	go install github.com/air-verse/air@latest
 
 ## build: Build the binary
 build:
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the server
+## run: Run the server with hot reload (requires air, set up by `make install`)
 run:
-	go run ./cmd/server
-
-## dev: Run with hot reload (requires air: go install github.com/air-verse/air@latest)
-dev:
 	air
+
+## dev: Alias for `run` (kept for backward compatibility)
+dev: run
+
+## start: Run the server once without hot reload
+start:
+	go run ./cmd/server
 
 ## stop: Stop the server
 stop:
