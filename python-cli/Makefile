@@ -1,4 +1,7 @@
-.PHONY: install lint typecheck format test test-cov check ci run clean clean-all help
+.PHONY: install run lint typecheck format test test-cov check ci clean clean-all help
+
+# Default target
+.DEFAULT_GOAL := help
 
 ## install: Install dependencies with uv
 install:
@@ -48,4 +51,7 @@ clean-all: clean
 
 ## help: Show this help
 help:
-	@grep -E '^##' Makefile | sed 's/## //'
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/## /  /'

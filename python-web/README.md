@@ -17,9 +17,11 @@ make install
 ## Development
 
 ```bash
-make dev
+make run
 # Open http://localhost:8000
 ```
+
+`make run` starts uvicorn with `--reload` and a parallel Tailwind CSS watcher.
 
 ## Testing
 
@@ -32,8 +34,8 @@ make ci          # Run lint + typecheck + test-cov
 ## Production
 
 ```bash
-make build       # Build production assets
-make run         # Start production server
+make build       # Build production assets (Tailwind CSS minified)
+make start       # Start the production server (no reload)
 ```
 
 ## Project Structure
