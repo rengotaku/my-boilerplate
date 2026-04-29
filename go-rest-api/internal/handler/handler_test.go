@@ -58,6 +58,29 @@ func loginUser(t *testing.T, h *Handler, email, password string) string {
 	return resp["token"]
 }
 
+func TestHandler_CORS(t *testing.T) {
+	h := setupTestHandler(t)
+
+	origins := []string{
+		"http://localhost:3000",
+		"http://localhost:4174",
+		"http://localhost:8081",
+	}
+
+	for _, origin := range origins {
+		t.Run(origin, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/api/v1/users", nil)
+			req.Header.Set("Origin", origin)
+			rec := httptest.NewRecorder()
+			h.Routes().ServeHTTP(rec, req)
+
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, origin, rec.Header().Get("Access-Control-Allow-Origin"),
+				"CORS header missing or wrong for origin %s", origin)
+		})
+	}
+}
+
 func TestHandler_Health(t *testing.T) {
 	h := setupTestHandler(t)
 
