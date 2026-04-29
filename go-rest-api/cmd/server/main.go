@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"github.com/sethvargo/go-envconfig"
 	"gorm.io/gorm"
@@ -49,8 +50,10 @@ func main() {
 		_ = logLevel.UnmarshalText([]byte(l))
 	}
 
+	isProduction := gin.Mode() == gin.ReleaseMode
+
 	var logHandler slog.Handler
-	if os.Getenv("APP_ENV") == "production" {
+	if isProduction {
 		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
 	} else {
 		logHandler = slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: &logLevel})
@@ -65,7 +68,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if os.Getenv("APP_ENV") == "production" {
+	if isProduction {
 		if err := validateProductionConfig(cfg); err != nil {
 			slog.Error("insecure production config", "error", err)
 			os.Exit(1)
