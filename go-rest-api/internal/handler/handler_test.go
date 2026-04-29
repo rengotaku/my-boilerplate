@@ -88,6 +88,14 @@ func TestHandler_Login(t *testing.T) {
 		h.Routes().ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
+
+	t.Run("invalid body", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBufferString(`{bad}`))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		h.Routes().ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+	})
 }
 
 func TestHandler_CreateUser(t *testing.T) {
@@ -100,6 +108,16 @@ func TestHandler_CreateUser(t *testing.T) {
 		rec := httptest.NewRecorder()
 		h.Routes().ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusCreated, rec.Code)
+	})
+
+	t.Run("duplicate email", func(t *testing.T) {
+		registerUser(t, h, "Dup User", "dup@example.com", "password123")
+		body := `{"name": "Dup User2", "email": "dup@example.com", "password": "password123"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/users", bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		h.Routes().ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusConflict, rec.Code)
 	})
 
 	t.Run("invalid body", func(t *testing.T) {
