@@ -1,68 +1,80 @@
 package handler
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strings"
+	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 
+	"go-rest-api/internal/middleware"
 	"go-rest-api/internal/service"
 )
 
 type Handler struct {
-	userService *service.UserService
+	userService    *service.UserService
+	jwtSecret      string
+	allowedOrigins []string
+	jwtTTL         time.Duration
 }
 
-func NewHandler(userService *service.UserService) *Handler {
-	return &Handler{userService: userService}
+func NewHandler(userService *service.UserService, jwtSecret string, jwtTTL time.Duration, allowedOrigins []string) *Handler {
+	return &Handler{userService: userService, jwtSecret: jwtSecret, jwtTTL: jwtTTL, allowedOrigins: allowedOrigins}
 }
 
-func (h *Handler) Routes() http.Handler {
-	r := chi.NewRouter()
+func (h *Handler) Routes() *gin.Engine {
+	r := gin.New()
 
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		ExposedHeaders:   []string{"Link"},
+	r.Use(gin.Recovery())
+	r.Use(slogLogger())
+	hasWildcard := false
+	for _, o := range h.allowedOrigins {
+		if strings.Contains(o, "*") {
+			hasWildcard = true
+			break
+		}
+	}
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     h.allowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
-		MaxAge:           300,
+		AllowWildcard:    hasWildcard,
+		MaxAge:           5 * time.Minute,
 	}))
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
 
-	r.Get("/health", h.Health)
+	r.GET("/health", h.Health)
 
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
-			r.Get("/", h.ListUsers)
-			r.Post("/", h.CreateUser)
-			r.Get("/{id}", h.GetUser)
-			r.Put("/{id}", h.UpdateUser)
-			r.Delete("/{id}", h.DeleteUser)
-		})
-	})
+	r.POST("/api/v1/auth/login", h.Login)
+	r.POST("/api/v1/users", h.CreateUser)
+	r.GET("/api/v1/users", h.ListUsers)
+	r.GET("/api/v1/users/:id", h.GetUser)
+
+	protected := r.Group("/api/v1", middleware.Auth(h.jwtSecret))
+	{
+		protected.PUT("/users/:id", h.UpdateUser)
+		protected.DELETE("/users/:id", h.DeleteUser)
+	}
 
 	return r
 }
 
-func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
-	respondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+func (h *Handler) Health(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func respondJSON(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		slog.Error("failed to encode response", "error", err)
+func slogLogger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		slog.Info("request",
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"status", c.Writer.Status(),
+			"latency", time.Since(start),
+			"ip", c.ClientIP(),
+		)
 	}
-}
-
-func respondError(w http.ResponseWriter, status int, message string) {
-	respondJSON(w, status, map[string]string{"error": message})
 }

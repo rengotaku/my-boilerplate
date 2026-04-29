@@ -1,18 +1,22 @@
 openapi: 3.0.3
 info:
   title: Go REST API
-  description: Sample REST API built with Go and Chi
-  version: 1.0.0
+  description: Batteries Included REST API — Gin / GORM+SQLite / Atlas / JWT
+  version: 2.0.0
 
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:10080
     description: Local development server
+
+security:
+  - bearerAuth: []
 
 paths:
   /health:
     get:
       summary: Health check
       operationId: health
+      security: []
       responses:
         '200':
           description: Service is healthy
@@ -24,6 +28,35 @@ paths:
                   status:
                     type: string
                     example: ok
+
+  /api/v1/auth/login:
+    post:
+      summary: Login and obtain JWT token
+      operationId: login
+      security: []
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/v1/users:
     get:
@@ -40,10 +73,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
     post:
-      summary: Create a new user
+      summary: Register a new user
       operationId: createUser
+      security: []
       tags:
         - users
       requestBody:
@@ -60,7 +96,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Invalid request
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already taken
           content:
             application/json:
               schema:
@@ -87,12 +125,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFound'
 
     put:
       summary: Update a user
@@ -113,17 +149,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFound'
 
     delete:
       summary: Delete a user
@@ -133,14 +163,18 @@ paths:
       responses:
         '204':
           description: User deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFound'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     User:
       type: object
@@ -160,11 +194,24 @@ components:
           type: string
           format: date-time
 
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
     CreateUserRequest:
       type: object
       required:
         - name
         - email
+        - password
       properties:
         name:
           type: string
@@ -173,6 +220,9 @@ components:
         email:
           type: string
           format: email
+        password:
+          type: string
+          minLength: 8
 
     UpdateUserRequest:
       type: object
@@ -193,3 +243,23 @@ components:
       properties:
         error:
           type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

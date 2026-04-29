@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci clean help
+.PHONY: install build run dev stop status lint test test-cov check ci migrate-diff migrate-apply migrate-hash clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -9,9 +9,10 @@ BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8080
 
-## install: Download dependencies
+## install: Download dependencies and dev tools
 install:
 	go mod download
+	go install github.com/air-verse/air@latest
 
 ## build: Build the binary
 build:
@@ -52,9 +53,21 @@ check: lint test
 ## ci: Run lint + test with coverage
 ci: lint test-cov
 
+## migrate-diff: Generate a new migration (requires atlas CLI)
+migrate-diff:
+	atlas migrate diff --env local
+
+## migrate-apply: Apply pending migrations (requires atlas CLI)
+migrate-apply:
+	atlas migrate apply --env local
+
+## migrate-hash: Rehash the migration directory (requires atlas CLI)
+migrate-hash:
+	atlas migrate hash --env local
+
 ## clean: Remove build artifacts
 clean:
-	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE)
+	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE) app.db
 
 ## help: Show this help
 help:

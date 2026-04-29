@@ -33,15 +33,21 @@ test.describe("react-spa ↔ go-rest-api integration", () => {
     ).toBeVisible();
   });
 
-  test("create user and verify it appears in the list", async ({ page }) => {
+  test("create user via API and verify it appears in the list", async ({
+    page,
+    request,
+  }) => {
+    // Create user via API (form does not include password field)
+    const createResp = await request.post(`${API_URL}/api/v1/users`, {
+      data: {
+        name: "E2E REST User",
+        email: "e2e-rest@example.com",
+        password: "password123",
+      },
+    });
+    expect(createResp.ok()).toBe(true);
+
     await page.goto(`${BASE_URL}/users`);
-
-    // Fill in create user form
-    await page.getByLabel(/name/i).fill("E2E REST User");
-    await page.getByLabel(/email/i).fill("e2e-rest@example.com");
-    await page.getByRole("button", { name: /create/i }).click();
-
-    // Wait for the new user to appear
     await expect(page.getByText("E2E REST User")).toBeVisible({
       timeout: 10_000,
     });
