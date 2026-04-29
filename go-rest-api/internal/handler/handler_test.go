@@ -194,8 +194,8 @@ func TestHandler_UpdateUser(t *testing.T) {
 
 func TestHandler_DeleteUser(t *testing.T) {
 	h := setupTestHandler(t)
-	created := registerUser(t, h, "delete@example.com", "delete@example.com", "password123")
-	token := loginUser(t, h, "delete@example.com", "password123")
+	created := registerUser(t, h, "delete@example.com", "delete@example.com", "s3cur3pass!")
+	token := loginUser(t, h, "delete@example.com", "s3cur3pass!")
 
 	t.Run("found", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/"+created.ID, nil)
