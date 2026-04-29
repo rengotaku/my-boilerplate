@@ -76,7 +76,7 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("starting server", "port", cfg.Port)
+		slog.Info("starting server", "url", "http://localhost:"+cfg.Port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server error", "error", err)
 			os.Exit(1)
