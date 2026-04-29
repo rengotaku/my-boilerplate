@@ -31,17 +31,17 @@ make install
 make run
 
 # Register a user
-curl -X POST http://localhost:8080/api/v1/users \
+curl -X POST http://localhost:10080/api/v1/users \
   -H "Content-Type: application/json" \
   -d '{"name": "John Doe", "email": "john@example.com", "password": "password123"}'
 
 # Login and get token
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -X POST http://localhost:10080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "john@example.com", "password": "password123"}'
 
 # Use token for protected endpoints
-curl http://localhost:8080/api/v1/users \
+curl http://localhost:10080/api/v1/users \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -112,7 +112,7 @@ go-rest-api/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| PORT | 8080 | Server port |
+| PORT | 10080 | Server port |
 | SHUTDOWN_TIMEOUT | 10s | Graceful shutdown timeout |
 | DATABASE_DSN | app.db | SQLite database path |
 | JWT_SECRET | change-me-in-production | JWT signing secret |
@@ -142,7 +142,7 @@ make migrate-hash
 
 ```bash
 docker build -t go-rest-api .
-docker run -p 8080:8080 -e JWT_SECRET=your-secret go-rest-api
+docker run -p 10080:10080 -e JWT_SECRET=your-secret go-rest-api
 ```
 
 ## License
