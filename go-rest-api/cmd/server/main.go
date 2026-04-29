@@ -22,9 +22,9 @@ import (
 
 type Config struct {
 	Port            string        `env:"PORT,default=10080"`
-	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
 	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
 	JWTSecret       string        `env:"JWT_SECRET,default=change-me-in-production"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
 	JWTExpiry       time.Duration `env:"JWT_EXPIRY,default=24h"`
 }
 

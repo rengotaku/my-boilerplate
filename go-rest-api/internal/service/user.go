@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrEmailTaken        = errors.New("email already taken")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrEmailTaken         = errors.New("email already taken")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 

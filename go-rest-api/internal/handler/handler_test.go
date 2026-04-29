@@ -123,11 +123,9 @@ func TestHandler_CreateUser(t *testing.T) {
 func TestHandler_GetUser(t *testing.T) {
 	h := setupTestHandler(t)
 	created := registerUser(t, h, "John", "john@example.com", "password123")
-	token := loginUser(t, h, "john@example.com", "password123")
 
 	t.Run("found", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/users/"+created.ID, nil)
-		req.Header.Set("Authorization", "Bearer "+token)
 		rec := httptest.NewRecorder()
 		h.Routes().ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -135,27 +133,17 @@ func TestHandler_GetUser(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/users/non-existing", nil)
-		req.Header.Set("Authorization", "Bearer "+token)
 		rec := httptest.NewRecorder()
 		h.Routes().ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusNotFound, rec.Code)
-	})
-
-	t.Run("no auth", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/api/v1/users/"+created.ID, nil)
-		rec := httptest.NewRecorder()
-		h.Routes().ServeHTTP(rec, req)
-		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 }
 
 func TestHandler_ListUsers(t *testing.T) {
 	h := setupTestHandler(t)
 	registerUser(t, h, "John", "john@example.com", "password123")
-	token := loginUser(t, h, "john@example.com", "password123")
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users", nil)
-	req.Header.Set("Authorization", "Bearer "+token)
 	rec := httptest.NewRecorder()
 	h.Routes().ServeHTTP(rec, req)
 
@@ -167,8 +155,8 @@ func TestHandler_ListUsers(t *testing.T) {
 
 func TestHandler_UpdateUser(t *testing.T) {
 	h := setupTestHandler(t)
-	created := registerUser(t, h, "John", "john@example.com", "password123")
-	token := loginUser(t, h, "john@example.com", "password123")
+	created := registerUser(t, h, "John", "update@example.com", "password123")
+	token := loginUser(t, h, "update@example.com", "password123")
 
 	t.Run("valid", func(t *testing.T) {
 		body := `{"name": "Jane Doe", "email": "jane@example.com"}`
@@ -206,8 +194,8 @@ func TestHandler_UpdateUser(t *testing.T) {
 
 func TestHandler_DeleteUser(t *testing.T) {
 	h := setupTestHandler(t)
-	created := registerUser(t, h, "John", "john@example.com", "password123")
-	token := loginUser(t, h, "john@example.com", "password123")
+	created := registerUser(t, h, "delete@example.com", "delete@example.com", "password123")
+	token := loginUser(t, h, "delete@example.com", "password123")
 
 	t.Run("found", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/api/v1/users/"+created.ID, nil)

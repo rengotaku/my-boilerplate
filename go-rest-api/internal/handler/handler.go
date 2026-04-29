@@ -39,11 +39,11 @@ func (h *Handler) Routes() *gin.Engine {
 
 	r.POST("/api/v1/auth/login", h.Login)
 	r.POST("/api/v1/users", h.CreateUser)
+	r.GET("/api/v1/users", h.ListUsers)
+	r.GET("/api/v1/users/:id", h.GetUser)
 
 	protected := r.Group("/api/v1", middleware.Auth(h.jwtSecret))
 	{
-		protected.GET("/users", h.ListUsers)
-		protected.GET("/users/:id", h.GetUser)
 		protected.PUT("/users/:id", h.UpdateUser)
 		protected.DELETE("/users/:id", h.DeleteUser)
 	}

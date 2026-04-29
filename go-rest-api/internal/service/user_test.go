@@ -19,11 +19,11 @@ func TestUserService_CreateUser(t *testing.T) {
 	svc := newTestService(t)
 
 	tests := []struct {
+		wantErr  error
 		name     string
 		uname    string
 		email    string
 		password string
-		wantErr  error
 	}{
 		{name: "valid", uname: "John", email: "john@example.com", password: "pass1234"},
 		{name: "duplicate email", uname: "John2", email: "john@example.com", password: "pass1234", wantErr: ErrEmailTaken},
