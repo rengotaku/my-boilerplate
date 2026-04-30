@@ -105,17 +105,27 @@ make test            # go test
 make test-frontend   # frontend tests
 make test-cov        # go test with coverage
 make coverage        # frontend tests with coverage
+make migrate         # apply migrations via GORM AutoMigrate
+make migrate-diff    # generate atlas migration (requires atlas CLI)
+make migrate-apply   # apply pending atlas migrations (requires atlas CLI)
+make migrate-hash    # rehash migration directory (requires atlas CLI)
 make check           # all linters + tests
 make ci              # CI: lint + test-cov + frontend lint + frontend test
 make verify          # smoke-test the scaffold pathway in a tmp dir
-make clean           # remove bin/, coverage.out, frontend/node_modules, dist/*
+make clean           # remove bin/, coverage.out, app.db, frontend/node_modules, dist/*
 ```
 
 ## Configuration
 
-| Variable | Default | Description                |
-|----------|---------|----------------------------|
-| PORT     | 8080    | Go server port             |
+| Variable          | Default                   | Description                                     |
+|-------------------|---------------------------|-------------------------------------------------|
+| PORT              | 8080                      | Go server port                                  |
+| SHUTDOWN_TIMEOUT  | 10s                       | Graceful shutdown timeout                       |
+| DATABASE_DSN      | app.db                    | SQLite database file path                       |
+| JWT_SECRET        | change-me-in-production   | HMAC secret for JWT signing/validation          |
+| JWT_TTL           | 24h                       | Issued JWT lifetime                             |
+| LOG_LEVEL         | INFO                      | slog level (DEBUG / INFO / WARN / ERROR)        |
+| APP_ENV           | (unset)                   | Set to `production` for JSON logs + gin release |
 
 ## Routes
 

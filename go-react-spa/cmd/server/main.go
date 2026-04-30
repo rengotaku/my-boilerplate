@@ -10,18 +10,26 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kelseyhightower/envconfig"
+	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
 	"github.com/lmittmann/tint"
+	"github.com/sethvargo/go-envconfig"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"go-react-spa/internal/handler"
+	"go-react-spa/internal/model"
 	"go-react-spa/internal/repository"
 	"go-react-spa/internal/service"
 	"go-react-spa/internal/static"
 )
 
 type Config struct {
-	Port            string        `envconfig:"PORT" default:"8080"`
-	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"10s"`
+	Port            string        `env:"PORT,default=8080"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
+	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
+	JWTSecret       string        `env:"JWT_SECRET,default=change-me-in-production"`
+	JWTTTL          time.Duration `env:"JWT_TTL,default=24h"`
 }
 
 func main() {
@@ -42,12 +50,28 @@ func main() {
 	slog.SetDefault(slog.New(logHandler))
 
 	var cfg Config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := envconfig.Process(context.Background(), &cfg); err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
 
-	repo := repository.NewUserRepository()
+	db, err := gorm.Open(sqlite.Open(cfg.DatabaseDSN), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		slog.Error("failed to migrate database", "error", err)
+		os.Exit(1)
+	}
+
+	if os.Getenv("APP_ENV") == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
 	h := handler.NewHandler(svc)
 
