@@ -1,0 +1,39 @@
+name: Scaffold Verify python-cli
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-cli.yml'
+  pull_request:
+    paths:
+      - 'python-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-cli.yml'
+
+jobs:
+  scaffold-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=python-cli \
+            dest=/tmp/test-python-cli \
+            name=test-python-cli
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-python-cli
+        run: |
+          uv sync --all-extras
+          make ci

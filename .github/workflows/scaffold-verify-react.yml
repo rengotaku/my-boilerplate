@@ -1,0 +1,33 @@
+name: Scaffold Verify React (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      template:
+        required: true
+        type: string
+        description: "React template name (e.g., react-spa)"
+
+jobs:
+  scaffold-react:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=${{ inputs.template }} \
+            dest=/tmp/test-${{ inputs.template }} \
+            name=test-${{ inputs.template }}
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-${{ inputs.template }}
+        run: |
+          npm install
+          make lint format-check test-coverage build

@@ -1,0 +1,102 @@
+name: Scaffold Verify go-react-spa
+
+# go-react-spa is a composite template (Go monolith embedding the react-spa
+# SPA via .compose.toml + frontend.overlay/). Triggered by changes to either
+# go-react-spa/, the react-spa base template, the scaffold scripts, or this
+# workflow itself.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-react-spa/**'
+      - 'react-spa/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-spa.yml'
+  pull_request:
+    paths:
+      - 'go-react-spa/**'
+      - 'react-spa/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-spa.yml'
+
+jobs:
+  scaffold-go-react-spa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go-react-spa/go.mod
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: react-spa/.node-version
+
+      - name: Install golangci-lint
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.11.2
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=go-react-spa \
+            dest=/tmp/test-go-react-spa \
+            name=test-go-react-spa \
+            go-module-name=github.com/test/test-go-react-spa
+
+      - name: Install dependencies (Go modules + npm ci)
+        working-directory: /tmp/test-go-react-spa
+        run: make install
+
+      - name: Build monolithic binary (frontend bundle embedded into Go)
+        working-directory: /tmp/test-go-react-spa
+        run: make build
+
+      - name: Verify no dev-host leak in production bundle
+        working-directory: /tmp/test-go-react-spa
+        run: |
+          if grep -R --include='*.js' --include='*.css' --include='*.html' \
+               'localhost:8080' internal/static/dist/ 2>/dev/null; then
+            echo "ERROR: 'localhost:8080' leaked into scaffolded production bundle"
+            exit 1
+          fi
+
+      - name: Smoke test — scaffolded binary serves SPA + API
+        working-directory: /tmp/test-go-react-spa
+        run: |
+          set -euo pipefail
+          PORT=18091 ./bin/server >/tmp/server.log 2>&1 &
+          server_pid=$!
+          trap "kill $server_pid 2>/dev/null || true" EXIT
+
+          for _ in $(seq 1 20); do
+            if curl -sSf -o /dev/null http://localhost:18091/api/v1/users; then
+              break
+            fi
+            sleep 0.5
+          done
+
+          fail=0
+          check() {
+            local path="$1" expected="$2" label="$3"
+            local got
+            got=$(curl -sS -o /dev/null -w '%{http_code}' "http://localhost:18091${path}")
+            if [ "$got" = "$expected" ]; then
+              echo "OK  $label  GET $path -> $got"
+            else
+              echo "FAIL $label  GET $path -> $got (expected $expected)"
+              fail=1
+            fi
+          }
+          check "/"             200 "SPA index"
+          check "/api/v1/users" 200 "API"
+          check "/users"        200 "SPA fallback"
+
+          if [ "$fail" -ne 0 ]; then
+            echo "--- server log ---"
+            cat /tmp/server.log || true
+            exit 1
+          fi

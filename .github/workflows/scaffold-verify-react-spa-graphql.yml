@@ -1,0 +1,22 @@
+name: Scaffold Verify react-spa-graphql
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'react-spa-graphql/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-graphql.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'react-spa-graphql/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-graphql.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: react-spa-graphql
