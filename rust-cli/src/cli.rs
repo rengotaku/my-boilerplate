@@ -1,7 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use tracing::{debug, info};
 
-use rust_cli::greet;
+use rust_cli::{greet, settings::Settings};
 
 #[derive(Parser)]
 #[command(name = "mycli")]
@@ -22,12 +23,14 @@ enum Commands {
     },
 }
 
-pub fn run() -> Result<()> {
+pub fn run(settings: &Settings) -> Result<()> {
     let cli = Cli::parse();
+    debug!(?settings.log_level, "settings loaded");
 
     match cli.command {
         Commands::Hello { name } => {
-            println!("{}", greet::hello(&name));
+            info!(target: "cli", %name, "running hello command");
+            println!("{}", greet::hello(&settings.greeting, &name));
         }
     }
 

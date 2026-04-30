@@ -1,0 +1,10 @@
+# Cargo build artifacts
+target/
+
+# Local environment overrides
+.env
+
+# Coverage
+*.profraw
+*.profdata
+lcov.info

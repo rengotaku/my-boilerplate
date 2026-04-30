@@ -1,11 +1,13 @@
 # Rust CLI Boilerplate
 
-Rust + clap + clippy の Rust CLI ボイラープレート。
+Rust + clap + config + tracing — batteries included な Rust CLI ボイラープレート。
 
 ## Features
 
 - **CLI Framework**: [clap](https://github.com/clap-rs/clap) (derive)
 - **Error Handling**: [anyhow](https://github.com/dtolnay/anyhow)
+- **Configuration**: [config](https://github.com/rust-cli/config-rs) (TOML) + [dotenvy](https://github.com/allan2/dotenvy) (`.env`)
+- **Logging**: [tracing](https://github.com/tokio-rs/tracing) + [tracing-subscriber](https://docs.rs/tracing-subscriber/) (`RUST_LOG` 対応)
 - **Linter**: [clippy](https://github.com/rust-lang/rust-clippy)
 - **Formatter**: [rustfmt](https://github.com/rust-lang/rustfmt)
 - **Testing**: cargo test + [assert_cmd](https://github.com/assert-rs/assert_cmd)
@@ -56,6 +58,26 @@ make build
 ./target/release/mycli --help         # Show help
 ```
 
+## Configuration
+
+設定値は次の優先順で解決される（後ろが優先）。
+
+1. `config/default.toml`（デフォルト値）
+2. `.env`（dotenvy で読み込み — `.env.example` を参照）
+3. プロセス環境変数（`APP__<KEY>` プレフィックス、区切りは `__`）
+
+| Key | Env | Default | 説明 |
+|---|---|---|---|
+| `greeting` | `APP__GREETING` | `Hello` | あいさつの prefix |
+| `log_level` | `APP__LOG_LEVEL` | `info` | デフォルトのログレベル |
+
+ログレベルは `RUST_LOG` 環境変数で上書きできる（`tracing-subscriber` の `EnvFilter`）。
+
+```bash
+RUST_LOG=debug make run ARGS="hello"
+APP__GREETING=Bonjour make run ARGS="hello Marie"   # → Bonjour, Marie!
+```
+
 ## Project Structure
 
 ```
@@ -64,9 +86,14 @@ rust-cli/
 │   ├── main.rs           # Entry point
 │   ├── cli.rs            # CLI definition (clap)
 │   ├── lib.rs            # Library exports
-│   └── greet.rs          # Sample functionality
+│   ├── greet.rs          # Sample functionality
+│   ├── logging.rs        # tracing-subscriber init
+│   └── settings.rs       # config + dotenvy loader
+├── config/
+│   └── default.toml      # Default configuration values
 ├── tests/
 │   └── integration_test.rs  # Integration tests
+├── .env.example          # Sample dotenv overrides
 ├── Cargo.toml            # Package manifest
 ├── Makefile
 ├── rustfmt.toml          # Formatter config

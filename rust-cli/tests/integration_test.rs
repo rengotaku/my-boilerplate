@@ -4,7 +4,8 @@ use predicates::prelude::*;
 #[test]
 fn test_hello_default() {
     let mut cmd = Command::cargo_bin("mycli").unwrap();
-    cmd.arg("hello")
+    cmd.env_remove("APP__GREETING")
+        .arg("hello")
         .assert()
         .success()
         .stdout(predicate::str::contains("Hello, World!"));
@@ -13,10 +14,21 @@ fn test_hello_default() {
 #[test]
 fn test_hello_with_name() {
     let mut cmd = Command::cargo_bin("mycli").unwrap();
-    cmd.args(["hello", "Alice"])
+    cmd.env_remove("APP__GREETING")
+        .args(["hello", "Alice"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Hello, Alice!"));
+}
+
+#[test]
+fn test_hello_with_custom_greeting_via_env() {
+    let mut cmd = Command::cargo_bin("mycli").unwrap();
+    cmd.env("APP__GREETING", "Bonjour")
+        .args(["hello", "Marie"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Bonjour, Marie!"));
 }
 
 #[test]

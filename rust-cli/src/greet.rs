@@ -1,6 +1,6 @@
-/// Returns a greeting message for the given name.
-pub fn hello(name: &str) -> String {
-    format!("Hello, {}!", name)
+/// Returns a greeting message for the given name using the configured prefix.
+pub fn hello(greeting: &str, name: &str) -> String {
+    format!("{}, {}!", greeting, name)
 }
 
 #[cfg(test)]
@@ -8,17 +8,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_hello_world() {
-        assert_eq!(hello("World"), "Hello, World!");
+    fn test_hello_default() {
+        assert_eq!(hello("Hello", "World"), "Hello, World!");
     }
 
     #[test]
-    fn test_hello_name() {
-        assert_eq!(hello("Alice"), "Hello, Alice!");
+    fn test_hello_named() {
+        assert_eq!(hello("Hello", "Alice"), "Hello, Alice!");
     }
 
     #[test]
-    fn test_hello_empty() {
-        assert_eq!(hello(""), "Hello, !");
+    fn test_hello_empty_name() {
+        assert_eq!(hello("Hello", ""), "Hello, !");
+    }
+
+    #[test]
+    fn test_hello_custom_greeting() {
+        assert_eq!(hello("Bonjour", "Marie"), "Bonjour, Marie!");
     }
 }
