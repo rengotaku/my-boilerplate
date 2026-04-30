@@ -53,8 +53,9 @@ check: lint test
 ## ci: Run lint + test with coverage
 ci: lint test-cov
 
-## migrate: Apply pending migrations (alias for migrate-apply)
-migrate: migrate-apply
+## migrate: Apply migrations via GORM AutoMigrate (no atlas required)
+migrate:
+	go run ./cmd/migrate
 
 ## migrate-diff: Generate a new migration (requires atlas CLI)
 migrate-diff:
