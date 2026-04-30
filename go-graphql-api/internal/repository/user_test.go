@@ -2,121 +2,97 @@ package repository
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"go-graphql-api/internal/graph/model"
+	"go-graphql-api/internal/testutil"
 )
 
+func newRepo(t *testing.T) *UserRepository {
+	t.Helper()
+	return NewUserRepository(testutil.NewTestDB(t))
+}
+
 func TestUserRepository_Create(t *testing.T) {
-	repo := NewUserRepository()
-
-	user := repo.Create("John Doe", "john@example.com")
-
-	if user == nil {
-		t.Fatal("Create() returned nil")
-	}
-	if user.ID == "" {
-		t.Error("Create() ID is empty")
-	}
-	if user.Name != "John Doe" {
-		t.Errorf("Create() Name = %v, want John Doe", user.Name)
-	}
-	if user.Email != "john@example.com" {
-		t.Errorf("Create() Email = %v, want john@example.com", user.Email)
-	}
-	if user.CreatedAt.IsZero() {
-		t.Error("Create() CreatedAt is zero")
-	}
-	if user.UpdatedAt.IsZero() {
-		t.Error("Create() UpdatedAt is zero")
-	}
+	repo := newRepo(t)
+	user, err := repo.Create(&model.User{Name: "John Doe", Email: "john@example.com", PasswordHash: "hash"})
+	require.NoError(t, err)
+	assert.NotEmpty(t, user.ID)
+	assert.Equal(t, "John Doe", user.Name)
+	assert.Equal(t, "john@example.com", user.Email)
+	assert.False(t, user.CreatedAt.IsZero())
 }
 
 func TestUserRepository_FindAll(t *testing.T) {
-	repo := NewUserRepository()
+	repo := newRepo(t)
 
-	// Empty repository
-	users := repo.FindAll()
-	if len(users) != 0 {
-		t.Errorf("FindAll() = %d, want 0", len(users))
-	}
+	users, err := repo.FindAll()
+	require.NoError(t, err)
+	assert.Len(t, users, 0)
 
-	// Add users
-	repo.Create("John Doe", "john@example.com")
-	repo.Create("Jane Doe", "jane@example.com")
+	_, _ = repo.Create(&model.User{Name: "John", Email: "john@example.com", PasswordHash: "h"})
+	_, _ = repo.Create(&model.User{Name: "Jane", Email: "jane@example.com", PasswordHash: "h"})
 
-	users = repo.FindAll()
-	if len(users) != 2 {
-		t.Errorf("FindAll() = %d, want 2", len(users))
-	}
+	users, err = repo.FindAll()
+	require.NoError(t, err)
+	assert.Len(t, users, 2)
 }
 
 func TestUserRepository_FindByID(t *testing.T) {
-	repo := NewUserRepository()
+	repo := newRepo(t)
+	created, err := repo.Create(&model.User{Name: "John", Email: "john@example.com", PasswordHash: "h"})
+	require.NoError(t, err)
 
-	created := repo.Create("John Doe", "john@example.com")
+	user, err := repo.FindByID(created.ID)
+	require.NoError(t, err)
+	require.NotNil(t, user)
+	assert.Equal(t, created.ID, user.ID)
 
-	// Find existing user
-	user := repo.FindByID(created.ID)
-	if user == nil {
-		t.Fatal("FindByID() returned nil for existing user")
-	}
-	if user.ID != created.ID {
-		t.Errorf("FindByID() ID = %v, want %v", user.ID, created.ID)
-	}
+	missing, err := repo.FindByID("non-existing-id")
+	require.NoError(t, err)
+	assert.Nil(t, missing)
+}
 
-	// Find non-existing user
-	user = repo.FindByID("non-existing-id")
-	if user != nil {
-		t.Error("FindByID() should return nil for non-existing user")
-	}
+func TestUserRepository_FindByEmail(t *testing.T) {
+	repo := newRepo(t)
+	_, err := repo.Create(&model.User{Name: "John", Email: "john@example.com", PasswordHash: "h"})
+	require.NoError(t, err)
+
+	user, err := repo.FindByEmail("john@example.com")
+	require.NoError(t, err)
+	require.NotNil(t, user)
+	assert.Equal(t, "john@example.com", user.Email)
+
+	missing, err := repo.FindByEmail("missing@example.com")
+	require.NoError(t, err)
+	assert.Nil(t, missing)
 }
 
 func TestUserRepository_Update(t *testing.T) {
-	repo := NewUserRepository()
+	repo := newRepo(t)
+	created, err := repo.Create(&model.User{Name: "John", Email: "john@example.com", PasswordHash: "h"})
+	require.NoError(t, err)
 
-	created := repo.Create("John Doe", "john@example.com")
-	originalUpdatedAt := created.UpdatedAt
-
-	// Update existing user
-	updated := repo.Update(created.ID, "Jane Doe", "jane@example.com")
-	if updated == nil {
-		t.Fatal("Update() returned nil for existing user")
-	}
-	if updated.Name != "Jane Doe" {
-		t.Errorf("Update() Name = %v, want Jane Doe", updated.Name)
-	}
-	if updated.Email != "jane@example.com" {
-		t.Errorf("Update() Email = %v, want jane@example.com", updated.Email)
-	}
-	if !updated.UpdatedAt.After(originalUpdatedAt) && updated.UpdatedAt != originalUpdatedAt {
-		t.Error("Update() should update UpdatedAt")
-	}
-
-	// Update non-existing user
-	updated = repo.Update("non-existing-id", "Name", "email@example.com")
-	if updated != nil {
-		t.Error("Update() should return nil for non-existing user")
-	}
+	created.Name = "Jane"
+	created.Email = "jane@example.com"
+	updated, err := repo.Update(created)
+	require.NoError(t, err)
+	assert.Equal(t, "Jane", updated.Name)
+	assert.Equal(t, "jane@example.com", updated.Email)
 }
 
 func TestUserRepository_Delete(t *testing.T) {
-	repo := NewUserRepository()
+	repo := newRepo(t)
+	created, err := repo.Create(&model.User{Name: "John", Email: "john@example.com", PasswordHash: "h"})
+	require.NoError(t, err)
 
-	created := repo.Create("John Doe", "john@example.com")
+	require.NoError(t, repo.Delete(created.ID))
 
-	// Delete existing user
-	deleted := repo.Delete(created.ID)
-	if !deleted {
-		t.Error("Delete() should return true for existing user")
-	}
+	user, err := repo.FindByID(created.ID)
+	require.NoError(t, err)
+	assert.Nil(t, user)
 
-	// Verify user is deleted
-	user := repo.FindByID(created.ID)
-	if user != nil {
-		t.Error("User should be deleted")
-	}
-
-	// Delete non-existing user
-	deleted = repo.Delete("non-existing-id")
-	if deleted {
-		t.Error("Delete() should return false for non-existing user")
-	}
+	assert.ErrorIs(t, repo.Delete("non-existing-id"), ErrNotFound)
 }

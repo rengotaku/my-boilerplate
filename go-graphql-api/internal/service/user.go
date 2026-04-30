@@ -24,12 +24,15 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) ListUsers() []*model.User {
+func (s *UserService) ListUsers() ([]*model.User, error) {
 	return s.repo.FindAll()
 }
 
 func (s *UserService) GetUser(id string) (*model.User, error) {
-	user := s.repo.FindByID(id)
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
 	if user == nil {
 		return nil, ErrUserNotFound
 	}
@@ -40,7 +43,7 @@ func (s *UserService) CreateUser(name, email string) (*model.User, error) {
 	if err := s.validateUser(name, email); err != nil {
 		return nil, err
 	}
-	return s.repo.Create(name, email), nil
+	return s.repo.Create(&model.User{Name: name, Email: email, PasswordHash: ""})
 }
 
 func (s *UserService) UpdateUser(id, name, email string) (*model.User, error) {
@@ -48,18 +51,25 @@ func (s *UserService) UpdateUser(id, name, email string) (*model.User, error) {
 		return nil, err
 	}
 
-	user := s.repo.Update(id, name, email)
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
 	if user == nil {
 		return nil, ErrUserNotFound
 	}
-	return user, nil
+
+	user.Name = name
+	user.Email = email
+	return s.repo.Update(user)
 }
 
 func (s *UserService) DeleteUser(id string) error {
-	if !s.repo.Delete(id) {
+	err := s.repo.Delete(id)
+	if errors.Is(err, repository.ErrNotFound) {
 		return ErrUserNotFound
 	}
-	return nil
+	return err
 }
 
 func (s *UserService) validateUser(name, email string) error {

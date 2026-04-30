@@ -1,81 +1,76 @@
 package repository
 
 import (
-	"sync"
-	"time"
+	"errors"
 
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 
 	"go-graphql-api/internal/graph/model"
 )
 
+var ErrNotFound = errors.New("not found")
+
 type UserRepository struct {
-	users map[string]*model.User
-	mu    sync.RWMutex
+	db *gorm.DB
 }
 
-func NewUserRepository() *UserRepository {
-	return &UserRepository{
-		users: make(map[string]*model.User),
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) FindAll() ([]*model.User, error) {
+	var users []*model.User
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
 	}
+	return users, nil
 }
 
-func (r *UserRepository) FindAll() []*model.User {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	users := make([]*model.User, 0, len(r.users))
-	for _, u := range r.users {
-		users = append(users, u)
+func (r *UserRepository) FindByID(id string) (*model.User, error) {
+	var user model.User
+	err := r.db.First(&user, "id = ?", id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
-	return users
-}
-
-func (r *UserRepository) FindByID(id string) *model.User {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	return r.users[id]
-}
-
-func (r *UserRepository) Create(name, email string) *model.User {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	now := time.Now()
-	user := &model.User{
-		ID:        uuid.New().String(),
-		Name:      name,
-		Email:     email,
-		CreatedAt: now,
-		UpdatedAt: now,
+	if err != nil {
+		return nil, err
 	}
-	r.users[user.ID] = user
-	return user
+	return &user, nil
 }
 
-func (r *UserRepository) Update(id, name, email string) *model.User {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	user, ok := r.users[id]
-	if !ok {
-		return nil
+func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
+	var user model.User
+	err := r.db.First(&user, "email = ?", email).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
-
-	user.Name = name
-	user.Email = email
-	user.UpdatedAt = time.Now()
-	return user
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
-func (r *UserRepository) Delete(id string) bool {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if _, ok := r.users[id]; !ok {
-		return false
+func (r *UserRepository) Create(user *model.User) (*model.User, error) {
+	if err := r.db.Create(user).Error; err != nil {
+		return nil, err
 	}
-	delete(r.users, id)
-	return true
+	return user, nil
+}
+
+func (r *UserRepository) Update(user *model.User) (*model.User, error) {
+	if err := r.db.Save(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (r *UserRepository) Delete(id string) error {
+	result := r.db.Delete(&model.User{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

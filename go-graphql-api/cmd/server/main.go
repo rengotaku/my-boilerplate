@@ -12,18 +12,24 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/lmittmann/tint"
+	"github.com/glebarez/sqlite"
+	"github.com/sethvargo/go-envconfig"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"go-graphql-api/internal/graph/generated"
+	"go-graphql-api/internal/graph/model"
 	"go-graphql-api/internal/graph/resolver"
 	"go-graphql-api/internal/repository"
 	"go-graphql-api/internal/service"
 )
 
 type Config struct {
-	Port            string        `envconfig:"PORT" default:"8080"`
-	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"10s"`
+	Port            string        `env:"PORT,default=8080"`
+	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
+	JWTSecret       string        `env:"JWT_SECRET,default=change-me-in-production"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
+	JWTExpiry       time.Duration `env:"JWT_EXPIRY,default=24h"`
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -47,24 +53,34 @@ func main() {
 		_ = logLevel.UnmarshalText([]byte(l))
 	}
 
-	var logHandler slog.Handler
+	logHandler := slog.Handler(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: &logLevel}))
 	if os.Getenv("APP_ENV") == "production" {
 		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
-	} else {
-		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      &logLevel,
-			TimeFormat: time.Kitchen,
-		})
 	}
 	slog.SetDefault(slog.New(logHandler))
 
+	ctx := context.Background()
+
 	var cfg Config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := envconfig.Process(ctx, &cfg); err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
 
-	repo := repository.NewUserRepository()
+	db, err := gorm.Open(sqlite.Open(cfg.DatabaseDSN), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		slog.Error("failed to migrate database", "error", err)
+		os.Exit(1)
+	}
+
+	repo := repository.NewUserRepository(db)
 	userSvc := service.NewUserService(repo)
 	resolvers := resolver.NewResolver(userSvc)
 
@@ -103,10 +119,10 @@ func main() {
 	<-quit
 
 	slog.Info("shutting down server")
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 
-	if err := httpSrv.Shutdown(ctx); err != nil {
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("server shutdown error", "error", err)
 		os.Exit(1)
 	}
