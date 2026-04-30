@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci migrate-diff migrate-apply migrate-hash clean help
+.PHONY: install build run dev stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -52,6 +52,9 @@ check: lint test
 
 ## ci: Run lint + test with coverage
 ci: lint test-cov
+
+## migrate: Apply pending migrations (alias for migrate-apply)
+migrate: migrate-apply
 
 ## migrate-diff: Generate a new migration (requires atlas CLI)
 migrate-diff:

@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci generate migrate-diff migrate-apply migrate-hash clean help
+.PHONY: install build run dev stop status lint test test-cov check ci generate migrate migrate-diff migrate-apply migrate-hash clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -7,7 +7,7 @@
 BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
-PORT ?= 8081
+PORT ?= 8080
 
 ## install: Download dependencies
 install:
@@ -55,6 +55,9 @@ ci: lint test-cov
 ## generate: Generate GraphQL code (requires gqlgen)
 generate:
 	go run github.com/99designs/gqlgen generate
+
+## migrate: Apply pending migrations (alias for migrate-apply)
+migrate: migrate-apply
 
 ## migrate-diff: Generate a new migration (requires atlas CLI)
 migrate-diff:

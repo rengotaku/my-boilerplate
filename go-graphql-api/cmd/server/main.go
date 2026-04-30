@@ -25,7 +25,7 @@ import (
 )
 
 type Config struct {
-	Port            string        `env:"PORT,default=8081"`
+	Port            string        `env:"PORT,default=8080"`
 	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
 	JWTSecret       string        `env:"JWT_SECRET,default=change-me-in-production"`
 	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`

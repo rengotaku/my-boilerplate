@@ -31,7 +31,7 @@ make install
 make run
 
 # Open GraphQL Playground
-open http://localhost:8081/
+open http://localhost:8080/
 ```
 
 ## Development (Hot Reload)
@@ -167,7 +167,7 @@ go-graphql-api/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `8081` | Server port |
+| `PORT` | `8080` | Server port |
 | `DATABASE_DSN` | `app.db` | SQLite database path |
 | `JWT_SECRET` | `change-me-in-production` | JWT signing secret |
 | `JWT_EXPIRY` | `24h` | JWT token expiry |
