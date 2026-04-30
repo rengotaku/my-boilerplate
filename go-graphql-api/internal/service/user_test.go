@@ -3,12 +3,20 @@ package service
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"go-graphql-api/internal/repository"
+	"go-graphql-api/internal/testutil"
 )
 
+func newSvc(t *testing.T) *UserService {
+	t.Helper()
+	return NewUserService(repository.NewUserRepository(testutil.NewTestDB(t)))
+}
+
 func TestUserService_CreateUser(t *testing.T) {
-	repo := repository.NewUserRepository()
-	svc := NewUserService(repo)
+	svc := newSvc(t)
 
 	tests := []struct {
 		name    string
@@ -16,91 +24,43 @@ func TestUserService_CreateUser(t *testing.T) {
 		email   string
 		wantErr bool
 	}{
-		{
-			name:    "valid user",
-			uname:   "John Doe",
-			email:   "john@example.com",
-			wantErr: false,
-		},
-		{
-			name:    "empty name",
-			uname:   "",
-			email:   "john@example.com",
-			wantErr: true,
-		},
-		{
-			name:    "invalid email",
-			uname:   "John Doe",
-			email:   "invalid",
-			wantErr: true,
-		},
-		{
-			name:    "empty email",
-			uname:   "John Doe",
-			email:   "",
-			wantErr: true,
-		},
+		{"valid user", "John Doe", "john@example.com", false},
+		{"empty name", "", "john@example.com", true},
+		{"invalid email", "John Doe", "invalid", true},
+		{"empty email", "John Doe", "", true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			user, err := svc.CreateUser(tt.uname, tt.email)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateUser() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				assert.Error(t, err)
 				return
 			}
-			if !tt.wantErr && user == nil {
-				t.Error("CreateUser() returned nil user")
-			}
-			if !tt.wantErr && user.Name != tt.uname {
-				t.Errorf("CreateUser() name = %v, want %v", user.Name, tt.uname)
-			}
+			require.NoError(t, err)
+			require.NotNil(t, user)
+			assert.Equal(t, tt.uname, user.Name)
 		})
 	}
 }
 
 func TestUserService_GetUser(t *testing.T) {
-	repo := repository.NewUserRepository()
-	svc := NewUserService(repo)
+	svc := newSvc(t)
+	created, err := svc.CreateUser("John Doe", "john@example.com")
+	require.NoError(t, err)
 
-	created, _ := svc.CreateUser("John Doe", "john@example.com")
+	user, err := svc.GetUser(created.ID)
+	require.NoError(t, err)
+	assert.Equal(t, created.ID, user.ID)
 
-	tests := []struct {
-		name    string
-		id      string
-		wantErr bool
-	}{
-		{
-			name:    "existing user",
-			id:      created.ID,
-			wantErr: false,
-		},
-		{
-			name:    "non-existing user",
-			id:      "non-existing-id",
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			user, err := svc.GetUser(tt.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetUser() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr && user == nil {
-				t.Error("GetUser() returned nil user")
-			}
-		})
-	}
+	_, err = svc.GetUser("non-existing-id")
+	assert.ErrorIs(t, err, ErrUserNotFound)
 }
 
 func TestUserService_UpdateUser(t *testing.T) {
-	repo := repository.NewUserRepository()
-	svc := NewUserService(repo)
-
-	created, _ := svc.CreateUser("John Doe", "john@example.com")
+	svc := newSvc(t)
+	created, err := svc.CreateUser("John Doe", "john@example.com")
+	require.NoError(t, err)
 
 	tests := []struct {
 		name    string
@@ -109,92 +69,44 @@ func TestUserService_UpdateUser(t *testing.T) {
 		email   string
 		wantErr bool
 	}{
-		{
-			name:    "valid update",
-			id:      created.ID,
-			uname:   "Jane Doe",
-			email:   "jane@example.com",
-			wantErr: false,
-		},
-		{
-			name:    "non-existing user",
-			id:      "non-existing-id",
-			uname:   "Jane Doe",
-			email:   "jane@example.com",
-			wantErr: true,
-		},
-		{
-			name:    "invalid email",
-			id:      created.ID,
-			uname:   "Jane Doe",
-			email:   "invalid",
-			wantErr: true,
-		},
+		{"valid update", created.ID, "Jane Doe", "jane@example.com", false},
+		{"non-existing user", "non-existing-id", "Jane Doe", "jane@example.com", true},
+		{"invalid email", created.ID, "Jane Doe", "invalid", true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			user, err := svc.UpdateUser(tt.id, tt.uname, tt.email)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				assert.Error(t, err)
 				return
 			}
-			if !tt.wantErr && user == nil {
-				t.Error("UpdateUser() returned nil user")
-			}
+			require.NoError(t, err)
+			assert.NotNil(t, user)
 		})
 	}
 }
 
 func TestUserService_DeleteUser(t *testing.T) {
-	repo := repository.NewUserRepository()
-	svc := NewUserService(repo)
+	svc := newSvc(t)
+	created, err := svc.CreateUser("John Doe", "john@example.com")
+	require.NoError(t, err)
 
-	created, _ := svc.CreateUser("John Doe", "john@example.com")
-
-	tests := []struct {
-		name    string
-		id      string
-		wantErr bool
-	}{
-		{
-			name:    "existing user",
-			id:      created.ID,
-			wantErr: false,
-		},
-		{
-			name:    "non-existing user",
-			id:      "non-existing-id",
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := svc.DeleteUser(tt.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("DeleteUser() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+	require.NoError(t, svc.DeleteUser(created.ID))
+	assert.ErrorIs(t, svc.DeleteUser("non-existing-id"), ErrUserNotFound)
 }
 
 func TestUserService_ListUsers(t *testing.T) {
-	repo := repository.NewUserRepository()
-	svc := NewUserService(repo)
+	svc := newSvc(t)
 
-	// Empty list
-	users := svc.ListUsers()
-	if len(users) != 0 {
-		t.Errorf("ListUsers() = %d users, want 0", len(users))
-	}
+	users, err := svc.ListUsers()
+	require.NoError(t, err)
+	assert.Len(t, users, 0)
 
-	// Add users
 	_, _ = svc.CreateUser("John Doe", "john@example.com")
 	_, _ = svc.CreateUser("Jane Doe", "jane@example.com")
 
-	users = svc.ListUsers()
-	if len(users) != 2 {
-		t.Errorf("ListUsers() = %d users, want 2", len(users))
-	}
+	users, err = svc.ListUsers()
+	require.NoError(t, err)
+	assert.Len(t, users, 2)
 }

@@ -33,7 +33,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, err
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return r.UserService.ListUsers(), nil
+	return r.UserService.ListUsers()
 }
 
 // User is the resolver for the user field.

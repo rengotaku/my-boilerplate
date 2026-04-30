@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci generate clean help
+.PHONY: install build run dev stop status lint test test-cov check ci generate migrate-diff migrate-apply migrate-hash clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -56,9 +56,21 @@ ci: lint test-cov
 generate:
 	go run github.com/99designs/gqlgen generate
 
+## migrate-diff: Generate a new migration (requires atlas CLI)
+migrate-diff:
+	atlas migrate diff --env local
+
+## migrate-apply: Apply pending migrations (requires atlas CLI)
+migrate-apply:
+	atlas migrate apply --env local
+
+## migrate-hash: Rehash the migration directory (requires atlas CLI)
+migrate-hash:
+	atlas migrate hash --env local
+
 ## clean: Remove build artifacts
 clean:
-	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE)
+	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE) app.db
 
 ## help: Show this help
 help:

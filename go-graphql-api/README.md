@@ -6,14 +6,19 @@ Go + gqlgen の GraphQL API ボイラープレート。
 
 - **GraphQL**: [gqlgen](https://github.com/99designs/gqlgen)
 - **Playground**: GraphQL Playground at `/`
-- **Config**: [envconfig](https://github.com/kelseyhightower/envconfig)
+- **ORM**: [GORM](https://gorm.io/) + SQLite ([glebarez/sqlite](https://github.com/glebarez/sqlite) — pure Go)
+- **Migrations**: [Atlas](https://atlasgo.io/)
+- **Auth**: [golang-jwt/jwt](https://github.com/golang-jwt/jwt)
+- **Config**: [sethvargo/go-envconfig](https://github.com/sethvargo/go-envconfig)
 - **Logging**: slog (標準ライブラリ)
+- **Testing**: [testify](https://github.com/stretchr/testify)
 - **Linter**: [golangci-lint](https://golangci-lint.run/)
 
 ## Prerequisites
 
 - [Go](https://go.dev/dl/) 1.21+
 - [golangci-lint](https://golangci-lint.run/welcome/install/)
+- [Atlas CLI](https://atlasgo.io/getting-started) (optional, for migrations)
 - [Docker](https://docs.docker.com/get-docker/) (optional)
 
 ## Quick Start
@@ -26,7 +31,7 @@ make install
 make run
 
 # Open GraphQL Playground
-open http://localhost:8080/
+open http://localhost:8081/
 ```
 
 ## Development (Hot Reload)
@@ -44,18 +49,21 @@ Air will watch `.go` files and automatically rebuild/restart the server on chang
 ## Commands
 
 ```bash
-make help        # Show all commands
-make install     # Download dependencies
-make build       # Build the binary
-make run         # Run the server
-make dev         # Run with hot reload (requires air)
-make lint        # Run golangci-lint
-make test        # Run tests
-make test-cov    # Run tests with coverage
-make check       # Run lint + test
-make ci          # Run lint + test-cov
-make generate    # Generate GraphQL code
-make clean       # Remove build artifacts
+make help           # Show all commands
+make install        # Download dependencies
+make build          # Build the binary
+make run            # Run the server
+make dev            # Run with hot reload (requires air)
+make lint           # Run golangci-lint
+make test           # Run tests
+make test-cov       # Run tests with coverage
+make check          # Run lint + test
+make ci             # Run lint + test-cov
+make generate       # Generate GraphQL code
+make migrate-diff   # Generate a new migration (requires atlas CLI)
+make migrate-apply  # Apply pending migrations (requires atlas CLI)
+make migrate-hash   # Rehash the migration directory (requires atlas CLI)
+make clean          # Remove build artifacts
 ```
 
 ## GraphQL Schema
@@ -130,22 +138,27 @@ mutation {
 
 ```
 go-graphql-api/
+├── atlasgen/
+│   └── main.go               # Atlas schema generator
 ├── cmd/
 │   └── server/
 │       └── main.go           # Entry point
 ├── internal/
 │   ├── graph/
 │   │   ├── generated/        # gqlgen generated code
-│   │   ├── model/            # GraphQL models
+│   │   ├── model/            # GraphQL models (GORM)
 │   │   └── resolver/         # Resolvers
+│   ├── middleware/           # JWT auth middleware
 │   ├── service/              # Business logic
-│   └── repository/           # Data access
+│   ├── repository/           # Data access (GORM)
+│   └── testutil/             # Test helpers
+├── migrations/               # Atlas SQL migrations
 ├── api/
 │   └── schema.graphql        # GraphQL schema
+├── atlas.hcl                 # Atlas config
 ├── gqlgen.yml                # gqlgen config
 ├── go.mod
 ├── Makefile
-├── .golangci.yml
 ├── Dockerfile
 └── README.md
 ```
@@ -154,8 +167,13 @@ go-graphql-api/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| PORT | 8080 | Server port |
-| SHUTDOWN_TIMEOUT | 10s | Graceful shutdown timeout |
+| `PORT` | `8081` | Server port |
+| `DATABASE_DSN` | `app.db` | SQLite database path |
+| `JWT_SECRET` | `change-me-in-production` | JWT signing secret |
+| `JWT_EXPIRY` | `24h` | JWT token expiry |
+| `SHUTDOWN_TIMEOUT` | `10s` | Graceful shutdown timeout |
+| `APP_ENV` | `` | Set to `production` for JSON logging |
+| `LOG_LEVEL` | `INFO` | Log level (DEBUG, INFO, WARN, ERROR) |
 
 ## Docker
 
@@ -164,7 +182,7 @@ go-graphql-api/
 docker build -t go-graphql-api .
 
 # Run container
-docker run -p 8080:8080 go-graphql-api
+docker run -p 8081:8081 go-graphql-api
 ```
 
 ## Customization
@@ -174,6 +192,7 @@ docker run -p 8080:8080 go-graphql-api
 3. Implement resolvers in `internal/graph/resolver/`
 4. Add business logic in `internal/service/`
 5. Implement persistence in `internal/repository/`
+6. Run `make migrate-diff` to generate migrations
 
 ## License
 
