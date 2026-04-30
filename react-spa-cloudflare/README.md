@@ -15,6 +15,7 @@ A standalone React SPA boilerplate optimized for Cloudflare Pages deployment.
 | Linter | ESLint |
 | Formatter | Prettier |
 | Testing | Vitest + Testing Library |
+| Logging | consola |
 | Deployment | Cloudflare Pages |
 
 ## Project Structure
