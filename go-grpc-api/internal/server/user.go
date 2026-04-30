@@ -10,7 +10,7 @@ import (
 
 	pb "go-grpc-api/pkg/pb/v1"
 
-	"go-grpc-api/internal/repository"
+	"go-grpc-api/internal/model"
 	"go-grpc-api/internal/service"
 )
 
@@ -24,7 +24,10 @@ func NewUserServer(svc *service.UserService) *UserServer {
 }
 
 func (s *UserServer) ListUsers(_ context.Context, _ *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
-	users := s.svc.ListUsers()
+	users, err := s.svc.ListUsers()
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	pbUsers := make([]*pb.User, len(users))
 	for i, u := range users {
 		pbUsers[i] = toProtoUser(u)
@@ -44,7 +47,10 @@ func (s *UserServer) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.Get
 }
 
 func (s *UserServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	user := s.svc.CreateUser(req.GetName(), req.GetEmail())
+	user, err := s.svc.CreateUser(req.GetName(), req.GetEmail())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	return &pb.CreateUserResponse{User: toProtoUser(user)}, nil
 }
 
@@ -69,7 +75,7 @@ func (s *UserServer) DeleteUser(_ context.Context, req *pb.DeleteUserRequest) (*
 	return &pb.DeleteUserResponse{}, nil
 }
 
-func toProtoUser(u *repository.User) *pb.User {
+func toProtoUser(u *model.User) *pb.User {
 	return &pb.User{
 		Id:        u.ID,
 		Name:      u.Name,

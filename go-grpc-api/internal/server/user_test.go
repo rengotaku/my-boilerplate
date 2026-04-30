@@ -13,16 +13,18 @@ import (
 
 	"go-grpc-api/internal/repository"
 	"go-grpc-api/internal/service"
+	"go-grpc-api/internal/testutil"
 )
 
-func setupTestServer() *UserServer {
-	repo := repository.NewUserRepository()
+func setupTestServer(t *testing.T) *UserServer {
+	t.Helper()
+	repo := repository.NewUserRepository(testutil.NewTestDB(t))
 	svc := service.NewUserService(repo)
 	return NewUserServer(svc)
 }
 
 func TestUserServer_CreateUser(t *testing.T) {
-	srv := setupTestServer()
+	srv := setupTestServer(t)
 	ctx := context.Background()
 
 	resp, err := srv.CreateUser(ctx, &pb.CreateUserRequest{
@@ -37,7 +39,7 @@ func TestUserServer_CreateUser(t *testing.T) {
 }
 
 func TestUserServer_GetUser(t *testing.T) {
-	srv := setupTestServer()
+	srv := setupTestServer(t)
 	ctx := context.Background()
 
 	created, err := srv.CreateUser(ctx, &pb.CreateUserRequest{
@@ -62,7 +64,7 @@ func TestUserServer_GetUser(t *testing.T) {
 }
 
 func TestUserServer_ListUsers(t *testing.T) {
-	srv := setupTestServer()
+	srv := setupTestServer(t)
 	ctx := context.Background()
 
 	_, err := srv.CreateUser(ctx, &pb.CreateUserRequest{Name: "User 1", Email: "user1@example.com"})
@@ -76,7 +78,7 @@ func TestUserServer_ListUsers(t *testing.T) {
 }
 
 func TestUserServer_UpdateUser(t *testing.T) {
-	srv := setupTestServer()
+	srv := setupTestServer(t)
 	ctx := context.Background()
 
 	created, err := srv.CreateUser(ctx, &pb.CreateUserRequest{
@@ -110,7 +112,7 @@ func TestUserServer_UpdateUser(t *testing.T) {
 }
 
 func TestUserServer_DeleteUser(t *testing.T) {
-	srv := setupTestServer()
+	srv := setupTestServer(t)
 	ctx := context.Background()
 
 	created, err := srv.CreateUser(ctx, &pb.CreateUserRequest{

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 
+	"go-grpc-api/internal/model"
 	"go-grpc-api/internal/repository"
 )
 
@@ -16,33 +17,42 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) ListUsers() []*repository.User {
+func (s *UserService) ListUsers() ([]*model.User, error) {
 	return s.repo.FindAll()
 }
 
-func (s *UserService) GetUser(id string) (*repository.User, error) {
-	user := s.repo.FindByID(id)
+func (s *UserService) GetUser(id string) (*model.User, error) {
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
 	if user == nil {
 		return nil, ErrUserNotFound
 	}
 	return user, nil
 }
 
-func (s *UserService) CreateUser(name, email string) *repository.User {
-	return s.repo.Create(name, email)
+func (s *UserService) CreateUser(name, email string) (*model.User, error) {
+	return s.repo.Create(&model.User{Name: name, Email: email, PasswordHash: ""})
 }
 
-func (s *UserService) UpdateUser(id, name, email string) (*repository.User, error) {
-	user := s.repo.Update(id, name, email)
+func (s *UserService) UpdateUser(id, name, email string) (*model.User, error) {
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
 	if user == nil {
 		return nil, ErrUserNotFound
 	}
-	return user, nil
+	user.Name = name
+	user.Email = email
+	return s.repo.Update(user)
 }
 
 func (s *UserService) DeleteUser(id string) error {
-	if !s.repo.Delete(id) {
+	err := s.repo.Delete(id)
+	if errors.Is(err, repository.ErrNotFound) {
 		return ErrUserNotFound
 	}
-	return nil
+	return err
 }
