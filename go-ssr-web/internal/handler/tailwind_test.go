@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"io/fs"
@@ -11,16 +11,17 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/gorilla/sessions"
 	"github.com/stretchr/testify/assert"
 
+	"go-ssr-web/internal/handler"
 	"go-ssr-web/internal/repository"
 	"go-ssr-web/internal/service"
+	"go-ssr-web/internal/testutil"
 )
 
-// projectRoot returns the absolute path to the go-ssr-web directory.
 func projectRoot() string {
 	_, filename, _, _ := runtime.Caller(0)
-	// filename = .../internal/handler/tailwind_test.go
 	return filepath.Join(filepath.Dir(filename), "..", "..")
 }
 
@@ -49,14 +50,12 @@ func TestTailwind_InputCSSExists(t *testing.T) {
 }
 
 func TestTailwind_IndexTemplateReferencesTailwind(t *testing.T) {
-	// The index template should reference Tailwind classes and an icon
 	indexTemplate := filepath.Join(projectRoot(), "web", "templates", "index.html")
 
 	data, err := os.ReadFile(indexTemplate)
 	assert.NoError(t, err, "index.html should exist")
 
 	content := string(data)
-	// Should contain at least one Tailwind utility class
 	hasTailwind := strings.Contains(content, "class=") &&
 		(strings.Contains(content, "bg-") ||
 			strings.Contains(content, "text-") ||
@@ -65,25 +64,23 @@ func TestTailwind_IndexTemplateReferencesTailwind(t *testing.T) {
 			strings.Contains(content, "rounded"))
 	assert.True(t, hasTailwind, "index.html should contain Tailwind utility classes")
 
-	// Should reference the static icons directory
 	assert.Contains(t, content, "/static/icons/", "index.html should reference an icon from /static/icons/")
 }
 
 func TestTailwind_StaticIconServed(t *testing.T) {
-	// Build a handler with a fake FS that includes an icon
-	repo := repository.NewUserRepository()
+	db := testutil.NewTestDB(t)
+	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
 
 	staticFS := fstest.MapFS{
 		"css/output.css":   &fstest.MapFile{Data: []byte("body{}")},
 		"icons/rocket.svg": &fstest.MapFile{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-rocket"></svg>`)},
 	}
-
-	h := NewHandler(svc, makeTestTemplates(), fs.FS(staticFS))
+	store := sessions.NewCookieStore([]byte("test-secret"))
+	h := handler.NewHandler(svc, makeTestTemplates(), fs.FS(staticFS), store)
 
 	req := httptest.NewRequest(http.MethodGet, "/static/icons/rocket.svg", nil)
 	rec := httptest.NewRecorder()
-
 	h.Routes().ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)

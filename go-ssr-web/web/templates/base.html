@@ -11,6 +11,11 @@
     <nav class="mb-8 pb-4 border-b border-gray-300 flex gap-4">
         <a href="/" class="text-blue-600 hover:underline">Home</a>
         <a href="/users" class="text-blue-600 hover:underline">Users</a>
+        {{if .UserID}}
+        <a href="/profile" class="text-blue-600 hover:underline ml-auto">Profile</a>
+        {{else}}
+        <a href="/login" class="text-blue-600 hover:underline ml-auto">Login</a>
+        {{end}}
     </nav>
     <main>
         {{template "content" .}}

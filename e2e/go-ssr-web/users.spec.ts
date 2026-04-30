@@ -20,8 +20,9 @@ test.describe("go-ssr-web users CRUD", () => {
     await page.goto("/users/new");
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("heading", { name: /new user/i })).toBeVisible();
-    await expect(page.getByLabel(/name/i)).toBeVisible();
-    await expect(page.getByLabel(/email/i)).toBeVisible();
+    await expect(page.getByLabel("Name")).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
     await expect(page.getByRole("button", { name: /create/i })).toBeVisible();
   });
 
@@ -30,8 +31,9 @@ test.describe("go-ssr-web users CRUD", () => {
     const uniqueName = `E2E Create User ${Date.now()}`;
 
     await page.goto("/users/new");
-    await page.getByLabel(/name/i).fill(uniqueName);
-    await page.getByLabel(/email/i).fill(uniqueEmail);
+    await page.getByLabel("Name").fill(uniqueName);
+    await page.getByLabel("Email").fill(uniqueEmail);
+    await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: /create/i }).click();
 
     await expect(page).toHaveURL(/\/users$/);
@@ -44,8 +46,9 @@ test.describe("go-ssr-web users CRUD", () => {
     const uniqueName = `E2E Detail User ${Date.now()}`;
 
     await page.goto("/users/new");
-    await page.getByLabel(/name/i).fill(uniqueName);
-    await page.getByLabel(/email/i).fill(uniqueEmail);
+    await page.getByLabel("Name").fill(uniqueName);
+    await page.getByLabel("Email").fill(uniqueEmail);
+    await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: /create/i }).click();
 
     await expect(page).toHaveURL(/\/users$/);
@@ -64,8 +67,9 @@ test.describe("go-ssr-web users CRUD", () => {
     const updatedEmail = `edited-${Date.now()}@example.com`;
 
     await page.goto("/users/new");
-    await page.getByLabel(/name/i).fill(uniqueName);
-    await page.getByLabel(/email/i).fill(uniqueEmail);
+    await page.getByLabel("Name").fill(uniqueName);
+    await page.getByLabel("Email").fill(uniqueEmail);
+    await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: /create/i }).click();
 
     await expect(page).toHaveURL(/\/users$/);
@@ -73,8 +77,8 @@ test.describe("go-ssr-web users CRUD", () => {
     await page.getByRole("link", { name: /edit/i }).click();
 
     await expect(page.getByRole("heading", { name: /edit user/i })).toBeVisible();
-    await page.getByLabel(/name/i).fill(updatedName);
-    await page.getByLabel(/email/i).fill(updatedEmail);
+    await page.getByLabel("Name").fill(updatedName);
+    await page.getByLabel("Email").fill(updatedEmail);
     await page.getByRole("button", { name: /update/i }).click();
 
     await expect(page.getByRole("heading", { name: updatedName })).toBeVisible();
@@ -86,8 +90,9 @@ test.describe("go-ssr-web users CRUD", () => {
     const uniqueName = `E2E Delete User ${Date.now()}`;
 
     await page.goto("/users/new");
-    await page.getByLabel(/name/i).fill(uniqueName);
-    await page.getByLabel(/email/i).fill(uniqueEmail);
+    await page.getByLabel("Name").fill(uniqueName);
+    await page.getByLabel("Email").fill(uniqueEmail);
+    await page.getByLabel("Password").fill("secret123");
     await page.getByRole("button", { name: /create/i }).click();
 
     await expect(page).toHaveURL(/\/users$/);

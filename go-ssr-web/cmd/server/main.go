@@ -13,18 +13,28 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kelseyhightower/envconfig"
+	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
+	"github.com/gorilla/sessions"
 	"github.com/lmittmann/tint"
+	"github.com/sethvargo/go-envconfig"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"go-ssr-web/internal/handler"
+	"go-ssr-web/internal/model"
 	"go-ssr-web/internal/repository"
 	"go-ssr-web/internal/service"
 	"go-ssr-web/web"
 )
 
 type Config struct {
-	Port            string        `envconfig:"PORT" default:"8080"`
-	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"10s"`
+	Port            string        `env:"PORT,default=8080"`
+	DatabaseDSN     string        `env:"DATABASE_DSN,default=app.db"`
+	SessionSecret   string        `env:"SESSION_SECRET,default=change-me-in-production"`
+	AppEnv          string        `env:"APP_ENV"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,default=10s"`
+	SessionMaxAge   int           `env:"SESSION_MAX_AGE,default=86400"`
 }
 
 func main() {
@@ -45,8 +55,24 @@ func main() {
 	slog.SetDefault(slog.New(logHandler))
 
 	var cfg Config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := envconfig.Process(context.Background(), &cfg); err != nil {
 		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	if cfg.AppEnv == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	db, err := gorm.Open(sqlite.Open(cfg.DatabaseDSN), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	if migErr := db.AutoMigrate(&model.User{}); migErr != nil {
+		slog.Error("failed to migrate database", "error", migErr)
 		os.Exit(1)
 	}
 
@@ -62,9 +88,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	repo := repository.NewUserRepository()
+	store := sessions.NewCookieStore([]byte(cfg.SessionSecret))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   cfg.SessionMaxAge,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   cfg.AppEnv == "production",
+	}
+
+	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
-	h := handler.NewHandler(svc, templates, staticFiles)
+	h := handler.NewHandler(svc, templates, staticFiles, store)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -104,6 +139,8 @@ func main() {
 func loadTemplates() (map[string]*template.Template, error) {
 	pages := []struct{ name, path string }{
 		{"index.html", "templates/index.html"},
+		{"login.html", "templates/login.html"},
+		{"profile.html", "templates/profile.html"},
 		{"users/index.html", "templates/users/index.html"},
 		{"users/new.html", "templates/users/new.html"},
 		{"users/show.html", "templates/users/show.html"},
