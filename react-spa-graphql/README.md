@@ -14,6 +14,7 @@ A minimal React SPA with GraphQL integration for development.
 | UI State | Zustand |
 | UI Components | MUI (Material UI) |
 | Form Validation | React Hook Form + Zod |
+| Logging | consola |
 | Linter | ESLint |
 | Formatter | Prettier |
 | Testing | Vitest + Testing Library + MSW |

@@ -1,6 +1,5 @@
-import log from "loglevel";
+import { createConsola } from "consola";
 
-const level = import.meta.env.PROD ? "warn" : "debug";
-log.setLevel(level);
-
-export const logger = log;
+export const logger = createConsola({
+  level: import.meta.env.PROD ? 1 : 4,
+});
