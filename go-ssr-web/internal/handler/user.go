@@ -4,146 +4,159 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/gin-gonic/gin"
 
-	"go-ssr-web/internal/repository"
+	"go-ssr-web/internal/model"
 	"go-ssr-web/internal/service"
 )
 
 type indexData struct {
-	Title string
+	Title  string
+	UserID string
 }
 
 type userListData struct {
-	Title string
-	Users []*repository.User
+	Title  string
+	UserID string
+	Users  []*model.User
 }
 
 type userFormData struct {
-	Title string
-	User  *repository.User
-	Error string
+	Title  string
+	UserID string
+	User   *model.User
+	Error  string
 }
 
-func (h *Handler) handleIndex(w http.ResponseWriter, _ *http.Request) {
-	h.render(w, "index.html", indexData{Title: "Home"})
-}
-
-func (h *Handler) handleUserList(w http.ResponseWriter, _ *http.Request) {
-	users := h.userSvc.ListUsers()
-	h.render(w, "users/index.html", userListData{
-		Title: "Users",
-		Users: users,
+func (h *Handler) handleIndex(c *gin.Context) {
+	h.render(c, "index.html", http.StatusOK, indexData{
+		Title:  "Home",
+		UserID: currentUserID(c),
 	})
 }
 
-func (h *Handler) handleUserNew(w http.ResponseWriter, _ *http.Request) {
-	h.render(w, "users/new.html", userFormData{Title: "New User"})
-}
-
-func (h *Handler) handleUserCreate(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+func (h *Handler) handleUserList(c *gin.Context) {
+	users, err := h.userSvc.ListUsers()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Internal error")
 		return
 	}
+	h.render(c, "users/index.html", http.StatusOK, userListData{
+		Title:  "Users",
+		UserID: currentUserID(c),
+		Users:  users,
+	})
+}
 
-	name := r.FormValue("name")
-	email := r.FormValue("email")
+func (h *Handler) handleUserNew(c *gin.Context) {
+	h.render(c, "users/new.html", http.StatusOK, userFormData{
+		Title:  "New User",
+		UserID: currentUserID(c),
+	})
+}
 
-	if name == "" || email == "" {
-		h.render(w, "users/new.html", userFormData{
-			Title: "New User",
-			User:  &repository.User{Name: name, Email: email},
-			Error: "Name and email are required",
+func (h *Handler) handleUserCreate(c *gin.Context) {
+	name := c.PostForm("name")
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	if name == "" || email == "" || password == "" {
+		h.render(c, "users/new.html", http.StatusOK, userFormData{
+			Title:  "New User",
+			UserID: currentUserID(c),
+			User:   &model.User{Name: name, Email: email},
+			Error:  "Name, email, and password are required",
 		})
 		return
 	}
 
-	h.userSvc.CreateUser(name, email)
-	http.Redirect(w, r, "/users", http.StatusSeeOther)
+	if _, err := h.userSvc.CreateUser(name, email, password); err != nil {
+		h.render(c, "users/new.html", http.StatusOK, userFormData{
+			Title:  "New User",
+			UserID: currentUserID(c),
+			User:   &model.User{Name: name, Email: email},
+			Error:  "Could not create user (email may already be taken)",
+		})
+		return
+	}
+	c.Redirect(http.StatusSeeOther, "/users")
 }
 
-func (h *Handler) handleUserShow(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+func (h *Handler) handleUserShow(c *gin.Context) {
+	id := c.Param("id")
 	user, err := h.userSvc.GetUser(id)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			http.NotFound(w, r)
+			c.String(http.StatusNotFound, "Not Found")
 			return
 		}
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "Internal error")
 		return
 	}
 
-	h.render(w, "users/show.html", userFormData{
-		Title: user.Name,
-		User:  user,
+	h.render(c, "users/show.html", http.StatusOK, userFormData{
+		Title:  user.Name,
+		UserID: currentUserID(c),
+		User:   user,
 	})
 }
 
-func (h *Handler) handleUserEdit(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+func (h *Handler) handleUserEdit(c *gin.Context) {
+	id := c.Param("id")
 	user, err := h.userSvc.GetUser(id)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			http.NotFound(w, r)
+			c.String(http.StatusNotFound, "Not Found")
 			return
 		}
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "Internal error")
 		return
 	}
 
-	h.render(w, "users/edit.html", userFormData{
-		Title: "Edit " + user.Name,
-		User:  user,
+	h.render(c, "users/edit.html", http.StatusOK, userFormData{
+		Title:  "Edit " + user.Name,
+		UserID: currentUserID(c),
+		User:   user,
 	})
 }
 
-func (h *Handler) handleUserUpdate(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	name := r.FormValue("name")
-	email := r.FormValue("email")
+func (h *Handler) handleUserUpdate(c *gin.Context) {
+	id := c.Param("id")
+	name := c.PostForm("name")
+	email := c.PostForm("email")
 
 	if name == "" || email == "" {
 		user, _ := h.userSvc.GetUser(id)
-		h.render(w, "users/edit.html", userFormData{
-			Title: "Edit User",
-			User:  user,
-			Error: "Name and email are required",
+		h.render(c, "users/edit.html", http.StatusOK, userFormData{
+			Title:  "Edit User",
+			UserID: currentUserID(c),
+			User:   user,
+			Error:  "Name and email are required",
 		})
 		return
 	}
 
-	_, err := h.userSvc.UpdateUser(id, name, email)
-	if err != nil {
+	if _, err := h.userSvc.UpdateUser(id, name, email); err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			http.NotFound(w, r)
+			c.String(http.StatusNotFound, "Not Found")
 			return
 		}
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "Internal error")
 		return
 	}
 
-	http.Redirect(w, r, "/users/"+id, http.StatusSeeOther)
+	c.Redirect(http.StatusSeeOther, "/users/"+id)
 }
 
-func (h *Handler) handleUserDelete(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
+func (h *Handler) handleUserDelete(c *gin.Context) {
+	id := c.Param("id")
 	if err := h.userSvc.DeleteUser(id); err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			http.NotFound(w, r)
+			c.String(http.StatusNotFound, "Not Found")
 			return
 		}
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "Internal error")
 		return
 	}
-
-	http.Redirect(w, r, "/users", http.StatusSeeOther)
+	c.Redirect(http.StatusSeeOther, "/users")
 }

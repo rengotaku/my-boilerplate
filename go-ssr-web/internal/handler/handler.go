@@ -5,57 +5,65 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 
+	"go-ssr-web/internal/middleware"
 	"go-ssr-web/internal/service"
 )
 
 type Handler struct {
-	userSvc   *service.UserService
-	templates map[string]*template.Template
-	staticFS  fs.FS
+	userSvc      *service.UserService
+	templates    map[string]*template.Template
+	staticFS     fs.FS
+	sessionStore sessions.Store
 }
 
-func NewHandler(userSvc *service.UserService, templates map[string]*template.Template, staticFS fs.FS) *Handler {
+func NewHandler(userSvc *service.UserService, templates map[string]*template.Template, staticFS fs.FS, sessionStore sessions.Store) *Handler {
 	return &Handler{
-		userSvc:   userSvc,
-		templates: templates,
-		staticFS:  staticFS,
+		userSvc:      userSvc,
+		templates:    templates,
+		staticFS:     staticFS,
+		sessionStore: sessionStore,
 	}
 }
 
 func (h *Handler) Routes() http.Handler {
-	r := chi.NewRouter()
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(middleware.Session(h.sessionStore))
 
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
+	r.StaticFS("/static", http.FS(h.staticFS))
 
-	// Static files
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(h.staticFS))))
+	r.GET("/", h.handleIndex)
+	r.GET("/login", h.handleLoginForm)
+	r.POST("/login", h.handleLogin)
 
-	// Pages
-	r.Get("/", h.handleIndex)
-	r.Get("/users", h.handleUserList)
-	r.Get("/users/new", h.handleUserNew)
-	r.Post("/users", h.handleUserCreate)
-	r.Get("/users/{id}", h.handleUserShow)
-	r.Get("/users/{id}/edit", h.handleUserEdit)
-	r.Post("/users/{id}", h.handleUserUpdate)
-	r.Post("/users/{id}/delete", h.handleUserDelete)
+	r.GET("/users", h.handleUserList)
+	r.GET("/users/new", h.handleUserNew)
+	r.POST("/users", h.handleUserCreate)
+	r.GET("/users/:id", h.handleUserShow)
+	r.GET("/users/:id/edit", h.handleUserEdit)
+	r.POST("/users/:id", h.handleUserUpdate)
+	r.POST("/users/:id/delete", h.handleUserDelete)
+
+	auth := r.Group("/")
+	auth.Use(middleware.RequireAuth())
+	auth.GET("/profile", h.handleProfile)
+	auth.POST("/logout", h.handleLogout)
 
 	return r
 }
 
-func (h *Handler) render(w http.ResponseWriter, name string, data any) {
+func (h *Handler) render(c *gin.Context, name string, status int, data any) {
 	t, ok := h.templates[name]
 	if !ok {
-		http.Error(w, "Template error", http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "Template error")
 		return
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := t.ExecuteTemplate(w, "base", data); err != nil {
-		http.Error(w, "Template error", http.StatusInternalServerError)
+	c.Status(status)
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	if err := t.ExecuteTemplate(c.Writer, "base", data); err != nil {
+		c.String(http.StatusInternalServerError, "Template error")
 	}
 }
