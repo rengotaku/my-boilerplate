@@ -1,38 +1,49 @@
-"""SQLite データベース接続管理とスキーマ初期化."""
+"""SQLModel エンジンとセッション管理."""
 
-import sqlite3
-from pathlib import Path
+from collections.abc import Generator
 
-DB_PATH = Path(__file__).parent.parent.parent / "myweb.db"
+from sqlalchemy.engine import Engine
+from sqlmodel import Session, SQLModel, create_engine
 
-CREATE_ITEMS_TABLE = """
-CREATE TABLE IF NOT EXISTS items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-"""
+import myweb.models  # noqa: F401  side-effect import: SQLModel.metadata 登録
+from myweb.config import get_settings
+
+_engine: Engine | None = None
 
 
-def get_connection(db_path: str = str(DB_PATH)) -> sqlite3.Connection:
-    """SQLite 接続を返す。row_factory を sqlite3.Row に設定する。"""
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _make_engine(database_url: str) -> Engine:
+    connect_args: dict[str, object] = {}
+    if database_url.startswith("sqlite"):
+        connect_args["check_same_thread"] = False
+    return create_engine(database_url, connect_args=connect_args, echo=False)
 
 
-def init_db(db_path: str = str(DB_PATH)) -> None:
-    """データベーススキーマを初期化する(テーブルが存在しない場合のみ作成)。"""
-    conn = get_connection(db_path)
-    try:
-        conn.execute(CREATE_ITEMS_TABLE)
-        conn.commit()
-    finally:
-        conn.close()
+def get_engine() -> Engine:
+    """SQLModel エンジンをシングルトンで返す."""
+    global _engine  # noqa: PLW0603
+    if _engine is None:
+        _engine = _make_engine(get_settings().database_url)
+    return _engine
 
 
-def create_tables(conn: sqlite3.Connection) -> None:
-    """既存の接続でテーブルを作成する。"""
-    conn.execute(CREATE_ITEMS_TABLE)
-    conn.commit()
+def set_engine(engine: Engine) -> None:
+    """テスト用: エンジンを差し替える."""
+    global _engine  # noqa: PLW0603
+    _engine = engine
+
+
+def reset_engine() -> None:
+    """テスト用: エンジンキャッシュをリセットする."""
+    global _engine  # noqa: PLW0603
+    _engine = None
+
+
+def init_db(engine: Engine | None = None) -> None:
+    """テーブルが存在しない場合のみ作成する (開発用)."""
+    SQLModel.metadata.create_all(engine or get_engine())
+
+
+def get_session() -> Generator[Session, None, None]:
+    """依存性注入用: SQLModel セッションを返す."""
+    with Session(get_engine()) as session:
+        yield session

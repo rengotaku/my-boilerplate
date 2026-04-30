@@ -1,4 +1,4 @@
-.PHONY: install dev lint typecheck format test test-cov check ci build run clean clean-all help
+.PHONY: install dev lint typecheck format test test-cov check ci build run migrate migrate-rev clean clean-all help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -57,6 +57,14 @@ build: _copy-alpine
 ## run: Run production server
 run: build
 	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
+
+## migrate: Apply Alembic migrations to the configured database
+migrate:
+	uv run alembic upgrade head
+
+## migrate-rev: Generate a new Alembic revision (usage: make migrate-rev m="msg")
+migrate-rev:
+	uv run alembic revision --autogenerate -m "$(m)"
 
 ## clean: Remove build artifacts and cache
 clean:

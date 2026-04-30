@@ -59,6 +59,12 @@ apply_python_replacements() {
     info "Updated Makefile references"
   fi
 
+  # Replace references in alembic.ini (python-web batteries-included template)
+  if [[ -f "$dest/alembic.ini" ]]; then
+    sed -i "s|src/${orig_pkg}|src/${pkg_name}|g" "$dest/alembic.ini"
+    info "Updated alembic.ini references"
+  fi
+
   # Replace pytest coverage source in CI workflow references
   find "$dest" -name '*.yml' -exec sed -i "s|--cov=src/${orig_pkg}|--cov=src/${pkg_name}|g" {} + 2>/dev/null || true
 
