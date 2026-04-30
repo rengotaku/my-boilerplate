@@ -25,6 +25,12 @@ apply_rust_replacements() {
     info "Updated src/cli.rs"
   fi
 
+  # Replace crate import in src/main.rs (rust_cli -> new crate name)
+  if [[ -f "$dest/src/main.rs" ]]; then
+    sed -i "s|use rust_cli::|use ${crate_name}::|g" "$dest/src/main.rs"
+    info "Updated src/main.rs"
+  fi
+
   # Replace BINARY_NAME in Makefile
   if [[ -f "$dest/Makefile" ]]; then
     sed -i "s|^BINARY_NAME := mycli|BINARY_NAME := ${name}|" "$dest/Makefile"
