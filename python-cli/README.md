@@ -6,6 +6,8 @@ uv + Typer + ruff + mypy + pytest のPython CLIボイラープレート。
 
 - **Package Manager**: [uv](https://docs.astral.sh/uv/) (10-100x faster than pip)
 - **CLI**: [Typer](https://typer.tiangolo.com/)
+- **Config**: [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) (env / `.env` 自動ロード)
+- **Logging**: [structlog](https://www.structlog.org/) (console / JSON 切替）
 - **Linter**: [ruff](https://docs.astral.sh/ruff/)
 - **Type Checker**: [mypy](https://mypy-lang.org/) (strict mode)
 - **Testing**: [pytest](https://pytest.org/) + coverage
@@ -55,6 +57,19 @@ python-cli/
 ├── Makefile
 ├── pyproject.toml
 └── README.md
+```
+
+## Configuration
+
+環境変数（`.env` も可）で挙動を切り替えられます。プレフィックスは `MYCLI_`。
+
+| 変数 | 既定値 | 値 |
+|---|---|---|
+| `MYCLI_LOG_LEVEL` | `INFO` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL` |
+| `MYCLI_LOG_FORMAT` | `console` | `console` / `json` |
+
+```bash
+MYCLI_LOG_LEVEL=DEBUG MYCLI_LOG_FORMAT=json uv run mycli hello World
 ```
 
 ## Customization
