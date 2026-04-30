@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci clean generate help
+.PHONY: install build run dev stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean generate help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -56,9 +56,25 @@ check: lint test
 ## ci: Run lint + test with coverage
 ci: lint test-cov
 
+## migrate: Apply migrations via GORM AutoMigrate (no atlas required)
+migrate:
+	go run ./cmd/migrate
+
+## migrate-diff: Generate a new migration (requires atlas CLI)
+migrate-diff:
+	atlas migrate diff --env local
+
+## migrate-apply: Apply pending migrations (requires atlas CLI)
+migrate-apply:
+	atlas migrate apply --env local
+
+## migrate-hash: Rehash the migration directory (requires atlas CLI)
+migrate-hash:
+	atlas migrate hash --env local
+
 ## clean: Remove build artifacts
 clean:
-	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE)
+	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE) app.db
 
 ## help: Show this help
 help:

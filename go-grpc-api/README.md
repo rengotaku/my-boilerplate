@@ -8,8 +8,12 @@ A minimal Go gRPC API boilerplate with clean architecture.
 - Protocol Buffers with buf for schema management
 - Input validation using protovalidate
 - Clean architecture (repository/service/server layers)
-- Structured logging with slog
-- Configuration via environment variables
+- **ORM**: [GORM](https://gorm.io/) + SQLite ([glebarez/sqlite](https://github.com/glebarez/sqlite) — pure Go)
+- **Migrations**: [Atlas](https://atlasgo.io/)
+- **Auth**: [golang-jwt/jwt](https://github.com/golang-jwt/jwt)
+- **Config**: [sethvargo/go-envconfig](https://github.com/sethvargo/go-envconfig)
+- Structured logging with slog (標準ライブラリ)
+- **Testing**: [testify](https://github.com/stretchr/testify)
 - Docker support
 - GitHub Actions CI with 80%+ coverage requirement
 
@@ -17,13 +21,21 @@ A minimal Go gRPC API boilerplate with clean architecture.
 
 ```
 go-grpc-api/
+├── atlasgen/
+│   └── main.go              # Atlas schema generator
 ├── cmd/
+│   ├── migrate/
+│   │   └── main.go          # Migration entry point
 │   └── server/
 │       └── main.go          # Application entry point
 ├── internal/
+│   ├── middleware/           # JWT auth interceptor
+│   ├── model/               # GORM models
 │   ├── server/              # gRPC server implementation
 │   ├── service/             # Business logic
-│   └── repository/          # Data access layer
+│   ├── repository/          # Data access layer (GORM)
+│   └── testutil/            # Test helpers
+├── migrations/              # Atlas SQL migrations
 ├── api/
 │   └── proto/
 │       └── v1/
@@ -74,24 +86,32 @@ Air will watch `.go` files and automatically rebuild/restart the server on chang
 ## Available Commands
 
 ```bash
-make install     # Download dependencies
-make generate    # Generate protobuf code
-make build       # Build the binary
-make run         # Run the server
-make dev         # Run with hot reload (requires air)
-make lint        # Run golangci-lint
-make test        # Run tests
-make test-cov    # Run tests with coverage
-make check       # Run lint + test
-make ci          # Run lint + test with coverage
-make clean       # Remove build artifacts
+make install        # Download dependencies
+make generate       # Generate protobuf code
+make build          # Build the binary
+make run            # Run the server
+make dev            # Run with hot reload (requires air)
+make lint           # Run golangci-lint
+make test           # Run tests
+make test-cov       # Run tests with coverage
+make check          # Run lint + test
+make ci             # Run lint + test with coverage
+make migrate        # Apply migrations (GORM AutoMigrate, no atlas required)
+make migrate-diff   # Generate a new migration (requires atlas CLI)
+make migrate-apply  # Apply pending migrations (requires atlas CLI)
+make migrate-hash   # Rehash the migration directory (requires atlas CLI)
+make clean          # Remove build artifacts
 ```
 
 ## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| PORT | 50051 | gRPC server port |
+| `PORT` | `50051` | gRPC server port |
+| `DATABASE_DSN` | `app.db` | SQLite database path |
+| `JWT_SECRET` | `change-me-in-production` | JWT signing secret |
+| `APP_ENV` | `` | Set to `production` for JSON logging |
+| `LOG_LEVEL` | `INFO` | Log level (DEBUG, INFO, WARN, ERROR) |
 
 ## API
 
@@ -151,8 +171,11 @@ docker run -p 50051:50051 go-grpc-api
 | Framework | grpc-go |
 | Proto Management | buf |
 | Validation | protovalidate |
+| ORM | GORM + glebarez/sqlite |
+| Migrations | Atlas |
+| Auth | golang-jwt/jwt |
 | Logging | slog (standard library) |
-| Configuration | envconfig |
+| Configuration | sethvargo/go-envconfig |
 | Testing | go test + testify |
 
 ## License

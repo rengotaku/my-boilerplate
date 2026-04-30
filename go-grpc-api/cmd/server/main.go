@@ -1,28 +1,33 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"buf.build/go/protovalidate"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/lmittmann/tint"
+	"github.com/glebarez/sqlite"
+	"github.com/sethvargo/go-envconfig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	pb "go-grpc-api/pkg/pb/v1"
 
+	"go-grpc-api/internal/model"
 	"go-grpc-api/internal/repository"
 	"go-grpc-api/internal/server"
 	"go-grpc-api/internal/service"
 )
 
 type Config struct {
-	Port string `envconfig:"PORT" default:"50051"`
+	Port        string `env:"PORT,default=50051"`
+	DatabaseDSN string `env:"DATABASE_DSN,default=app.db"`
+	JWTSecret   string `env:"JWT_SECRET,default=change-me-in-production"`
 }
 
 func main() {
@@ -31,20 +36,28 @@ func main() {
 		_ = logLevel.UnmarshalText([]byte(l))
 	}
 
-	var logHandler slog.Handler
+	logHandler := slog.Handler(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: &logLevel}))
 	if os.Getenv("APP_ENV") == "production" {
 		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
-	} else {
-		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      &logLevel,
-			TimeFormat: time.Kitchen,
-		})
 	}
 	slog.SetDefault(slog.New(logHandler))
 
 	var cfg Config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := envconfig.Process(context.Background(), &cfg); err != nil {
 		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	db, err := gorm.Open(sqlite.Open(cfg.DatabaseDSN), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		slog.Error("failed to migrate database", "error", err)
 		os.Exit(1)
 	}
 
@@ -54,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	repo := repository.NewUserRepository()
+	repo := repository.NewUserRepository(db)
 	svc := service.NewUserService(repo)
 	userServer := server.NewUserServer(svc)
 
