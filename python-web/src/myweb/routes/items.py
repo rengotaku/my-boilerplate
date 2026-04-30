@@ -1,14 +1,12 @@
 """Item CRUD ルート: contracts/routes.md に準拠した APIRouter 定義."""
 
-import sqlite3
-from collections.abc import Generator
-
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlmodel import Session
 from starlette.responses import Response
 
-from myweb.database import get_connection
+from myweb.database import get_session
 from myweb.repositories.item_repo import ItemRepository
 from myweb.services.item_service import ItemNotFoundError, ItemService
 
@@ -22,20 +20,11 @@ def set_templates(tmpl: Jinja2Templates) -> None:
     templates = tmpl
 
 
-def get_db() -> Generator[sqlite3.Connection, None, None]:
-    """依存性注入: SQLite 接続を返すジェネレータ。"""
-    conn = get_connection()
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
 def get_item_service(
-    conn: sqlite3.Connection = Depends(get_db),
+    session: Session = Depends(get_session),
 ) -> ItemService:
     """依存性注入: ItemService を生成する。"""
-    repo = ItemRepository(conn)
+    repo = ItemRepository(session)
     return ItemService(repo)
 
 
@@ -47,9 +36,7 @@ async def index(
     """トップページ(Item 一覧)."""
     assert templates is not None
     items = service.get_all_items()
-    return templates.TemplateResponse(
-        request, "index.html", {"items": items}
-    )
+    return templates.TemplateResponse(request, "index.html", {"items": items})
 
 
 @router.get("/items/new", response_class=HTMLResponse)
@@ -105,9 +92,8 @@ async def edit_item(
 ) -> HTMLResponse:
     """編集フォーム."""
     assert templates is not None
-    service_inst = service
     try:
-        item = service_inst.get_item(item_id)
+        item = service.get_item(item_id)
     except ItemNotFoundError:
         return templates.TemplateResponse(
             request, "items/edit.html", {"item": None}, status_code=404

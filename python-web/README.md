@@ -1,6 +1,18 @@
 # myweb
 
-Python Web application with FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite.
+Python Web application **batteries-included** boilerplate: FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite.
+
+定番パッケージを同梱しており、scaffold 直後から DB / 認証 / ロギング / Config を追加インストール無しで使える。
+
+## Batteries Included
+
+| カテゴリ | パッケージ |
+|---|---|
+| Web | `fastapi`, `uvicorn[standard]`, `jinja2`, `python-multipart` |
+| ORM / Migrations | `sqlmodel`, `alembic` |
+| 認証 | `pyjwt`, `pwdlib[argon2]` |
+| ロギング | `structlog` |
+| Config | `pydantic-settings` |
 
 ## Prerequisites
 
@@ -12,6 +24,7 @@ Python Web application with FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite
 
 ```bash
 make install
+make migrate     # Alembic で初回マイグレーション
 ```
 
 ## Development
@@ -33,6 +46,7 @@ make ci          # Run lint + typecheck + test-cov
 
 ```bash
 make build       # Build production assets
+make migrate     # Apply migrations
 make run         # Start production server
 ```
 
@@ -40,19 +54,38 @@ make run         # Start production server
 
 ```
 src/myweb/
-├── app.py               # FastAPI application
-├── database.py           # SQLite connection
+├── app.py                # FastAPI application + lifespan
+├── config.py             # pydantic-settings 設定
+├── logging_config.py     # structlog 設定
+├── database.py           # SQLModel エンジン / Session
+├── models.py             # SQLModel エンティティ (Item, User)
+├── auth/                 # 認証ユーティリティ (JWT + argon2)
 ├── routes/
-│   └── items.py          # Item CRUD routes
-├── services/
-│   └── item_service.py   # Business logic
-└── repositories/
-    └── item_repo.py      # Data access
-templates/                # Jinja2 templates
-static/                   # Static assets (CSS, JS)
-tests/                    # Test suite
+│   ├── items.py          # Item CRUD
+│   └── auth.py           # register / login / logout
+├── services/             # ビジネスロジック
+├── repositories/         # データアクセス
+└── alembic/              # Alembic マイグレーション
+templates/                # Jinja2 テンプレート
+static/                   # 静的アセット
+tests/                    # テストスイート
 ```
 
 ## Available Commands
 
-Run `make help` to see all available targets.
+`make help` で全ターゲットを確認できる。
+
+## Environment Variables
+
+`.env` または環境変数で上書き可能 (`pydantic-settings` がロードする):
+
+| 変数 | デフォルト | 用途 |
+|---|---|---|
+| `APP_ENV` | `development` | 動作環境名 |
+| `LOG_LEVEL` | `INFO` | structlog ログレベル |
+| `LOG_JSON` | `false` | true で JSON 形式ログ |
+| `DATABASE_URL` | `sqlite:///./myweb.db` | SQLAlchemy URL |
+| `JWT_SECRET` | `dev-secret-change-me` | JWT 署名キー (本番では必ず変更) |
+| `JWT_ALGORITHM` | `HS256` | JWT 署名アルゴリズム |
+| `JWT_EXPIRE_MINUTES` | `1440` | JWT 有効期限 (分) |
+| `SESSION_COOKIE_NAME` | `session` | セッション Cookie 名 |
