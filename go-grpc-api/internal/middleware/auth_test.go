@@ -23,8 +23,8 @@ func TestGenerateToken(t *testing.T) {
 	assert.NotEmpty(t, token)
 }
 
-func callWithAuth(secret, authHeader string) error {
-	interceptor := middleware.AuthInterceptor(secret)
+func callWithAuth(authHeader string) error {
+	interceptor := middleware.AuthInterceptor(testSecret)
 	ctx := context.Background()
 	if authHeader != "" {
 		md := metadata.Pairs("authorization", authHeader)
@@ -39,7 +39,7 @@ func callWithAuth(secret, authHeader string) error {
 func TestAuthInterceptor(t *testing.T) {
 	t.Run("valid token", func(t *testing.T) {
 		token, _ := middleware.GenerateToken("user-abc", testSecret, time.Hour)
-		err := callWithAuth(testSecret, "Bearer "+token)
+		err := callWithAuth("Bearer " + token)
 		assert.NoError(t, err)
 	})
 
@@ -53,27 +53,27 @@ func TestAuthInterceptor(t *testing.T) {
 	})
 
 	t.Run("missing authorization header", func(t *testing.T) {
-		err := callWithAuth(testSecret, "")
+		err := callWithAuth("")
 		require.Error(t, err)
 		assert.Equal(t, codes.Unauthenticated, status.Code(err))
 	})
 
 	t.Run("invalid format", func(t *testing.T) {
-		err := callWithAuth(testSecret, "Token abc123")
+		err := callWithAuth("Token abc123")
 		require.Error(t, err)
 		assert.Equal(t, codes.Unauthenticated, status.Code(err))
 	})
 
 	t.Run("expired token", func(t *testing.T) {
 		token, _ := middleware.GenerateToken("user-abc", testSecret, -time.Hour)
-		err := callWithAuth(testSecret, "Bearer "+token)
+		err := callWithAuth("Bearer " + token)
 		require.Error(t, err)
 		assert.Equal(t, codes.Unauthenticated, status.Code(err))
 	})
 
 	t.Run("wrong secret", func(t *testing.T) {
 		token, _ := middleware.GenerateToken("user-abc", "other-secret", time.Hour)
-		err := callWithAuth(testSecret, "Bearer "+token)
+		err := callWithAuth("Bearer " + token)
 		require.Error(t, err)
 		assert.Equal(t, codes.Unauthenticated, status.Code(err))
 	})
