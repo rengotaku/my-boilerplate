@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/gin-gonic/gin"
 
 	"go-react-spa/internal/service"
 )
@@ -20,84 +19,78 @@ type UpdateUserRequest struct {
 	Email string `json:"email"`
 }
 
-func (h *Handler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	users := h.userService.ListUsers()
-	respondJSON(w, http.StatusOK, users)
-}
-
-func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	user, err := h.userService.GetUser(id)
+func (h *Handler) ListUsers(c *gin.Context) {
+	users, err := h.userService.ListUsers()
 	if err != nil {
-		if errors.Is(err, service.ErrUserNotFound) {
-			respondError(w, http.StatusNotFound, "user not found")
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-
-	respondJSON(w, http.StatusOK, user)
+	c.JSON(http.StatusOK, users)
 }
 
-func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetUser(c *gin.Context) {
+	user, err := h.userService.GetUser(c.Param("id"))
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *Handler) CreateUser(c *gin.Context) {
 	var req CreateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
 
 	user, err := h.userService.CreateUser(req.Name, req.Email)
 	if err != nil {
 		if errors.Is(err, service.ErrValidation) {
-			respondError(w, http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-
-	respondJSON(w, http.StatusCreated, user)
+	c.JSON(http.StatusCreated, user)
 }
 
-func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
+func (h *Handler) UpdateUser(c *gin.Context) {
 	var req UpdateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
 
-	user, err := h.userService.UpdateUser(id, req.Name, req.Email)
+	user, err := h.userService.UpdateUser(c.Param("id"), req.Name, req.Email)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			respondError(w, http.StatusNotFound, "user not found")
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
 		if errors.Is(err, service.ErrValidation) {
-			respondError(w, http.StatusBadRequest, err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-
-	respondJSON(w, http.StatusOK, user)
+	c.JSON(http.StatusOK, user)
 }
 
-func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-
-	if err := h.userService.DeleteUser(id); err != nil {
+func (h *Handler) DeleteUser(c *gin.Context) {
+	if err := h.userService.DeleteUser(c.Param("id")); err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			respondError(w, http.StatusNotFound, "user not found")
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }

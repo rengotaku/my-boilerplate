@@ -1,13 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
-	"log/slog"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
+	"github.com/gin-gonic/gin"
 
 	"go-react-spa/internal/service"
 )
@@ -21,51 +17,46 @@ func NewHandler(userService *service.UserService) *Handler {
 }
 
 func (h *Handler) Routes(staticHandler http.Handler) http.Handler {
-	r := chi.NewRouter()
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery(), corsMiddleware())
 
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}))
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	r.GET("/health", h.Health)
 
-	r.Get("/health", h.Health)
+	api := r.Group("/api/v1")
+	{
+		users := api.Group("/users")
+		users.GET("", h.ListUsers)
+		users.POST("", h.CreateUser)
+		users.GET("/:id", h.GetUser)
+		users.PUT("/:id", h.UpdateUser)
+		users.DELETE("/:id", h.DeleteUser)
+	}
 
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
-			r.Get("/", h.ListUsers)
-			r.Post("/", h.CreateUser)
-			r.Get("/{id}", h.GetUser)
-			r.Put("/{id}", h.UpdateUser)
-			r.Delete("/{id}", h.DeleteUser)
-		})
-	})
-
-	// All unmatched routes fall through to the static/SPA handler.
-	r.NotFound(staticHandler.ServeHTTP)
+	r.NoRoute(gin.WrapH(staticHandler))
 
 	return r
 }
 
-func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
-	respondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+func (h *Handler) Health(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func respondJSON(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		slog.Error("failed to encode response", "error", err)
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		if origin != "" {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Vary", "Origin")
+			c.Header("Access-Control-Allow-Credentials", "true")
+		}
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
+		c.Header("Access-Control-Max-Age", "300")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
 	}
-}
-
-func respondError(w http.ResponseWriter, status int, message string) {
-	respondJSON(w, status, map[string]string{"error": message})
 }

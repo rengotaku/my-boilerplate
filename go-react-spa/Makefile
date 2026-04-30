@@ -2,6 +2,7 @@
 	compose compose-clean verify \
 	lint lint-frontend lint-fix format format-check \
 	test test-frontend test-cov test-watch coverage \
+	migrate migrate-diff migrate-apply migrate-hash \
 	check ci clean help
 
 .DEFAULT_GOAL := help
@@ -130,6 +131,22 @@ check: lint test lint-frontend test-frontend
 ## ci: Run lint + test (Go uses coverage; frontend uses normal test)
 ci: lint test-cov lint-frontend test-frontend
 
+## migrate: Apply migrations via GORM AutoMigrate (no atlas required)
+migrate:
+	go run ./cmd/migrate
+
+## migrate-diff: Generate a new migration (requires atlas CLI)
+migrate-diff:
+	atlas migrate diff --env local
+
+## migrate-apply: Apply pending migrations (requires atlas CLI)
+migrate-apply:
+	atlas migrate apply --env local
+
+## migrate-hash: Rehash the migration directory (requires atlas CLI)
+migrate-hash:
+	atlas migrate hash --env local
+
 ## verify: Smoke-test the scaffold pathway by composing into a temp dir + running ci
 verify:
 	@tmp=$$(mktemp -d) && \
@@ -147,7 +164,7 @@ verify:
 
 ## clean: Remove all build artifacts and caches (keeps composed frontend)
 clean:
-	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE)
+	rm -rf $(BIN_DIR)/ $(COVERAGE_FILE) app.db
 	@if [ -d $(FRONTEND_DIR) ]; then rm -rf $(FRONTEND_DIR)/node_modules $(FRONTEND_DIR)/coverage; fi
 	find internal/static/dist -mindepth 1 ! -name '.gitkeep' -delete 2>/dev/null || true
 
