@@ -14,7 +14,7 @@ jobs:
 
       - name: Check server Makefiles for stop/status targets
         run: |
-          SERVERS="go-rest-api go-graphql-api go-grpc-api go-ssr-web go-react-spa react-spa"
+          SERVERS="go-rest-api go-graphql-api go-grpc-api go-ssr-web go-ssr-web-minimal go-react-spa react-spa"
           for dir in $SERVERS; do
             if [ -f "$dir/Makefile" ]; then
               grep -q "^stop:" "$dir/Makefile" || echo "::warning file=$dir/Makefile::Missing 'stop' target"

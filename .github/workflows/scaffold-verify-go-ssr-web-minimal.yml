@@ -1,0 +1,22 @@
+name: Scaffold Verify go-ssr-web-minimal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-ssr-web-minimal/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-ssr-web-minimal.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+  pull_request:
+    paths:
+      - 'go-ssr-web-minimal/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-ssr-web-minimal.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-go.yml
+    with:
+      template: go-ssr-web-minimal

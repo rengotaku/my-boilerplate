@@ -9,6 +9,7 @@ VALID_TEMPLATES=(
   go-graphql-api
   go-grpc-api
   go-ssr-web
+  go-ssr-web-minimal
   go-react-spa
   go-cli
   react-spa
