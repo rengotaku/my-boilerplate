@@ -3,6 +3,8 @@ import { test, expect } from "@playwright/test";
 const BASE_URL = "http://localhost:4174";
 const API_URL = "http://localhost:8081";
 
+const uniqueEmail = (prefix: string) => `${prefix}-${Date.now()}@example.com`;
+
 test.describe("react-spa ↔ go-rest-api integration", () => {
   test("API health check responds", async ({ request }) => {
     const response = await request.get(`${API_URL}/health`);
@@ -18,40 +20,75 @@ test.describe("react-spa ↔ go-rest-api integration", () => {
     await expect(usersLink).toBeVisible();
   });
 
-  test("users page loads and displays user management UI", async ({
+  test("users page loads and displays user management UI with password field", async ({
     page,
   }) => {
     await page.goto(`${BASE_URL}/users`);
     await expect(
       page.getByRole("heading", { name: /users/i })
     ).toBeVisible();
-    // Create form should be visible
-    await expect(page.getByLabel(/name/i)).toBeVisible();
-    await expect(page.getByLabel(/email/i)).toBeVisible();
+    await expect(page.getByLabel("Name")).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
     await expect(
       page.getByRole("button", { name: /create/i })
     ).toBeVisible();
   });
 
-  test("create user via API and verify it appears in the list", async ({
+  test("login page exposes email and password fields", async ({ page }) => {
+    await page.goto(`${BASE_URL}/login`);
+    await expect(
+      page.getByRole("heading", { name: /sign in/i })
+    ).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /sign in/i })
+    ).toBeVisible();
+  });
+
+  test("create user via UI form including password", async ({ page }) => {
+    const email = uniqueEmail("e2e-ui");
+    await page.goto(`${BASE_URL}/users`);
+
+    await page.getByLabel("Name").fill("E2E UI User");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill("password123");
+    await page.getByRole("button", { name: /^create$/i }).click();
+
+    await expect(page.getByText("E2E UI User")).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText(email)).toBeVisible();
+  });
+
+  test("login flow stores token and grants protected access (UI)", async ({
     page,
     request,
   }) => {
-    // Create user via API (form does not include password field)
+    const email = uniqueEmail("e2e-login");
+    const password = "password123";
+
     const createResp = await request.post(`${API_URL}/api/v1/users`, {
-      data: {
-        name: "E2E REST User",
-        email: "e2e-rest@example.com",
-        password: "password123",
-      },
+      data: { name: "E2E Login User", email, password },
     });
     expect(createResp.ok()).toBe(true);
 
-    await page.goto(`${BASE_URL}/users`);
-    await expect(page.getByText("E2E REST User")).toBeVisible({
-      timeout: 10_000,
-    });
-    await expect(page.getByText("e2e-rest@example.com")).toBeVisible();
+    await page.goto(`${BASE_URL}/login`);
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    // After login, header shows Logout instead of Login
+    await expect(
+      page.getByRole("button", { name: /logout/i })
+    ).toBeVisible({ timeout: 10_000 });
+
+    // Token persisted in localStorage
+    const token = await page.evaluate(() =>
+      window.localStorage.getItem("react-spa-auth-token")
+    );
+    expect(token).toBeTruthy();
   });
 
   test("REST API endpoint returns valid response", async ({ request }) => {

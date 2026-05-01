@@ -15,8 +15,167 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks";
-import { userFormSchema, type UserFormData } from "@/schemas";
+import {
+  userCreateFormSchema,
+  userUpdateFormSchema,
+  type UserCreateFormData,
+  type UserUpdateFormData,
+} from "@/schemas";
 import type { User } from "@/types";
+
+interface CreateFormProps {
+  isPending: boolean;
+  onSubmit: (data: UserCreateFormData) => void;
+}
+
+function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UserCreateFormData>({
+    resolver: zodResolver(userCreateFormSchema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
+
+  return (
+    <form
+      onSubmit={handleSubmit((data) => onSubmit(data))}
+      className="mb-6 flex flex-wrap items-start gap-3"
+      onReset={() => reset()}
+    >
+      <div className="flex flex-col">
+        <label
+          htmlFor="user-name"
+          className="mb-1 text-xs font-medium text-muted-foreground"
+        >
+          Name
+        </label>
+        <Input
+          id="user-name"
+          {...register("name")}
+          aria-invalid={!!errors.name}
+          className="w-48"
+        />
+        {errors.name && (
+          <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <label
+          htmlFor="user-email"
+          className="mb-1 text-xs font-medium text-muted-foreground"
+        >
+          Email
+        </label>
+        <Input
+          id="user-email"
+          {...register("email")}
+          aria-invalid={!!errors.email}
+          className="w-64"
+        />
+        {errors.email && (
+          <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <label
+          htmlFor="user-password"
+          className="mb-1 text-xs font-medium text-muted-foreground"
+        >
+          Password
+        </label>
+        <Input
+          id="user-password"
+          type="password"
+          autoComplete="new-password"
+          {...register("password")}
+          aria-invalid={!!errors.password}
+          className="w-48"
+        />
+        {errors.password && (
+          <span className="mt-1 text-xs text-destructive">{errors.password.message}</span>
+        )}
+      </div>
+      <Button type="submit" disabled={isPending}>
+        Create
+      </Button>
+    </form>
+  );
+}
+
+interface EditFormProps {
+  user: User;
+  isPending: boolean;
+  onSubmit: (data: UserUpdateFormData) => void;
+  onCancel: () => void;
+}
+
+function EditUserForm({ user, isPending, onSubmit, onCancel }: EditFormProps) {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<UserUpdateFormData>({
+    resolver: zodResolver(userUpdateFormSchema),
+    defaultValues: { name: user.name, email: user.email },
+  });
+
+  useEffect(() => {
+    setValue("name", user.name);
+    setValue("email", user.email);
+  }, [user, setValue]);
+
+  return (
+    <form
+      onSubmit={handleSubmit((data) => onSubmit(data))}
+      className="mb-6 flex flex-wrap items-start gap-3"
+    >
+      <div className="flex flex-col">
+        <label
+          htmlFor="user-name"
+          className="mb-1 text-xs font-medium text-muted-foreground"
+        >
+          Name
+        </label>
+        <Input
+          id="user-name"
+          {...register("name")}
+          aria-invalid={!!errors.name}
+          className="w-48"
+        />
+        {errors.name && (
+          <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <label
+          htmlFor="user-email"
+          className="mb-1 text-xs font-medium text-muted-foreground"
+        >
+          Email
+        </label>
+        <Input
+          id="user-email"
+          {...register("email")}
+          aria-invalid={!!errors.email}
+          className="w-64"
+        />
+        {errors.email && (
+          <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
+        )}
+      </div>
+      <Button type="submit" disabled={isPending}>
+        Update
+      </Button>
+      <Button type="button" variant="outline" onClick={onCancel}>
+        Cancel
+      </Button>
+    </form>
+  );
+}
 
 export function UsersPage() {
   const { data: users, isLoading, error } = useUsers();
@@ -25,58 +184,32 @@ export function UsersPage() {
   const deleteUser = useDeleteUser();
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [createFormKey, setCreateFormKey] = useState(0);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<UserFormData>({
-    resolver: zodResolver(userFormSchema),
-    defaultValues: { name: "", email: "" },
-  });
+  const handleCreate = (data: UserCreateFormData) => {
+    createUser.mutate(data, {
+      onSuccess: () => {
+        setCreateFormKey((k) => k + 1);
+      },
+    });
+  };
 
-  useEffect(() => {
-    if (editingUser) {
-      setValue("name", editingUser.name);
-      setValue("email", editingUser.email);
-    }
-  }, [editingUser, setValue]);
-
-  const onSubmit = (data: UserFormData) => {
-    if (editingUser) {
-      updateUser.mutate(
-        { id: editingUser.id, input: data },
-        {
-          onSuccess: () => {
-            setEditingUser(null);
-            reset();
-          },
-        }
-      );
-    } else {
-      createUser.mutate(data, {
+  const handleUpdate = (data: UserUpdateFormData) => {
+    if (!editingUser) return;
+    updateUser.mutate(
+      { id: editingUser.id, input: data },
+      {
         onSuccess: () => {
-          reset();
+          setEditingUser(null);
         },
-      });
-    }
+      }
+    );
   };
 
   const handleDelete = (id: string) => {
     if (confirm("Delete this user?")) {
       deleteUser.mutate(id);
     }
-  };
-
-  const startEdit = (user: User) => {
-    setEditingUser(user);
-  };
-
-  const cancelEdit = () => {
-    setEditingUser(null);
-    reset();
   };
 
   if (isLoading) {
@@ -106,53 +239,21 @@ export function UsersPage() {
     <div>
       <h1 className="mb-6 text-3xl font-bold tracking-tight">Users</h1>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mb-6 flex flex-wrap items-start gap-3"
-      >
-        <div className="flex flex-col">
-          <label
-            htmlFor="user-name"
-            className="mb-1 text-xs font-medium text-muted-foreground"
-          >
-            Name
-          </label>
-          <Input
-            id="user-name"
-            {...register("name")}
-            aria-invalid={!!errors.name}
-            className="w-48"
-          />
-          {errors.name && (
-            <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
-          )}
-        </div>
-        <div className="flex flex-col">
-          <label
-            htmlFor="user-email"
-            className="mb-1 text-xs font-medium text-muted-foreground"
-          >
-            Email
-          </label>
-          <Input
-            id="user-email"
-            {...register("email")}
-            aria-invalid={!!errors.email}
-            className="w-64"
-          />
-          {errors.email && (
-            <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
-          )}
-        </div>
-        <Button type="submit" disabled={createUser.isPending || updateUser.isPending}>
-          {editingUser ? "Update" : "Create"}
-        </Button>
-        {editingUser && (
-          <Button type="button" variant="outline" onClick={cancelEdit}>
-            Cancel
-          </Button>
-        )}
-      </form>
+      {editingUser ? (
+        <EditUserForm
+          key={editingUser.id}
+          user={editingUser}
+          isPending={updateUser.isPending}
+          onSubmit={handleUpdate}
+          onCancel={() => setEditingUser(null)}
+        />
+      ) : (
+        <CreateUserForm
+          key={createFormKey}
+          isPending={createUser.isPending}
+          onSubmit={handleCreate}
+        />
+      )}
 
       {mutationError && (
         <Alert variant="destructive" className="mb-4">
@@ -177,7 +278,7 @@ export function UsersPage() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => startEdit(user)}>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingUser(user)}>
                         Edit
                       </Button>
                       <Button

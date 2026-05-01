@@ -1,9 +1,14 @@
 import { render, screen, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { UsersPage } from "./UsersPage";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 describe("UsersPage", () => {
+  beforeEach(() => {
+    useAuthStore.getState().clearToken();
+  });
+
   it("displays loading state initially", () => {
     render(<UsersPage />);
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
@@ -36,7 +41,7 @@ describe("UsersPage", () => {
     });
   });
 
-  it("creates a new user", async () => {
+  it("creates a new user with password", async () => {
     const user = userEvent.setup();
     render(<UsersPage />);
 
@@ -46,14 +51,16 @@ describe("UsersPage", () => {
 
     await user.type(screen.getByLabelText("Name"), "New User");
     await user.type(screen.getByLabelText("Email"), "new@example.com");
+    await user.type(screen.getByLabelText("Password"), "password123");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
       expect(screen.getByLabelText("Name")).toHaveValue("");
     });
+    expect(screen.getByLabelText("Password")).toHaveValue("");
   });
 
-  it("shows validation errors for empty fields", async () => {
+  it("shows validation errors for empty fields including password", async () => {
     const user = userEvent.setup();
     render(<UsersPage />);
 
@@ -66,6 +73,9 @@ describe("UsersPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Name is required")).toBeInTheDocument();
       expect(screen.getByText("Email is required")).toBeInTheDocument();
+      expect(
+        screen.getByText("Password must be at least 8 characters")
+      ).toBeInTheDocument();
     });
   });
 
@@ -79,6 +89,7 @@ describe("UsersPage", () => {
 
     await user.type(screen.getByLabelText("Name"), "Test User");
     await user.type(screen.getByLabelText("Email"), "invalid-email");
+    await user.type(screen.getByLabelText("Password"), "password123");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
@@ -86,7 +97,27 @@ describe("UsersPage", () => {
     });
   });
 
-  it("enters edit mode when Edit button is clicked", async () => {
+  it("shows validation error for short password", async () => {
+    const user = userEvent.setup();
+    render(<UsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Name"), "Test User");
+    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByLabelText("Password"), "short");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Password must be at least 8 characters")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("enters edit mode without password field", async () => {
     const user = userEvent.setup();
     render(<UsersPage />);
 
@@ -99,6 +130,7 @@ describe("UsersPage", () => {
 
     expect(screen.getByLabelText("Name")).toHaveValue("John Doe");
     expect(screen.getByLabelText("Email")).toHaveValue("john@example.com");
+    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Update" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
   });
@@ -122,8 +154,9 @@ describe("UsersPage", () => {
     expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument();
   });
 
-  it("updates a user", async () => {
-    const user = userEvent.setup();
+  it("updates a user when authenticated", async () => {
+    useAuthStore.getState().setToken("valid-token");
+    const userInput = userEvent.setup();
     render(<UsersPage />);
 
     await waitFor(() => {
@@ -131,21 +164,22 @@ describe("UsersPage", () => {
     });
 
     const editButtons = screen.getAllByRole("button", { name: "Edit" });
-    await user.click(editButtons[0]);
+    await userInput.click(editButtons[0]);
 
     const nameInput = screen.getByLabelText("Name");
-    await user.clear(nameInput);
-    await user.type(nameInput, "Updated Name");
+    await userInput.clear(nameInput);
+    await userInput.type(nameInput, "Updated Name");
 
-    await user.click(screen.getByRole("button", { name: "Update" }));
+    await userInput.click(screen.getByRole("button", { name: "Update" }));
 
     await waitFor(() => {
       expect(screen.getByLabelText("Name")).toHaveValue("");
     });
   });
 
-  it("deletes a user when confirmed", async () => {
-    const user = userEvent.setup();
+  it("deletes a user when confirmed and authenticated", async () => {
+    useAuthStore.getState().setToken("valid-token");
+    const userInput = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(<UsersPage />);
@@ -155,13 +189,13 @@ describe("UsersPage", () => {
     });
 
     const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
-    await user.click(deleteButtons[0]);
+    await userInput.click(deleteButtons[0]);
 
     expect(window.confirm).toHaveBeenCalledWith("Delete this user?");
   });
 
   it("does not delete a user when cancelled", async () => {
-    const user = userEvent.setup();
+    const userInput = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(false);
 
     render(<UsersPage />);
@@ -171,10 +205,9 @@ describe("UsersPage", () => {
     });
 
     const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
-    await user.click(deleteButtons[0]);
+    await userInput.click(deleteButtons[0]);
 
     expect(window.confirm).toHaveBeenCalledWith("Delete this user?");
-    // User should still be present
     expect(screen.getByText("John Doe")).toBeInTheDocument();
   });
 

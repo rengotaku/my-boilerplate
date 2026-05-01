@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   useUsers,
   useUser,
@@ -8,7 +8,12 @@ import {
   useUpdateUser,
   useDeleteUser,
 } from "./useUsers";
+import { useAuthStore } from "./useAuthStore";
 import type { ReactNode } from "react";
+
+beforeEach(() => {
+  useAuthStore.getState().clearToken();
+});
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -61,7 +66,11 @@ describe("useCreateUser", () => {
   it("creates a new user", async () => {
     const { result } = renderHook(() => useCreateUser(), { wrapper: createWrapper() });
 
-    result.current.mutate({ name: "New User", email: "new@example.com" });
+    result.current.mutate({
+      name: "New User",
+      email: "new@example.com",
+      password: "password123",
+    });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
@@ -72,7 +81,8 @@ describe("useCreateUser", () => {
 });
 
 describe("useUpdateUser", () => {
-  it("updates an existing user", async () => {
+  it("updates an existing user when authenticated", async () => {
+    useAuthStore.getState().setToken("valid-token");
     const { result } = renderHook(() => useUpdateUser(), { wrapper: createWrapper() });
 
     result.current.mutate({
@@ -89,7 +99,8 @@ describe("useUpdateUser", () => {
 });
 
 describe("useDeleteUser", () => {
-  it("deletes a user", async () => {
+  it("deletes a user when authenticated", async () => {
+    useAuthStore.getState().setToken("valid-token");
     const { result } = renderHook(() => useDeleteUser(), { wrapper: createWrapper() });
 
     result.current.mutate("1");

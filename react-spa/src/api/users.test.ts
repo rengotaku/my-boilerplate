@@ -1,7 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { usersApi } from "./users";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 describe("usersApi", () => {
+  beforeEach(() => {
+    useAuthStore.getState().clearToken();
+  });
+
   describe("getAll", () => {
     it("fetches all users", async () => {
       const users = await usersApi.getAll();
@@ -23,10 +28,11 @@ describe("usersApi", () => {
   });
 
   describe("create", () => {
-    it("creates a new user", async () => {
+    it("creates a new user with password", async () => {
       const newUser = await usersApi.create({
         name: "New User",
         email: "new@example.com",
+        password: "password123",
       });
 
       expect(newUser.name).toBe("New User");
@@ -36,7 +42,8 @@ describe("usersApi", () => {
   });
 
   describe("update", () => {
-    it("updates an existing user", async () => {
+    it("updates an existing user when authenticated", async () => {
+      useAuthStore.getState().setToken("valid-token");
       const updatedUser = await usersApi.update("1", {
         name: "Updated Name",
         email: "updated@example.com",
@@ -48,10 +55,10 @@ describe("usersApi", () => {
   });
 
   describe("delete", () => {
-    it("deletes a user", async () => {
+    it("deletes a user when authenticated", async () => {
+      useAuthStore.getState().setToken("valid-token");
       const response = await usersApi.delete("1");
 
-      // 204 No Content returns empty response
       expect(response.ok).toBe(true);
     });
   });
