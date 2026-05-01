@@ -95,5 +95,4 @@ describe("apiClient", () => {
       expect(dispatched).toBe(0);
     });
   });
-
 });

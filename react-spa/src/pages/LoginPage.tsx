@@ -86,7 +86,9 @@ export function LoginPage() {
             aria-invalid={!!errors.password}
           />
           {errors.password && (
-            <span className="mt-1 text-xs text-destructive">{errors.password.message}</span>
+            <span className="mt-1 text-xs text-destructive">
+              {errors.password.message}
+            </span>
           )}
         </div>
 

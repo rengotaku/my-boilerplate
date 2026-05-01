@@ -1,12 +1,6 @@
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components";
 import { HomePage, UsersPage, LoginPage, NotFoundPage } from "@/pages";
 import { UNAUTHORIZED_EVENT } from "@/api";

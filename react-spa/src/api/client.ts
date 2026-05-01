@@ -38,9 +38,10 @@ export const apiClient = ky.create({
         if (response) {
           try {
             const body = await response.json();
-            const message = (body as { message?: string; error?: string }).message
-              || (body as { error?: string }).error
-              || error.message;
+            const message =
+              (body as { message?: string; error?: string }).message ||
+              (body as { error?: string }).error ||
+              error.message;
             logger.error(`API ${response.url} failed: ${response.status}`, message);
             error.message = message;
           } catch {

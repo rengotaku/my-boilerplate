@@ -278,7 +278,11 @@ export function UsersPage() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => setEditingUser(user)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setEditingUser(user)}
+                      >
                         Edit
                       </Button>
                       <Button

@@ -3,11 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach } from "vitest";
 import { LoginPage } from "./LoginPage";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import {
-  MOCK_VALID_EMAIL,
-  MOCK_VALID_PASSWORD,
-  MOCK_TOKEN,
-} from "@/test/mocks/handlers";
+import { MOCK_VALID_EMAIL, MOCK_VALID_PASSWORD, MOCK_TOKEN } from "@/test/mocks/handlers";
 
 describe("LoginPage", () => {
   beforeEach(() => {
