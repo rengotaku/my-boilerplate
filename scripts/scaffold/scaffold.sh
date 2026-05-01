@@ -77,7 +77,7 @@ transform_ci_workflows "$dest" "$REPO_ROOT" "$template" "$name"
 generic_files="$(grep -rl "${template}" "$dest" --include='*.html' --include='Makefile' --include='*.graphql' 2>/dev/null || true)"
 if [[ -n "$generic_files" ]]; then
   while IFS= read -r f; do
-    sed -i "s|${template}|${name}|g" "$f"
+    sed_inplace "s|${template}|${name}|g" "$f"
   done <<< "$generic_files"
 fi
 
