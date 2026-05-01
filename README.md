@@ -56,6 +56,7 @@ Collection of project boilerplates.
 | [go-graphql-api](./go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |
 | [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
 | [go-ssr-web](./go-ssr-web) | Go SSR Web with Chi, html/template |
+| [go-ssr-web-minimal](./go-ssr-web-minimal) | Minimal Go SSR (gin + html/template + embed; no DB / auth / Tailwind) |
 
 ## Roadmap
 
@@ -85,6 +86,7 @@ make stop-all
 | go-graphql-api | 8081 | GraphQL API |
 | go-grpc-api | 50051 | gRPC |
 | go-ssr-web | 8082 | SSR Web |
+| go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
 | react-spa | 5173 | Vite dev |
 
 ### New Project Checklist

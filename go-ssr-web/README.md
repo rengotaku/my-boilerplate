@@ -2,6 +2,8 @@
 
 A minimal Go server-side rendering web application boilerplate (batteries included).
 
+> Need a smaller starting point? If you don't need a database, sessions, auth, user CRUD, or Tailwind, see [`go-ssr-web-minimal`](../go-ssr-web-minimal) — it ships only `gin + html/template + embed + slog + envconfig` and plain CSS.
+
 ## Features
 
 - HTTP framework: [gin-gonic/gin](https://github.com/gin-gonic/gin)

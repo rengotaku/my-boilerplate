@@ -1,0 +1,21 @@
+name: go-ssr-web-minimal CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-ssr-web-minimal/**'
+      - '.github/workflows/go-ssr-web-minimal.yml'
+      - '.github/workflows/go-ci.yml'
+  pull_request:
+    paths:
+      - 'go-ssr-web-minimal/**'
+      - '.github/workflows/go-ssr-web-minimal.yml'
+      - '.github/workflows/go-ci.yml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/go-ci.yml
+    with:
+      working-directory: go-ssr-web-minimal
+      test-paths: "./internal/..."

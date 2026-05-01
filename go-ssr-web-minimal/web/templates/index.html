@@ -1,0 +1,9 @@
+{{template "base" .}}
+
+{{define "content"}}
+<section class="card">
+    <h2>Hello, {{.Name}}</h2>
+    <p>This is a minimal Go SSR template: gin + html/template + embed + slog + envconfig.</p>
+    <p>No database, no auth, no Tailwind. Edit <code>web/templates/index.html</code> to start.</p>
+</section>
+{{end}}
