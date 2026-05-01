@@ -104,11 +104,11 @@ compose_template() {
           "$base_dest/package.json" "$pkg_name"
       else
         # Fallback: sed-edit the "name" field. Keeps formatting roughly intact.
-        sed -i "s|\"name\": *\"[^\"]*\"|\"name\": \"$pkg_name\"|" "$base_dest/package.json"
+        sed_inplace "s|\"name\": *\"[^\"]*\"|\"name\": \"$pkg_name\"|" "$base_dest/package.json"
       fi
     fi
     if [[ -f "$base_dest/package-lock.json" ]]; then
-      sed -i "s|\"name\": *\"[^\"]*\"|\"name\": \"$pkg_name\"|" "$base_dest/package-lock.json"
+      sed_inplace "s|\"name\": *\"[^\"]*\"|\"name\": \"$pkg_name\"|" "$base_dest/package-lock.json"
     fi
   fi
 

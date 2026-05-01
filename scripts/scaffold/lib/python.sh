@@ -22,16 +22,16 @@ apply_python_replacements() {
   # Replace pyproject.toml fields
   if [[ -f "$dest/pyproject.toml" ]]; then
     # Replace project name
-    sed -i "s|^name = \"${orig_pkg}\"|name = \"${name}\"|" "$dest/pyproject.toml"
+    sed_inplace "s|^name = \"${orig_pkg}\"|name = \"${name}\"|" "$dest/pyproject.toml"
 
     # Replace scripts entry (python-cli only)
-    sed -i "s|^${orig_pkg} = \"${orig_pkg}\.|${pkg_name} = \"${pkg_name}.|" "$dest/pyproject.toml"
+    sed_inplace "s|^${orig_pkg} = \"${orig_pkg}\.|${pkg_name} = \"${pkg_name}.|" "$dest/pyproject.toml"
 
     # Replace hatch build packages
-    sed -i "s|\"src/${orig_pkg}\"|\"src/${pkg_name}\"|g" "$dest/pyproject.toml"
+    sed_inplace "s|\"src/${orig_pkg}\"|\"src/${pkg_name}\"|g" "$dest/pyproject.toml"
 
     # Replace coverage source
-    sed -i "s|source = \[\"src/${orig_pkg}\"\]|source = [\"src/${pkg_name}\"]|g" "$dest/pyproject.toml"
+    sed_inplace "s|source = \[\"src/${orig_pkg}\"\]|source = [\"src/${pkg_name}\"]|g" "$dest/pyproject.toml"
 
     info "Updated pyproject.toml"
   fi
@@ -43,7 +43,7 @@ apply_python_replacements() {
   fi
 
   # Replace import references, string literals, and comments in .py files
-  find "$dest" -name '*.py' -exec sed -i \
+  find "$dest" -name '*.py' -exec sed "${SED_INPLACE_ARGS[@]}" \
     "s|from ${orig_pkg}|from ${pkg_name}|g; \
      s|import ${orig_pkg}|import ${pkg_name}|g; \
      s|\"${orig_pkg}\"|\"${name}\"|g; \
@@ -55,22 +55,22 @@ apply_python_replacements() {
 
   # Replace references in Makefile
   if [[ -f "$dest/Makefile" ]]; then
-    sed -i "s|${orig_pkg}|${pkg_name}|g" "$dest/Makefile"
+    sed_inplace "s|${orig_pkg}|${pkg_name}|g" "$dest/Makefile"
     info "Updated Makefile references"
   fi
 
   # Replace references in alembic.ini (python-web batteries-included template)
   if [[ -f "$dest/alembic.ini" ]]; then
-    sed -i "s|src/${orig_pkg}|src/${pkg_name}|g" "$dest/alembic.ini"
+    sed_inplace "s|src/${orig_pkg}|src/${pkg_name}|g" "$dest/alembic.ini"
     info "Updated alembic.ini references"
   fi
 
   # Replace pytest coverage source in CI workflow references
-  find "$dest" -name '*.yml' -exec sed -i "s|--cov=src/${orig_pkg}|--cov=src/${pkg_name}|g" {} + 2>/dev/null || true
+  find "$dest" -name '*.yml' -exec sed "${SED_INPLACE_ARGS[@]}" "s|--cov=src/${orig_pkg}|--cov=src/${pkg_name}|g" {} + 2>/dev/null || true
 
   # python-web specific: replace package.json name field
   if [[ "$template" == "python-web" && -f "$dest/package.json" ]]; then
-    sed -i "s|\"name\": \"${orig_pkg}\"|\"name\": \"${name}\"|" "$dest/package.json"
+    sed_inplace "s|\"name\": \"${orig_pkg}\"|\"name\": \"${name}\"|" "$dest/package.json"
     info "Updated package.json name"
   fi
 }

@@ -40,6 +40,26 @@ ARTIFACTS=(
   tmp
 )
 
+# Portable sed -i (GNU/BSD compatible).
+#
+# GNU sed (Linux): `sed -i 's|x|y|' file`
+# BSD sed (macOS): `sed -i '' 's|x|y|' file` — `-i` requires an extension
+# argument, so without `''` BSD sed parses the substitution expression as the
+# extension and the file path as the script, silently mangling absolute paths
+# that contain spaces (#182).
+#
+# Use `sed_inplace ARGS...` for direct calls, and `sed "${SED_INPLACE_ARGS[@]}"`
+# for `find -exec` so the array expands before find sees it.
+if sed --version 2>/dev/null | grep -q GNU; then
+  SED_INPLACE_ARGS=(-i)
+else
+  SED_INPLACE_ARGS=(-i '')
+fi
+
+sed_inplace() {
+  sed "${SED_INPLACE_ARGS[@]}" "$@"
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
