@@ -10,6 +10,10 @@ COVERAGE_FILE := coverage.out
 PORT ?= 8082
 TAILWIND_VERSION ?= v4.1.5
 TAILWIND_BIN := $(BIN_DIR)/tailwindcss
+# OS/arch detection: linux-x64 / linux-arm64 / macos-x64 / macos-arm64
+TAILWIND_OS := $(shell uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')
+TAILWIND_ARCH := $(shell uname -m | sed -e 's/x86_64/x64/' -e 's/aarch64/arm64/')
+TAILWIND_TARGET ?= $(TAILWIND_OS)-$(TAILWIND_ARCH)
 
 ## install: Download dependencies
 install:
@@ -21,8 +25,8 @@ tailwind-install:
 		echo "tailwindcss already installed at $(TAILWIND_BIN)"; \
 	else \
 		mkdir -p $(BIN_DIR); \
-		echo "Downloading Tailwind CSS CLI $(TAILWIND_VERSION)..."; \
-		curl -sL "https://github.com/tailwindlabs/tailwindcss/releases/download/$(TAILWIND_VERSION)/tailwindcss-linux-x64" \
+		echo "Downloading Tailwind CSS CLI $(TAILWIND_VERSION) for $(TAILWIND_TARGET)..."; \
+		curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/$(TAILWIND_VERSION)/tailwindcss-$(TAILWIND_TARGET)" \
 			-o $(TAILWIND_BIN); \
 		chmod +x $(TAILWIND_BIN); \
 		echo "tailwindcss installed at $(TAILWIND_BIN)"; \
