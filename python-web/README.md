@@ -30,7 +30,7 @@ make migrate     # Alembic で初回マイグレーション
 ## Development
 
 ```bash
-make dev
+make run
 # Open http://localhost:8000
 ```
 
@@ -47,7 +47,7 @@ make ci          # Run lint + typecheck + test-cov
 ```bash
 make build       # Build production assets
 make migrate     # Apply migrations
-make run         # Start production server
+make run-prod    # Start production server (no reload)
 ```
 
 ## Project Structure

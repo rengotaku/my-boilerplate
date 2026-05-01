@@ -30,4 +30,4 @@ jobs:
         working-directory: /tmp/test-${{ inputs.template }}
         run: |
           npm install
-          make lint format-check test-coverage build
+          make ci

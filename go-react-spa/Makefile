@@ -1,4 +1,4 @@
-.PHONY: install build build-frontend run dev dev-server dev-frontend stop status \
+.PHONY: install build build-frontend run run-binary run-server run-frontend stop status \
 	compose compose-clean verify \
 	lint lint-frontend lint-fix format format-check \
 	test test-frontend test-cov test-watch coverage \
@@ -58,21 +58,21 @@ build-frontend: compose
 build: build-frontend
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the built monolithic binary
-run:
-	./$(BIN_DIR)/$(BINARY_NAME)
+## run: Run Go (with hot reload via air, -tags dev) + Vite in parallel
+run: compose
+	$(MAKE) -j2 run-server run-frontend
 
-## dev: Run Go (with hot reload via air, -tags dev) + Vite in parallel
-dev: compose
-	$(MAKE) -j2 dev-server dev-frontend
-
-## dev-server: Run Go server with hot reload (uses -tags dev so embed is bypassed)
-dev-server:
+## run-server: Run Go server with hot reload (uses -tags dev so embed is bypassed)
+run-server:
 	air
 
-## dev-frontend: Run Vite dev server (proxies /api to Go)
-dev-frontend:
+## run-frontend: Run Vite dev server (proxies /api to Go)
+run-frontend:
 	cd $(FRONTEND_DIR) && npm run dev
+
+## run-binary: Run the built monolithic binary (no hot reload)
+run-binary:
+	./$(BIN_DIR)/$(BINARY_NAME)
 
 ## stop: Stop both Go and Vite dev servers
 stop:

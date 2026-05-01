@@ -1,4 +1,4 @@
-.PHONY: install dev lint typecheck format test test-cov check ci build run migrate migrate-rev clean clean-all help
+.PHONY: install run run-prod lint typecheck format test test-cov check ci build migrate migrate-rev clean clean-all help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -12,8 +12,8 @@ install:
 	uv sync --all-extras
 	npm install
 
-## dev: Start development server (uvicorn reload + Tailwind watch)
-dev: _build-assets
+## run: Start development server (uvicorn reload + Tailwind watch)
+run: _build-assets
 	@_port=$(PORT); \
 	if ! python3 -c "import socket; s=socket.socket(); s.bind(('',$$_port)); s.close()" 2>/dev/null; then \
 		_port=$$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()"); \
@@ -54,8 +54,8 @@ ci: lint typecheck test-cov
 build: _copy-alpine
 	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --minify
 
-## run: Run production server
-run: build
+## run-prod: Run production server (no reload, builds assets first)
+run-prod: build
 	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
 
 ## migrate: Apply Alembic migrations to the configured database

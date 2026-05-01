@@ -47,19 +47,21 @@ curl http://localhost:10080/api/v1/users \
 
 ## Development (Hot Reload)
 
+`make install` installs `air` for hot reload, then `make run` starts the server with reload enabled.
+
 ```bash
-go install github.com/air-verse/air@latest
-make dev
+make install
+make run
 ```
 
 ## Commands
 
 ```bash
 make help            # Show all commands
-make install         # Download dependencies
+make install         # Download dependencies and dev tools (air)
 make build           # Build the binary
-make run             # Run the server
-make dev             # Run with hot reload
+make run             # Run the server with hot reload (air)
+make run-bare        # Run the server without hot reload
 make lint            # Run golangci-lint
 make test            # Run tests
 make test-cov        # Run tests with coverage

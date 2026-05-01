@@ -107,9 +107,11 @@ npx wrangler pages deploy dist --project-name=react-spa-cloudflare
 
 | Target | Description |
 |--------|-------------|
-| `make dev` | Start development server |
+| `make run` | Start development server |
 | `make build` | Build for production |
 | `make test` | Run tests |
+| `make test-cov` | Run tests with coverage |
+| `make ci` | lint + format-check + test-cov + build |
 | `make deploy` | Deploy to Cloudflare Pages (production) |
 | `make deploy-preview` | Deploy to Cloudflare Pages (preview) |
 | `make clean` | Remove build artifacts |

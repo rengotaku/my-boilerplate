@@ -74,23 +74,23 @@ make run
 ## Development (Hot Reload)
 
 ```bash
-# Install Air (once)
-go install github.com/air-verse/air@latest
+# Install dependencies + air (once)
+make install
 
 # Run with hot reload
-make dev
+make run
 ```
 
-Air will watch `.go` files and automatically rebuild/restart the server on changes.
+Air watches `.go` files and automatically rebuilds/restarts the server on changes.
 
 ## Available Commands
 
 ```bash
-make install        # Download dependencies
+make install        # Download dependencies and dev tools (air)
 make generate       # Generate protobuf code
 make build          # Build the binary
-make run            # Run the server
-make dev            # Run with hot reload (requires air)
+make run            # Run the server with hot reload (air)
+make run-bare       # Run the server without hot reload
 make lint           # Run golangci-lint
 make test           # Run tests
 make test-cov       # Run tests with coverage

@@ -51,7 +51,7 @@ The static asset path is selected at build time:
 | (default)  | `static_embed.go`   | `embed.FS` reads `internal/static/dist/` into binary  |
 | `-tags dev`| `static_dev.go`     | empty FS — Vite serves the SPA on `:5174`             |
 
-`make dev` runs `air` with `-tags dev` so the embedded bundle is bypassed
+`make run` runs `air` with `-tags dev` so the embedded bundle is bypassed
 and Vite is the source of truth for SPA assets. `make build` uses the
 default tag set so the bundle is embedded into the produced binary.
 
@@ -59,7 +59,7 @@ default tag set so the bundle is embedded into the produced binary.
 
 - Go 1.25+
 - Node.js (matches `react-spa/.node-version`)
-- [air](https://github.com/cosmtrek/air) (only for `make dev`)
+- [air](https://github.com/cosmtrek/air) (only for `make run`)
 - [golangci-lint](https://golangci-lint.run/) v2.11+
 
 ## Quick start
@@ -71,8 +71,8 @@ make install
 # Build: `vite build` -> internal/static/dist/, then `go build` embedding the bundle
 make build
 
-# Run the binary (single port, serves SPA + API)
-./bin/server
+# Run the built binary (single port, serves SPA + API)
+make run-binary
 # open http://localhost:8080
 ```
 
@@ -81,7 +81,7 @@ make build
 ```bash
 # Two-process dev: Go (:8080) with hot reload + Vite (:5174) in parallel.
 # Vite proxies /api -> :8080, so open http://localhost:5174
-make dev
+make run
 
 # Stop both
 make stop
@@ -95,8 +95,8 @@ make compose         # materialize frontend/ from base + overlay
 make compose-clean   # remove frontend/
 make build-frontend  # vite build -> internal/static/dist/
 make build           # build-frontend + go build (monolithic binary)
-make run             # run the built binary
-make dev             # Go (air, -tags dev) + Vite in parallel
+make run             # Go (air, -tags dev) + Vite in parallel
+make run-binary      # run the built monolithic binary (no hot reload)
 make stop            # kill dev servers on :8080 and :5174
 make status          # report which dev servers are running
 make lint            # golangci-lint

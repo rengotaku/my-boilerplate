@@ -1,4 +1,4 @@
-.PHONY: install build run dev stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean generate help
+.PHONY: install build run run-bare stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean generate help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -9,9 +9,10 @@ BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 50051
 
-## install: Download dependencies
+## install: Download dependencies and dev tools
 install:
 	go mod download
+	go install github.com/air-verse/air@latest
 
 ## generate: Generate protobuf code using buf
 generate:
@@ -21,13 +22,13 @@ generate:
 build:
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the server
+## run: Run the server with hot reload (requires air; installed by `make install`)
 run:
-	go run ./cmd/server
-
-## dev: Run with hot reload (requires air: go install github.com/air-verse/air@latest)
-dev:
 	air
+
+## run-bare: Run the server without hot reload
+run-bare:
+	go run ./cmd/server
 
 ## stop: Stop the server
 stop:
