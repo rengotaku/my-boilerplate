@@ -30,7 +30,7 @@ make migrate     # Alembic で初回マイグレーション
 ## Development
 
 ```bash
-make dev
+make run
 # Open http://localhost:8000
 ```
 
@@ -42,13 +42,14 @@ make test-cov    # Run tests with coverage
 make ci          # Run lint + typecheck + test-cov
 ```
 
-## Production
+## Production assets
 
 ```bash
-make build       # Build production assets
+make build       # Build production assets (Tailwind CSS minify)
 make migrate     # Apply migrations
-make run         # Start production server
 ```
+
+Makefile はローカル開発用。本番サーバー起動はホスト環境の手段 (uvicorn 直叩き / gunicorn / systemd / Docker など) で行う。
 
 ## Project Structure
 
