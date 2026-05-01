@@ -74,13 +74,13 @@ jobs:
         working-directory: go-graphql-api
         env:
           CGO_ENABLED: "0"
-        run: go build -o /tmp/go-graphql-api ./cmd/server
+        run: go build -buildvcs=false -o /tmp/go-graphql-api ./cmd/server
 
       - name: Build go-rest-api binary
         working-directory: go-rest-api
         env:
           CGO_ENABLED: "0"
-        run: go build -o /tmp/go-rest-api ./cmd/server
+        run: go build -buildvcs=false -o /tmp/go-rest-api ./cmd/server
 
       - name: Run E2E tests (integration + VRT + a11y)
         working-directory: e2e
