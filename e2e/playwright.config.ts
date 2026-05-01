@@ -37,7 +37,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? "github" : "html",
   timeout: 30_000,
   expect: {
@@ -65,13 +65,17 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "cd ../go-graphql-api && go run ./cmd/server",
+      command: process.env.GO_GRAPHQL_API_BIN
+        ? process.env.GO_GRAPHQL_API_BIN
+        : "cd ../go-graphql-api && go run ./cmd/server",
       url: "http://localhost:8080/health",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },
     {
-      command: "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
+      command: process.env.GO_REST_API_BIN
+        ? `PORT=8081 ${process.env.GO_REST_API_BIN}`
+        : "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
       url: "http://localhost:8081/health",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,

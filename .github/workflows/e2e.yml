@@ -47,25 +47,46 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            react-spa-graphql/package-lock.json
+            react-spa/package-lock.json
+            react-spa-cloudflare/package-lock.json
+            e2e/package-lock.json
 
       - name: Install React SPA GraphQL dependencies
         working-directory: react-spa-graphql
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install React SPA dependencies
         working-directory: react-spa
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install React SPA Cloudflare dependencies
         working-directory: react-spa-cloudflare
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install E2E dependencies
         working-directory: e2e
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Build go-graphql-api binary
+        working-directory: go-graphql-api
+        env:
+          CGO_ENABLED: "0"
+        run: go build -o /tmp/go-graphql-api ./cmd/server
+
+      - name: Build go-rest-api binary
+        working-directory: go-rest-api
+        env:
+          CGO_ENABLED: "0"
+        run: go build -o /tmp/go-rest-api ./cmd/server
 
       - name: Run E2E tests (integration + VRT + a11y)
         working-directory: e2e
+        env:
+          GO_GRAPHQL_API_BIN: /tmp/go-graphql-api
+          GO_REST_API_BIN: /tmp/go-rest-api
         run: npx playwright test
 
       - name: Upload test artifacts
