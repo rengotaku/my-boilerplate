@@ -1,4 +1,4 @@
-.PHONY: install run run-prod lint typecheck format test test-cov check ci build migrate migrate-rev clean clean-all help
+.PHONY: install run lint typecheck format test test-cov check ci build migrate migrate-rev clean clean-all help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -53,10 +53,6 @@ ci: lint typecheck test-cov
 ## build: Build production assets (Tailwind CSS minify)
 build: _copy-alpine
 	npx @tailwindcss/cli -i static/css/input.css -o static/css/style.css --minify
-
-## run-prod: Run production server (no reload, builds assets first)
-run-prod: build
-	uv run uvicorn myweb.app:app --host 0.0.0.0 --port $(PORT)
 
 ## migrate: Apply Alembic migrations to the configured database
 migrate:

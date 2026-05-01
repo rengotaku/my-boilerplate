@@ -1,8 +1,12 @@
-"""Production build and server configuration tests.
+"""Build assets and dev-server configuration tests.
 
-US4: 本番ビルドとデプロイ準備
-- make build で Tailwind CSS が minify される
-- make run で本番モードのサーバーが起動する
+US4: 本番ビルドアセットとローカル開発サーバー
+- make build で Tailwind CSS が minify される (本番アセット)
+- make run でローカル開発モードのサーバーが起動する (--reload + watch)
+
+Makefile はローカル開発のみを対象とする (#143)。本番サーバー起動は
+ホスト環境の責務 (uvicorn 直叩き / gunicorn / Docker など) なので
+Makefile には本番サーバーターゲットは存在しない。
 """
 
 import re
@@ -54,7 +58,7 @@ def _npm_available() -> bool:
 
 
 class TestMakefileBuildTarget:
-    """make build ターゲットの本番ビルド要件テスト."""
+    """make build ターゲットの本番アセットビルド要件テスト."""
 
     def test_build_target_exists_in_makefile(self) -> None:
         """Makefile に build ターゲットが定義されていること."""
@@ -156,35 +160,21 @@ class TestMakefileBuildTarget:
 
 
 class TestMakefileRunTarget:
-    """make run ターゲットの本番サーバー要件テスト."""
+    """make run ターゲットのローカル開発サーバー要件テスト."""
 
     def test_run_target_exists_in_makefile(self) -> None:
         """Makefile に run ターゲットが定義されていること."""
         content = _read_makefile()
-        assert "run:" in content or "run: build" in content
+        assert re.search(r"^run:", content, re.MULTILINE)
 
-    def test_run_target_does_not_enable_reload(self) -> None:
-        """run ターゲットが --reload を有効化しないこと.
-
-        本番サーバーでは自動リロードを無効にする。
-        uvicorn 0.44 では --no-reload フラグは廃止 (デフォルトが非リロード)。
-        """
+    def test_run_target_enables_reload(self) -> None:
+        """run ターゲットが --reload を有効化すること (開発モード)."""
         content = _read_makefile()
         run_section = _extract_target_section(content, "run")
-        assert not re.search(r"--reload(\s|$)", run_section), (
-            "run target で --reload が有効化されている。"
+        assert re.search(r"--reload(\s|$)", run_section), (
+            "run target で --reload が見つからない。"
             f"section: {run_section}"
         )
-
-    def test_run_target_depends_on_build(self) -> None:
-        """run ターゲットが build に依存していること."""
-        content = _read_makefile()
-        lines = content.split("\n")
-        for line in lines:
-            if line.startswith("run:"):
-                assert "build" in line
-                return
-        pytest.fail("run target not found")
 
     def test_run_target_uses_uvicorn(self) -> None:
         """run ターゲットが uvicorn を使用すること."""
@@ -197,7 +187,7 @@ class TestMakefileRunTarget:
         content = _read_makefile()
         assert "PORT" in content
         run_section = _extract_target_section(content, "run")
-        assert "$(PORT)" in run_section
+        assert "PORT" in run_section
 
     def test_run_target_binds_to_all_interfaces(self) -> None:
         """run ターゲットが 0.0.0.0 にバインドすること."""
@@ -205,31 +195,38 @@ class TestMakefileRunTarget:
         run_section = _extract_target_section(content, "run")
         assert "0.0.0.0" in run_section
 
+    def test_run_target_runs_tailwind_watch(self) -> None:
+        """run ターゲットが Tailwind --watch を起動すること."""
+        content = _read_makefile()
+        run_section = _extract_target_section(content, "run")
+        assert "--watch" in run_section, (
+            "run target で Tailwind --watch が見つからない。"
+            f"section: {run_section}"
+        )
 
-class TestDevVsProductionDifferences:
-    """開発モードと本番モードの違いが正しいこと."""
 
-    def test_dev_uses_reload_run_does_not(self) -> None:
-        """dev は --reload あり、run は --reload を含まない.
+class TestNoProductionTargetInMakefile:
+    """Makefile はローカル開発のみを対象とする (#143)."""
 
-        uvicorn 0.44 で --no-reload は廃止されたので、run では --reload を
-        指定しないことで非リロード (デフォルト) 動作にする。
+    def test_no_run_prod_target(self) -> None:
+        """Makefile に run-prod ターゲットが存在しないこと.
+
+        本番サーバー起動はホスト環境の責務とし、Makefile はローカル開発のみ。
         """
         content = _read_makefile()
-        dev_section = _extract_target_section(content, "dev")
-        run_section = _extract_target_section(content, "run")
+        assert not re.search(r"^run-prod:", content, re.MULTILINE), (
+            "run-prod ターゲットが残存している。Makefile はローカル開発のみ"
+        )
 
-        assert "--reload" in dev_section
-        assert not re.search(r"--reload(\s|$)", run_section)
+    def test_no_dev_target(self) -> None:
+        """Makefile に dev ターゲットが存在しないこと.
 
-    def test_dev_uses_tailwind_watch_build_uses_minify(self) -> None:
-        """dev は Tailwind watch、build は minify."""
+        開発サーバーは `run` に統一された (#143)。
+        """
         content = _read_makefile()
-        dev_section = _extract_target_section(content, "dev")
-        build_section = _extract_target_section(content, "build")
-
-        assert "--watch" in dev_section
-        assert "--minify" in build_section
+        assert not re.search(r"^dev:", content, re.MULTILINE), (
+            "dev ターゲットが残存している。run に統一されたはず"
+        )
 
 
 class TestCopyAlpineTarget:

@@ -41,21 +41,17 @@ def _extract_target_section(content: str, target: str) -> str:
 
 
 class TestRunTargetUvicornFlags:
-    """run ターゲットの uvicorn 起動フラグが現行 uvicorn で有効なこと."""
+    """run (開発) ターゲットの uvicorn 起動フラグが現行 uvicorn で有効なこと.
 
-    def test_run_target_does_not_use_no_reload(self) -> None:
-        """run は --no-reload を含まない (uvicorn 0.44 で削除済み)."""
-        run_section = _extract_target_section(_read_makefile(), "run")
-        assert "--no-reload" not in run_section, (
-            "uvicorn 0.44 では --no-reload が削除された (デフォルト = 非リロード)"
-        )
+    Makefile はローカル開発のみを対象とするため (#143)、
+    `run` は --reload + Tailwind watch を伴う開発モードである。
+    """
 
-    def test_run_target_does_not_enable_reload(self) -> None:
-        """run は --reload を有効化しない (本番モード)."""
-        run_section = _extract_target_section(_read_makefile(), "run")
-        # --reload-xxx は許容、単独 --reload のみ NG
-        assert not re.search(r"--reload(\s|$)", run_section), (
-            f"run target で --reload が有効化されている: {run_section}"
+    def test_run_target_enables_reload(self) -> None:
+        """run は --reload を有効化する (開発モード)."""
+        section = _extract_target_section(_read_makefile(), "run")
+        assert re.search(r"--reload(\s|$)", section), (
+            f"run target で --reload が見つからない: {section}"
         )
 
     def test_run_target_uvicorn_flags_are_accepted_by_uvicorn(self) -> None:
@@ -68,12 +64,14 @@ class TestRunTargetUvicornFlags:
         if not uvicorn_bin.exists():
             pytest.skip(".venv/bin/uvicorn 未インストールのためスキップ")
 
-        run_section = _extract_target_section(_read_makefile(), "run")
-        match = re.search(r"uvicorn\s+([^\n]+)", run_section)
-        assert match, f"uvicorn 起動行が見つからない: {run_section}"
+        section = _extract_target_section(_read_makefile(), "run")
+        match = re.search(r"uvicorn\s+([^\n]+)", section)
+        assert match, f"uvicorn 起動行が見つからない: {section}"
 
-        # 環境変数を展開: $(PORT) → 8000
-        args_str = match.group(1).replace("$(PORT)", "8000")
+        # 環境変数を展開: $$_port → 8000 / $(PORT) → 8000
+        args_str = match.group(1).replace("$$_port", "8000").replace(
+            "$(PORT)", "8000"
+        )
         args = args_str.split()
 
         result = subprocess.run(
