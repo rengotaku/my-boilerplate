@@ -1,5 +1,7 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -11,6 +13,15 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   );
 
 export function Layout() {
+  const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
+  const clearToken = useAuthStore((s) => s.clearToken);
+
+  const handleLogout = () => {
+    clearToken();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="bg-primary text-primary-foreground shadow">
@@ -24,6 +35,22 @@ export function Layout() {
               Users
             </NavLink>
           </nav>
+          <div className="ml-auto">
+            {token ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleLogout}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                Logout
+              </Button>
+            ) : (
+              <NavLink to="/login" className={navLinkClass}>
+                Login
+              </NavLink>
+            )}
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
