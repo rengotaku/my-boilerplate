@@ -56,8 +56,8 @@ jobs:
             react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
 
-      - name: Install make
-        run: apt-get update -y && apt-get install -y make
+      - name: Install make and rsync
+        run: apt-get update -y && apt-get install -y make rsync
 
       - name: Compose shared-react-ui into all React templates
         run: |
