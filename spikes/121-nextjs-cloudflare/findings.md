@@ -28,16 +28,18 @@ npx create-next-app@latest tmp/nextjs-cloudflare-spike \
 
 確認日: 2026-05-01
 
-実機サンプル: `tmp/nextjs-cloudflare-spike/`（gitignore 済み、再現は上記コマンド）
+実機サンプル: `tmp/nextjs-cloudflare-spike/`（gitignore 済み、再現は上記コマンド + `sample/` のソース overlay）
 
 ### 追加した最小サンプル
 
+レビュー用ソースは [`sample/src/app/`](./sample/) に配置（`tmp/` は gitignore のため）。
+
 | ファイル | 種別 | 目的 |
 |---------|------|------|
-| `src/app/api/hello/route.ts` | Route Handler | GET で JSON を返す |
-| `src/app/actions/page.tsx` | Server Component | RSC で時刻をレンダ |
-| `src/app/actions/greet.ts` | Server Action (`"use server"`) | フォーム入力を受けて文字列を返す |
-| `src/app/actions/GreetForm.tsx` | Client Component (`"use client"`) | Server Action を呼び出すフォーム |
+| [`sample/src/app/api/hello/route.ts`](./sample/src/app/api/hello/route.ts) | Route Handler | GET で JSON を返す |
+| [`sample/src/app/actions/page.tsx`](./sample/src/app/actions/page.tsx) | Server Component | RSC で時刻をレンダ |
+| [`sample/src/app/actions/greet.ts`](./sample/src/app/actions/greet.ts) | Server Action (`"use server"`) | フォーム入力を受けて文字列を返す |
+| [`sample/src/app/actions/GreetForm.tsx`](./sample/src/app/actions/GreetForm.tsx) | Client Component (`"use client"`) | Server Action を呼び出すフォーム |
 
 ### 動作確認結果
 
