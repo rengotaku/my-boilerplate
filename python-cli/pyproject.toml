@@ -15,7 +15,7 @@ license = {text = "MIT"}
 keywords = ["cli", "boilerplate", "typer"]
 dependencies = [
     "typer>=0.9.0",
-    "pydantic-settings>=2.0.0",
+    "pydantic-settings>=2.14.0",
     "structlog>=24.0.0",
 ]
 
