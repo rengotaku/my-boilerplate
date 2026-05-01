@@ -4,18 +4,28 @@
 .DEFAULT_GOAL := help
 
 # Variables
-BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8083
+
+# Auto-discover entry points under cmd/<name>/. Adding cmd/foo/main.go is
+# sufficient — `make build` will produce bin/foo without further edits.
+CMDS := $(notdir $(wildcard cmd/*))
+BINARIES := $(addprefix $(BIN_DIR)/,$(CMDS))
+.PHONY: $(BINARIES)
 
 ## install: Download dependencies
 install:
 	go mod download
 
-## build: Build the binary
-build:
-	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
+## build: Build all cmd/* binaries
+build: $(BINARIES)
+
+# Static pattern rule restricted to $(BINARIES) so it only matches discovered
+# cmd/* entry points, not any other file that may live under bin/.
+$(BINARIES): $(BIN_DIR)/%:
+	@mkdir -p $(BIN_DIR)
+	go build -o $@ ./cmd/$*
 
 ## run: Run the server
 run:
