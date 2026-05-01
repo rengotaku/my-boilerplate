@@ -9,6 +9,7 @@ on:
       - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "go-ssr-web/**"
+      - "shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -20,6 +21,7 @@ on:
       - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "go-ssr-web/**"
+      - "shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 
@@ -53,6 +55,12 @@ jobs:
             react-spa/package-lock.json
             react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
+
+      - name: Compose shared-react-ui into all React templates
+        run: |
+          make -C react-spa-graphql compose-ui
+          make -C react-spa compose-ui
+          make -C react-spa-cloudflare compose-ui
 
       - name: Install React SPA GraphQL dependencies
         working-directory: react-spa-graphql

@@ -23,3 +23,14 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# shared-react-ui-managed:begin
+# Files materialized from ../shared-react-ui/ via `make compose-ui`. The
+# monorepo keeps these out of VCS to enforce single-source-of-truth in
+# shared-react-ui/. At scaffold time this block is stripped so the resulting
+# project tracks the files normally.
+src/components/ui/button.tsx
+src/components/ui/button-variants.ts
+src/components/ui/input.tsx
+src/components/ui/time-picker.tsx
+# shared-react-ui-managed:end

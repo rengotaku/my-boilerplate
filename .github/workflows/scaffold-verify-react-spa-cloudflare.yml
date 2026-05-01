@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - 'react-spa-cloudflare/**'
+      - 'shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa-cloudflare.yml'
       - '.github/workflows/scaffold-verify-react.yml'
   pull_request:
     paths:
       - 'react-spa-cloudflare/**'
+      - 'shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa-cloudflare.yml'
       - '.github/workflows/scaffold-verify-react.yml'

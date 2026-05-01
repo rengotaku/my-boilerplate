@@ -11,12 +11,14 @@ on:
     paths:
       - 'go-react-spa/**'
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa.yml'
   pull_request:
     paths:
       - 'go-react-spa/**'
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa.yml'
 
