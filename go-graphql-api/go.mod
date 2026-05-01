@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/sethvargo/go-envconfig v1.3.0
 	github.com/stretchr/testify v1.11.1
-	github.com/vektah/gqlparser/v2 v2.5.32
+	github.com/vektah/gqlparser/v2 v2.5.33
 	gorm.io/gorm v1.31.1
 )
 
