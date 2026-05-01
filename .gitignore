@@ -21,3 +21,6 @@ Thumbs.db
 
 .specify/
 specs/
+
+# Spike sandboxes (scratch projects, e.g. create-next-app output)
+tmp/
