@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -137,23 +138,29 @@ func main() {
 // "content" definition. A single shared set causes {{define "content"}} to be
 // overwritten by the last-parsed file, breaking all but the final page.
 func loadTemplates() (map[string]*template.Template, error) {
-	pages := []struct{ name, path string }{
-		{"index.html", "templates/index.html"},
-		{"login.html", "templates/login.html"},
-		{"profile.html", "templates/profile.html"},
-		{"users/index.html", "templates/users/index.html"},
-		{"users/new.html", "templates/users/new.html"},
-		{"users/show.html", "templates/users/show.html"},
-		{"users/edit.html", "templates/users/edit.html"},
-	}
+	const (
+		root   = "templates"
+		layout = "templates/base.html"
+	)
 
-	m := make(map[string]*template.Template, len(pages))
-	for _, p := range pages {
-		t, err := template.ParseFS(web.FS, "templates/base.html", p.path)
+	m := map[string]*template.Template{}
+	err := fs.WalkDir(web.FS, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, fmt.Errorf("loading template %s: %w", p.name, err)
+			return err
 		}
-		m[p.name] = t
+		if d.IsDir() || path == layout || !strings.HasSuffix(path, ".html") {
+			return nil
+		}
+		name := strings.TrimPrefix(path, root+"/")
+		t, perr := template.ParseFS(web.FS, layout, path)
+		if perr != nil {
+			return fmt.Errorf("loading template %s: %w", name, perr)
+		}
+		m[name] = t
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	return m, nil
 }
