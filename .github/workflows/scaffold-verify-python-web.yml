@@ -1,0 +1,49 @@
+name: Scaffold Verify python-web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python-web/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-web.yml'
+  pull_request:
+    paths:
+      - 'python-web/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-web.yml'
+
+jobs:
+  scaffold-python-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=python-web \
+            dest=/tmp/test-python-web \
+            name=test-python-web
+
+      - name: Install dependencies
+        working-directory: /tmp/test-python-web
+        run: |
+          uv sync --all-extras
+          npm install
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-python-web
+        run: |
+          make ci

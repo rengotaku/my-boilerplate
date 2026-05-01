@@ -1,0 +1,22 @@
+name: Scaffold Verify go-cli
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-cli.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+  pull_request:
+    paths:
+      - 'go-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-cli.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-go.yml
+    with:
+      template: go-cli

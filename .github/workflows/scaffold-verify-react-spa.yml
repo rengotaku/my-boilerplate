@@ -1,0 +1,22 @@
+name: Scaffold Verify react-spa
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'react-spa/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'react-spa/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: react-spa

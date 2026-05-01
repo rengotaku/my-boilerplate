@@ -1,0 +1,22 @@
+name: Scaffold Verify react-spa-cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'react-spa-cloudflare/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-cloudflare.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'react-spa-cloudflare/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-cloudflare.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: react-spa-cloudflare

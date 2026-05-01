@@ -1,0 +1,40 @@
+name: Scaffold Verify rust-cli
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rust-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-rust-cli.yml'
+  pull_request:
+    paths:
+      - 'rust-cli/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-rust-cli.yml'
+
+jobs:
+  scaffold-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=rust-cli \
+            dest=/tmp/test-rust-cli \
+            name=test-rust-cli
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-rust-cli
+        run: |
+          make ci

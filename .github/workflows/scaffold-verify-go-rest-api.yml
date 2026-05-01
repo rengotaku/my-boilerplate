@@ -1,0 +1,22 @@
+name: Scaffold Verify go-rest-api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-rest-api/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-rest-api.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+  pull_request:
+    paths:
+      - 'go-rest-api/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-rest-api.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-go.yml
+    with:
+      template: go-rest-api

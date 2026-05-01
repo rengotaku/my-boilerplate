@@ -1,0 +1,22 @@
+name: Scaffold Verify go-graphql-api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-graphql-api/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-graphql-api.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+  pull_request:
+    paths:
+      - 'go-graphql-api/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-graphql-api.yml'
+      - '.github/workflows/scaffold-verify-go.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-go.yml
+    with:
+      template: go-graphql-api
