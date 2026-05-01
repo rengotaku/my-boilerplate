@@ -4,12 +4,17 @@
 .DEFAULT_GOAL := help
 
 # Variables
-BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8082
 TAILWIND_VERSION ?= v4.1.5
 TAILWIND_BIN := $(BIN_DIR)/tailwindcss
+
+# Auto-discover entry points under cmd/<name>/. Adding cmd/foo/main.go is
+# sufficient — `make build` will produce bin/foo without further edits.
+CMDS := $(notdir $(wildcard cmd/*))
+BINARIES := $(addprefix $(BIN_DIR)/,$(CMDS))
+.PHONY: $(BINARIES)
 
 ## install: Download dependencies
 install:
@@ -32,9 +37,14 @@ tailwind-install:
 tailwind-build: tailwind-install
 	$(TAILWIND_BIN) -i web/static/css/input.css -o web/static/css/output.css --minify
 
-## build: Build the binary and Tailwind CSS
-build: tailwind-build
-	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
+## build: Build all cmd/* binaries and Tailwind CSS
+build: tailwind-build $(BINARIES)
+
+# Static pattern rule restricted to $(BINARIES) so it can't accidentally match
+# other files under bin/ (e.g. bin/tailwindcss, which is fetched by curl).
+$(BINARIES): $(BIN_DIR)/%:
+	@mkdir -p $(BIN_DIR)
+	go build -o $@ ./cmd/$*
 
 ## run: Run the server (Tailwind CSS をビルドしてから起動)
 run: tailwind-build
