@@ -128,6 +128,18 @@ MY_BOILERPLATE_REPO=myorg/my-fork MY_BOILERPLATE_REF=v1.0.0 \
 
 リポジトリをクローン済みなら直接 [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。`download.sh` はそれをラップして「リポジトリ未取得」状態から実行できるようにしたものです。
 
+## Dependabot Policy
+
+dependabot PR は以下のルールで運用しています:
+
+| 種別 | 挙動 |
+|------|------|
+| patch / minor | CI 緑になり次第 **自動でスカッシュマージ**（`.github/workflows/dependabot-auto-merge.yml`） |
+| major | `needs-review` ラベルを付与し、**手動レビュー** |
+| security update | `update-type` が patch/minor 相当なら自動マージ、major なら手動レビュー |
+
+兄弟 PR の conflict を減らすため、`.github/dependabot.yml` の各 ecosystem は minor/patch を 1 PR に **groups** で集約しています。
+
 ## License
 
 MIT
