@@ -56,14 +56,18 @@ jobs:
             react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
 
-      - name: Install make and rsync
-        run: apt-get update -y && apt-get install -y make rsync
-
       - name: Compose shared-react-ui into all React templates
         run: |
-          make -C react-spa-graphql compose-ui
-          make -C react-spa compose-ui
-          make -C react-spa-cloudflare compose-ui
+          for dir in react-spa-graphql react-spa react-spa-cloudflare; do
+            src="shared-react-ui/src/ui"
+            dest="${dir}/src/components/ui"
+            if [ -d "$src" ]; then
+              echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
+              mkdir -p "$dest"
+              find "$src" -maxdepth 1 \( -name "*.ts" -o -name "*.tsx" \) ! -name "*.stories.tsx" \
+                -exec cp {} "$dest/" \;
+            fi
+          done
 
       - name: Install React SPA GraphQL dependencies
         working-directory: react-spa-graphql
