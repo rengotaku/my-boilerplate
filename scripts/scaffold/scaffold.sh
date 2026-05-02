@@ -60,11 +60,25 @@ copy_template "$REPO_ROOT/$template" "$dest"
 
 # --- Composite-template merge (runs before family replacements so the
 #     materialized base tree is visible to subsequent steps). ---
+# shellcheck source=lib/compose.sh
+source "$SCRIPT_DIR/lib/compose.sh"
+
 if [[ -f "$dest/.compose.toml" ]]; then
   info "Composing template '$template' (manifest: .compose.toml)..."
-  # shellcheck source=lib/compose.sh
-  source "$SCRIPT_DIR/lib/compose.sh"
   compose_template "$dest" "$REPO_ROOT" "$name"
+fi
+
+# --- shared-react-ui merge (runs after compose_template so composed sub-trees
+#     can also opt-in via their own .shared-ui.toml). ---
+if [[ -f "$dest/.shared-ui.toml" ]]; then
+  info "Merging shared-react-ui (manifest: .shared-ui.toml)..."
+  merge_shared_ui "$dest" "$REPO_ROOT"
+fi
+# go-react-spa scaffolds frontend/ from the react-spa base; pick up the
+# manifest that landed inside the composed sub-tree, too.
+if [[ -f "$dest/frontend/.shared-ui.toml" ]]; then
+  info "Merging shared-react-ui into frontend/..."
+  merge_shared_ui "$dest/frontend" "$REPO_ROOT"
 fi
 
 # --- CI workflow transformation (before family replacements so they can process CI files too) ---

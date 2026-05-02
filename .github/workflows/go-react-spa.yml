@@ -12,11 +12,13 @@ on:
     paths:
       - 'go-react-spa/**'
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - '.github/workflows/go-react-spa.yml'
   pull_request:
     paths:
       - 'go-react-spa/**'
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - '.github/workflows/go-react-spa.yml'
 
 defaults:

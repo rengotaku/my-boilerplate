@@ -41,6 +41,11 @@ $(COMPOSED_MARKER): $(OVERLAY_DIR) $(BASE_TEMPLATE_DIR)
 		$(BASE_TEMPLATE_DIR)/ $(FRONTEND_DIR)/
 	@echo "[compose] overlay: $(OVERLAY_DIR) -> $(FRONTEND_DIR)"
 	@rsync -a $(OVERLAY_DIR)/ $(FRONTEND_DIR)/
+	@if [ -d "../shared-react-ui/src/ui" ]; then \
+		echo "[compose] shared-ui: ../shared-react-ui/src/ui -> $(FRONTEND_DIR)/src/components/ui (excl. *.stories.tsx)"; \
+		rsync -a --exclude='*.stories.tsx' ../shared-react-ui/src/ui/ $(FRONTEND_DIR)/src/components/ui/; \
+		rm -f $(FRONTEND_DIR)/.shared-ui.toml; \
+	fi
 	@echo "[compose] post: package.json name -> $(PACKAGE_NAME)"
 	@node -e "const f='$(FRONTEND_DIR)/package.json';const fs=require('fs');const p=JSON.parse(fs.readFileSync(f,'utf8'));p.name='$(PACKAGE_NAME)';fs.writeFileSync(f,JSON.stringify(p,null,2)+'\n');"
 	@touch $(COMPOSED_MARKER)

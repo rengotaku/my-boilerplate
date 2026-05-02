@@ -123,6 +123,89 @@ compose_template() {
   fi
 }
 
+# Output globals from parse_shared_ui_toml
+SHARED_UI_SRC=""
+SHARED_UI_DEST=""
+
+# parse_shared_ui_toml <manifest>
+#
+# Reuses the same minimal TOML reader as parse_compose_toml. Recognises a
+# single [ui] section with `src` and `dest` keys.
+parse_shared_ui_toml() {
+  local manifest="$1"
+  SHARED_UI_SRC=""
+  SHARED_UI_DEST=""
+
+  local section="" line key value
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    [[ "${line:0:1}" == "#" ]] && continue
+    if [[ "$line" =~ ^\[([a-zA-Z_]+)\]$ ]]; then
+      section="${BASH_REMATCH[1]}"
+      continue
+    fi
+    if [[ "$line" =~ ^([a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*=[[:space:]]*\"([^\"]*)\"$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      value="${BASH_REMATCH[2]}"
+      case "${section}.${key}" in
+        ui.src) SHARED_UI_SRC="$value" ;;
+        ui.dest) SHARED_UI_DEST="$value" ;;
+      esac
+    fi
+  done < "$manifest"
+}
+
+# merge_shared_ui <dest> <repo_root>
+#
+# If <dest>/.shared-ui.toml exists, copies <repo_root>/<ui.src>/*.tsx (excluding
+# `*.stories.tsx`) into <dest>/<ui.dest>/. Existing files in the destination
+# are overwritten, so this is the single source of truth for the listed
+# components. Other files already present in <dest>/<ui.dest>/ (e.g. card,
+# alert) are left untouched. After merging, the manifest is removed.
+merge_shared_ui() {
+  local dest="$1"
+  local repo_root="$2"
+
+  local manifest="$dest/.shared-ui.toml"
+  [[ -f "$manifest" ]] || return 0
+
+  parse_shared_ui_toml "$manifest"
+
+  [[ -z "$SHARED_UI_SRC" ]] && die "[shared-ui] $manifest: missing [ui].src"
+  [[ -z "$SHARED_UI_DEST" ]] && die "[shared-ui] $manifest: missing [ui].dest"
+
+  local ui_src="$repo_root/$SHARED_UI_SRC"
+  local ui_dest="$dest/$SHARED_UI_DEST"
+
+  [[ -d "$ui_src" ]] || die "[shared-ui] source dir not found: $ui_src"
+
+  if ! command -v rsync >/dev/null 2>&1; then
+    die "[shared-ui] rsync is required"
+  fi
+
+  info "[shared-ui] $SHARED_UI_SRC -> $SHARED_UI_DEST (excl. *.stories.tsx)"
+  mkdir -p "$ui_dest"
+  rsync -a --exclude='*.stories.tsx' "$ui_src/" "$ui_dest/"
+
+  # Strip the shared-react-ui-managed:begin/end block from .gitignore so the
+  # scaffolded project tracks the materialized UI files normally. The block
+  # exists in the monorepo to keep the duplicated source files out of VCS.
+  if [[ -f "$dest/.gitignore" ]]; then
+    local tmp
+    tmp="$(mktemp)"
+    awk '
+      /^# shared-react-ui-managed:begin/ { skip = 1; next }
+      /^# shared-react-ui-managed:end/   { skip = 0; next }
+      !skip { print }
+    ' "$dest/.gitignore" > "$tmp"
+    mv "$tmp" "$dest/.gitignore"
+  fi
+
+  rm -f "$manifest"
+}
+
 # strip_compose_makefile <Makefile path>
 #
 # Removes BASE_TEMPLATE_DIR / overlay / verify machinery so the

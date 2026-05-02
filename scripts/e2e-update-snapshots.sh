@@ -30,6 +30,18 @@ docker run --rm --ipc=host --network=host \
     export GOPATH="/tmp/gopath"
     go version
 
+    echo "--> Composing shared-react-ui into React templates"
+    for dir in react-spa react-spa-graphql react-spa-cloudflare; do
+      src="shared-react-ui/src/ui"
+      dest="${dir}/src/components/ui"
+      if [ -d "$src" ]; then
+        echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
+        mkdir -p "$dest"
+        find "$src" -maxdepth 1 \( -name "*.ts" -o -name "*.tsx" \) ! -name "*.stories.tsx" \
+          -exec cp {} "$dest/" \;
+      fi
+    done
+
     echo "--> Installing frontend dependencies"
     (cd react-spa && npm ci)
     (cd react-spa-graphql && npm ci)

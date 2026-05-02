@@ -9,6 +9,7 @@ on:
       - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "go-ssr-web/**"
+      - "shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -20,6 +21,7 @@ on:
       - "react-spa-cloudflare/**"
       - "go-rest-api/**"
       - "go-ssr-web/**"
+      - "shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 
@@ -53,6 +55,19 @@ jobs:
             react-spa/package-lock.json
             react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
+
+      - name: Compose shared-react-ui into all React templates
+        run: |
+          for dir in react-spa-graphql react-spa react-spa-cloudflare; do
+            src="shared-react-ui/src/ui"
+            dest="${dir}/src/components/ui"
+            if [ -d "$src" ]; then
+              echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
+              mkdir -p "$dest"
+              find "$src" -maxdepth 1 \( -name "*.ts" -o -name "*.tsx" \) ! -name "*.stories.tsx" \
+                -exec cp {} "$dest/" \;
+            fi
+          done
 
       - name: Install React SPA GraphQL dependencies
         working-directory: react-spa-graphql

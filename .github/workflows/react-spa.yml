@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - '.github/workflows/react-spa.yml'
   pull_request:
     paths:
       - 'react-spa/**'
+      - 'shared-react-ui/**'
       - '.github/workflows/react-spa.yml'
 
 defaults:
@@ -28,6 +30,9 @@ jobs:
           node-version-file: react-spa/.node-version
           cache: 'npm'
           cache-dependency-path: react-spa/package-lock.json
+
+      - name: Compose shared-react-ui
+        run: make compose-ui
 
       - name: Install dependencies
         run: npm ci

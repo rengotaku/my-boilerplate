@@ -1,0 +1,14 @@
+# shared-react-ui manifest.
+#
+# At scaffold time, scripts/scaffold/lib/compose.sh reads this manifest and
+# rsync's <repo_root>/<ui.src>/*.tsx (excluding *.stories.tsx) into
+# <dest>/<ui.dest>/, then deletes this manifest. The result is a self-contained
+# project that owns its UI components — the shadcn "copy/paste to add" workflow
+# is preserved.
+#
+# For local monorepo development, `make compose-ui` performs the same merge
+# from ../shared-react-ui/, so editing react-spa/ standalone still works.
+
+[ui]
+src = "shared-react-ui/src/ui"
+dest = "src/components/ui"

@@ -17,7 +17,15 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html"],
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/test/**", "src/main.tsx", "src/vite-env.d.ts"],
+      exclude: [
+        "src/test/**",
+        "src/main.tsx",
+        "src/vite-env.d.ts",
+        // shared-react-ui primitive: shipped to every template via compose
+        // even when not referenced by app code. Coverage is enforced via
+        // shared-react-ui's gallery, not via per-template integration.
+        "src/components/ui/time-picker.tsx",
+      ],
     },
   },
 });
