@@ -1,0 +1,90 @@
+name: Scaffold Verify GitHub Templates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'meta/github-workflow/**'
+      - 'scripts/scaffold/scaffold.sh'
+      - 'go-ssr-web/**'
+      - 'react-spa/**'
+      - 'python-web/**'
+      - '.github/workflows/scaffold-verify-github-templates.yml'
+  pull_request:
+    paths:
+      - 'meta/github-workflow/**'
+      - 'scripts/scaffold/scaffold.sh'
+      - 'go-ssr-web/**'
+      - 'react-spa/**'
+      - 'python-web/**'
+      - '.github/workflows/scaffold-verify-github-templates.yml'
+
+jobs:
+  verify-injection:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: [go-ssr-web, react-spa, python-web]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Scaffold project (${{ matrix.template }})
+        run: |
+          extra=""
+          case "${{ matrix.template }}" in
+            go-*) extra="go-module-name=github.com/test/test-${{ matrix.template }}" ;;
+          esac
+          bash scripts/scaffold/scaffold.sh \
+            template=${{ matrix.template }} \
+            dest=/tmp/test-${{ matrix.template }} \
+            name=test-${{ matrix.template }} \
+            $extra
+
+      - name: Verify GitHub templates are injected
+        run: |
+          dest=/tmp/test-${{ matrix.template }}
+          fail=0
+          for f in \
+            .github/PULL_REQUEST_TEMPLATE.md \
+            .github/ISSUE_TEMPLATE/parent-issue.md \
+            .github/ISSUE_TEMPLATE/sub-issue.md \
+            .github/ISSUE_TEMPLATE/discussion-issue.md; do
+            if [ ! -f "$dest/$f" ]; then
+              echo "MISSING: $dest/$f"
+              fail=1
+            else
+              echo "OK: $f"
+            fi
+          done
+          exit $fail
+
+      - name: Scaffold project with --no-github-templates (${{ matrix.template }})
+        run: |
+          extra=""
+          case "${{ matrix.template }}" in
+            go-*) extra="go-module-name=github.com/test/test-${{ matrix.template }}-ngt" ;;
+          esac
+          bash scripts/scaffold/scaffold.sh \
+            template=${{ matrix.template }} \
+            dest=/tmp/test-${{ matrix.template }}-ngt \
+            name=test-${{ matrix.template }}-ngt \
+            no-github-templates=1 \
+            $extra
+
+      - name: Verify GitHub templates are NOT injected with no-github-templates=1
+        run: |
+          dest=/tmp/test-${{ matrix.template }}-ngt
+          fail=0
+          for f in \
+            .github/PULL_REQUEST_TEMPLATE.md \
+            .github/ISSUE_TEMPLATE/parent-issue.md \
+            .github/ISSUE_TEMPLATE/sub-issue.md \
+            .github/ISSUE_TEMPLATE/discussion-issue.md; do
+            if [ -f "$dest/$f" ]; then
+              echo "UNEXPECTED: $dest/$f (should not exist with no-github-templates=1)"
+              fail=1
+            else
+              echo "OK (absent): $f"
+            fi
+          done
+          exit $fail
