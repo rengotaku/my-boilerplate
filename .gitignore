@@ -19,5 +19,10 @@ go-ssr-web/web/static/css/output.css
 .DS_Store
 Thumbs.db
 
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
 .specify/
 specs/
