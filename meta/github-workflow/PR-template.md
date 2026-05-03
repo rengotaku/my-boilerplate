@@ -3,7 +3,7 @@
 - 「Affects:」は他の sub-issue の前提仕様を変える変更がある場合に記載する。なければ「なし」
 - 「Refs:」は参照のみ（issue を close しない）。「Fixes:」は issue を close する
 - 親 issue は手動で close するため、PR には必ず「Refs: #親issue番号」を使う
-- 「Closes:」は sub-issue に使う（実装完了で close してよい場合のみ）
+- 「Closes:」は sub-issue に使う（PR マージで自動 close される）
 - 全チェックボックスを埋めること。該当なしの場合は「N/A」と書く
 -->
 

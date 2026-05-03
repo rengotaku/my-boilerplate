@@ -24,8 +24,8 @@ assignees: ''
 
 ## ⚠️ 実装前に必ず読むこと
 
-- **親 [#N](PARENT_ISSUE_URL_HERE)** — Decision Log 全N エントリ + 論点確定事項
-- 親 #N の first comment ([元要望全文](FIRST_COMMENT_URL_HERE))
+- **親 [#親issue番号](PARENT_ISSUE_URL_HERE)** — Decision Log 全エントリ + 論点確定事項
+- 親 #親issue番号 の first comment ([元要望全文](FIRST_COMMENT_URL_HERE))
 
 ## 元の要望 (inline)
 

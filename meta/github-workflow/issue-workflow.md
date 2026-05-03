@@ -204,10 +204,19 @@ gh issue edit <親issue番号>
 
 **5-1. ブランチを作成する**
 
+ブランチ名: `<type>/<issue#>-<kebab-description>`
+
+**type** は Conventional Commits と同じ: `feat` / `fix` / `refactor` / `docs` / `chore` / `test` / `perf` / `ci`
+
+例:
+- `feat/209-meta-github-workflow`
+- `fix/210-curl-fail-flag`
+- `docs/220-issue-workflow-guide`
+
 ```bash
 git switch main
 git pull origin main
-git switch -c issue<NUMBER>
+git switch -c <type>/<issue#>-<description>
 ```
 
 **5-2. sub-issue の Status を更新する**
