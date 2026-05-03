@@ -22,8 +22,10 @@
 #   <dest>       Destination directory (must not exist; parent must exist).
 #
 # Optional:
-#   --name=NAME  Project name written into Makefile / package.json / etc.
-#                Defaults to basename(<dest>).
+#   --name=NAME               Project name written into Makefile / package.json / etc.
+#                             Defaults to basename(<dest>).
+#   --no-github-templates     Skip injecting .github/PULL_REQUEST_TEMPLATE.md and
+#                             .github/ISSUE_TEMPLATE/*.md into the scaffolded project.
 #
 # Go templates: the `module` line in go.mod is auto-set to basename(<dest>),
 # producing a local-only module suitable for prototyping. If you plan to
@@ -65,7 +67,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: download.sh <template> <dest> [--name=NAME]
+Usage: download.sh <template> <dest> [--name=NAME] [--no-github-templates]
 
 See https://github.com/rengotaku/my-boilerplate#usage for full documentation.
 Run with an unknown <template> to see the currently available list.
@@ -75,6 +77,7 @@ EOF
 template=""
 dest=""
 name=""
+no_github_templates=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -83,6 +86,7 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     --name=*) name="${1#--name=}" ;;
+    --no-github-templates) no_github_templates="1" ;;
     --*) die "Unknown option: $1 (see --help)" ;;
     *)
       if [ -z "$template" ]; then
@@ -168,12 +172,10 @@ fi
 # during scaffolding, so the full tarball must remain available — do not
 # pre-trim it down to $extracted/$template here.
 info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module})"
-if [ -n "$module" ]; then
-  bash "$extracted/scripts/scaffold/scaffold.sh" \
-    "template=$template" "dest=$dest" "name=$name" "go-module-name=$module"
-else
-  bash "$extracted/scripts/scaffold/scaffold.sh" \
-    "template=$template" "dest=$dest" "name=$name"
-fi
+scaffold_args="template=$template dest=$dest name=$name"
+[ -n "$module" ] && scaffold_args="$scaffold_args go-module-name=$module"
+[ -n "$no_github_templates" ] && scaffold_args="$scaffold_args no-github-templates=1"
+# shellcheck disable=SC2086
+bash "$extracted/scripts/scaffold/scaffold.sh" $scaffold_args
 
 info "Done: $dest"

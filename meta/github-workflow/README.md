@@ -11,18 +11,21 @@ GitHub issue / PR の運用テンプレートと運用ガイド一式。
 | `discussion-issue.md` | 議論用 sub-issue テンプレ（決定後 close） |
 | `PR-template.md` | PR テンプレ（`Refs:` / `Closes:` 使い分け） |
 | `issue-workflow.md` | 運用ガイド（7 セクション） |
-| `install.sh` | `.github/ISSUE_TEMPLATE/` へ展開するインストールスクリプト |
 
 ## クイックスタート
 
+`scripts/download.sh` で scaffold すると、これらのテンプレートは `.github/` に**自動注入**される。
+
 ```bash
-cd /path/to/your-repo
-curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/meta/github-workflow/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-ssr-web ~/projects/my-app
 ```
 
-カレントディレクトリの `.github/ISSUE_TEMPLATE/` に issue テンプレートが展開される。
+注入をスキップしたい場合は `--no-github-templates` を指定する:
 
-PR テンプレートは `PR-template.md` を参考に `.github/PULL_REQUEST_TEMPLATE.md` を手動で作成する。
+```bash
+curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app --no-github-templates
+```
 
 ## 詳細
 

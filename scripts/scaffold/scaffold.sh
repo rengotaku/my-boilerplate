@@ -20,6 +20,7 @@ template=""
 dest=""
 name=""
 module=""
+no_github_templates=""
 
 for arg in "$@"; do
   case "$arg" in
@@ -27,6 +28,7 @@ for arg in "$@"; do
     dest=*) dest="${arg#dest=}" ;;
     name=*) name="${arg#name=}" ;;
     go-module-name=*) module="${arg#go-module-name=}" ;;
+    no-github-templates=*) no_github_templates="${arg#no-github-templates=}" ;;
     *) die "Unknown argument: $arg" ;;
   esac
 done
@@ -116,6 +118,20 @@ case "$family" in
     apply_rust_replacements "$dest" "$template" "$name"
     ;;
 esac
+
+# --- GitHub workflow templates injection ---
+# Skip if: caller passed no-github-templates=1, OR the source template already ships .github/
+if [[ -z "$no_github_templates" && ! -d "$REPO_ROOT/$template/.github" ]]; then
+  github_workflow_src="$REPO_ROOT/meta/github-workflow"
+  if [[ -d "$github_workflow_src" ]]; then
+    info "Injecting GitHub workflow templates..."
+    mkdir -p "$dest/.github/ISSUE_TEMPLATE"
+    cp "$github_workflow_src/PR-template.md" "$dest/.github/PULL_REQUEST_TEMPLATE.md"
+    for f in parent-issue.md sub-issue.md discussion-issue.md; do
+      cp "$github_workflow_src/$f" "$dest/.github/ISSUE_TEMPLATE/$f"
+    done
+  fi
+fi
 
 # --- README replacement ---
 info "Generating README..."
