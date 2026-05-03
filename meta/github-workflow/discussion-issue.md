@@ -2,7 +2,7 @@
 name: 議論用 sub-issue
 about: 親 issue の特定の論点を議論するための sub-issue
 title: '議論: '
-labels: ''
+labels: []
 assignees: ''
 ---
 

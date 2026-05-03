@@ -34,14 +34,16 @@
 
 ### Status 凡例
 
-| テキスト | 意味 |
-|---------|------|
-| `✅ closed` | 完了（close済み） |
-| `⏳ in-progress` | 実装中 |
-| `🔴 blocked` | 別 issue・PR の完了待ち |
-| `⏸ on-hold` | 意図的に止めている |
-| `実装待ち` | 未着手 |
-| `⏳ 議論中` | 議論用 sub-issue の初期状態 |
+| テキスト | 意味 | 初期値 |
+|---------|------|-------|
+| `実装待ち` | 未着手（起票時デフォルト） | ✓ |
+| `⏳ in-progress` | 実装中 | |
+| `🔴 blocked` | 別 issue・PR の完了待ち | |
+| `⏸ on-hold` | 意図的に止めている | |
+| `✅ closed` | 完了（close 済み） | |
+| `⏳ 議論中` | 議論用 sub-issue の初期状態 | ✓ |
+
+`実装待ち` / `⏳ 議論中` は起票時の初期値で emoji なし・あり混在は仕様。emoji を使う場合は必ずテキストを併記する。
 
 ---
 
@@ -66,11 +68,12 @@ GitHub UI の場合: "New issue" → "親 issue" テンプレートを選択。
 issue を作成後、すぐに first comment を投稿する:
 
 ```bash
-# issue 番号を確認
-gh issue list --limit 5
+# gh issue create は完了時に URL を返す。番号は末尾から取得する
+ISSUE_URL=$(gh issue create --template parent-issue.md --title "タイトル")
+NUMBER=$(echo "$ISSUE_URL" | awk -F/ '{print $NF}')
 
 # first comment を投稿
-gh issue comment <NUMBER> --body "$(cat <<'EOF'
+gh issue comment "$NUMBER" --body "$(cat <<'EOF'
 ## 元要望全文
 
 （ここに要望の全文を貼り付ける）
@@ -156,9 +159,8 @@ gh issue close <NUMBER> --reason completed --comment "決定: 案 A を採用。
 
 以下の条件を**すべて満たす**場合に sub-issue に分解する:
 
-1. 実装に 4 時間以上かかる見込みがある
-2. 独立した PR が作れる（他の sub-issue と並行実装できる）
-3. DoD（完了条件）を具体的に書ける
+1. 独立した PR が作れる（他の sub-issue と並行実装できる）
+2. DoD（完了条件）を具体的に書ける
 
 1 つでも満たさない場合は、親 issue の Sub-issues テーブルに TODO として追記するだけでよい。
 
@@ -210,11 +212,7 @@ git switch -c issue<NUMBER>
 
 **5-2. sub-issue の Status を更新する**
 
-```bash
-gh issue edit <NUMBER> --body "$(gh issue view <NUMBER> --json body --jq '.body' | sed 's/\*\*Status:\*\* 実装待ち/**Status:** ⏳ in-progress/')"
-```
-
-または GitHub UI で手動更新する。
+GitHub UI で description を開き、`**Status:** 実装待ち` を `**Status:** ⏳ in-progress` に書き換える。
 
 **5-3. 実装する**
 
@@ -332,7 +330,7 @@ cd /path/to/your-repo
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/meta/github-workflow/install.sh | sh
 ```
 
-`./github/ISSUE_TEMPLATE/` に以下のファイルが展開される:
+`.github/ISSUE_TEMPLATE/` に以下のファイルが展開される:
 - `parent-issue.md`
 - `sub-issue.md`
 - `discussion-issue.md`

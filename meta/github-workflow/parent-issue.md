@@ -2,7 +2,7 @@
 name: 親 issue
 about: 大きな機能・改善提案を議論するための親 issue
 title: ''
-labels: ''
+labels: []
 assignees: ''
 ---
 
@@ -20,7 +20,7 @@ assignees: ''
 
 <!-- 1〜2 行で目的・背景を書く。詳細は first comment の元要望全文を参照 -->
 
-元要望全文: [このコメント](<FIRST_COMMENT_URL>)
+元要望全文: [このコメント](FIRST_COMMENT_URL_HERE)
 
 ## Goal
 
@@ -28,15 +28,17 @@ assignees: ''
 
 ## Decision Log
 
+<!-- 議論が進むたびに追記する。番号は通し番号 -->
+
 | # | 論点 | 決定 | 日付 |
 |---|------|------|------|
-| 1 | | | YYYY-MM-DD |
 
 ## Sub-issues
 
+<!-- sub-issue を作成したら追記する -->
+
 | # | タイトル | Status |
 |---|---------|--------|
-| [#N]() | | ⏳ in-progress |
 
 ## 不明点があれば
 

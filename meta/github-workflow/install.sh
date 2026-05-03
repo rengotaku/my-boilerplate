@@ -30,16 +30,24 @@ if [ -n "$EXISTING" ]; then
   exit 1
 fi
 
-mkdir -p "$DEST"
+# Download to a temp dir first to avoid partial installs on curl failure
+TMP=$(mktemp -d)
 
 echo ""
-echo "Installing issue templates into $DEST/ ..."
+echo "Downloading issue templates ..."
 echo ""
 
 for f in $TEMPLATES; do
-  curl -sSL "$BASE_URL/$f" -o "$DEST/$f"
-  echo "  ✓ $DEST/$f"
+  curl -fsSL "$BASE_URL/$f" -o "$TMP/$f"
+  echo "  ✓ $f"
 done
+
+# Move atomically after all downloads succeed
+mkdir -p "$DEST"
+for f in $TEMPLATES; do
+  mv "$TMP/$f" "$DEST/$f"
+done
+rmdir "$TMP"
 
 echo ""
 echo "✅ インストール完了"

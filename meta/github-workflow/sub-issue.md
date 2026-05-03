@@ -2,7 +2,7 @@
 name: sub-issue
 about: 親 issue の議論で確定した仕様を実装するための sub-issue
 title: ''
-labels: ''
+labels: []
 assignees: ''
 ---
 
@@ -24,8 +24,8 @@ assignees: ''
 
 ## ⚠️ 実装前に必ず読むこと
 
-- **親 [#N](<親issue URL>)** — Decision Log 全N エントリ + 論点確定事項
-- 親 #N の first comment ([元要望全文](<FIRST_COMMENT_URL>))
+- **親 [#N](PARENT_ISSUE_URL_HERE)** — Decision Log 全N エントリ + 論点確定事項
+- 親 #N の first comment ([元要望全文](FIRST_COMMENT_URL_HERE))
 
 ## 元の要望 (inline)
 
