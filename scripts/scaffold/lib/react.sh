@@ -22,4 +22,6 @@ apply_react_replacements() {
     sed_inplace "s|^name = \"${template}\"|name = \"${name}\"|" "$dest/wrangler.toml"
     info "Updated wrangler.toml name"
   fi
+
+  resolve_node_version_files "$dest"
 }

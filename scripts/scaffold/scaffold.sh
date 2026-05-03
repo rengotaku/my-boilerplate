@@ -21,6 +21,7 @@ dest=""
 name=""
 module=""
 no_github_templates=""
+no_auth=""
 
 for arg in "$@"; do
   case "$arg" in
@@ -29,9 +30,17 @@ for arg in "$@"; do
     name=*) name="${arg#name=}" ;;
     go-module-name=*) module="${arg#go-module-name=}" ;;
     no-github-templates=*) no_github_templates="${arg#no-github-templates=}" ;;
+    no-auth=*) no_auth="${arg#no-auth=}" ;;
     *) die "Unknown argument: $arg" ;;
   esac
 done
+
+# --- Template aliases ---
+# go-react-spa-noauth is a virtual template: same as go-react-spa with no-auth applied.
+if [[ "$template" == "go-react-spa-noauth" ]]; then
+  template="go-react-spa"
+  no_auth="1"
+fi
 
 # --- Validation ---
 [[ -z "$template" ]] && die "Missing required argument: template="
@@ -83,6 +92,11 @@ if [[ -f "$dest/frontend/.shared-ui.toml" ]]; then
   merge_shared_ui "$dest/frontend" "$REPO_ROOT"
 fi
 
+# --- Node version resolution (go-react-spa: frontend/ was materialized above) ---
+if [[ -d "$dest/frontend" ]]; then
+  resolve_node_version_files "$dest/frontend"
+fi
+
 # --- CI workflow transformation (before family replacements so they can process CI files too) ---
 info "Transforming CI workflows..."
 source "$SCRIPT_DIR/lib/ci.sh"
@@ -118,6 +132,17 @@ case "$family" in
     apply_rust_replacements "$dest" "$template" "$name"
     ;;
 esac
+
+# --- No-auth transformation ---
+if [[ -n "$no_auth" && "$no_auth" != "0" ]]; then
+  # shellcheck source=lib/noauth.sh
+  source "$SCRIPT_DIR/lib/noauth.sh"
+  if [[ -d "$dest/frontend" ]]; then
+    apply_noauth "$dest/frontend"
+  else
+    apply_noauth "$dest"
+  fi
+fi
 
 # --- GitHub workflow templates injection ---
 # Skip if: caller passed no-github-templates=1, OR the source template already ships .github/
@@ -160,6 +185,14 @@ case "$family" in
       echo "  make install"
       echo "  make build"
       echo "  ./bin/server"
+      if [[ -z "$no_auth" || "$no_auth" == "0" ]]; then
+        echo ""
+        echo "Auth not needed? Remove it at scaffold time:"
+        echo "  Use template go-react-spa-noauth, or add --no-auth to the download command."
+        echo "  Manual removal: delete src/api/auth.ts users.ts, src/hooks/useAuthStore.ts,"
+        echo "  src/pages/LoginPage.tsx, src/schemas/auth.ts user.ts, src/types/auth.ts user.ts"
+        echo "  then clean up the re-exports in the corresponding index.ts files."
+      fi
     else
       echo "  go mod tidy"
       echo "  make ci"
