@@ -6,13 +6,17 @@ on:
     paths:
       - 'meta/github-workflow/**'
       - 'scripts/scaffold/scaffold.sh'
-      - 'scripts/download.sh'
+      - 'go-ssr-web/**'
+      - 'react-spa/**'
+      - 'python-web/**'
       - '.github/workflows/scaffold-verify-github-templates.yml'
   pull_request:
     paths:
       - 'meta/github-workflow/**'
       - 'scripts/scaffold/scaffold.sh'
-      - 'scripts/download.sh'
+      - 'go-ssr-web/**'
+      - 'react-spa/**'
+      - 'python-web/**'
       - '.github/workflows/scaffold-verify-github-templates.yml'
 
 jobs:
