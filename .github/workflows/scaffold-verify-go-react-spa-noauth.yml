@@ -4,6 +4,8 @@ name: Scaffold Verify go-react-spa-noauth
 #   1. Has no auth-related source files
 #   2. Has no auth symbols in index barrels
 #   3. Compiles cleanly (TypeScript + Go)
+#   4. Passes frontend tests (Vitest) — catches import errors from any auth file
+#      left behind or newly added without updating noauth.sh
 #
 # Tested via two equivalent paths:
 #   - template=go-react-spa-noauth  (template alias)
@@ -123,6 +125,13 @@ jobs:
       - name: Install dependencies
         working-directory: /tmp/test-noauth
         run: make install
+
+      - name: Frontend tests (Vitest)
+        working-directory: /tmp/test-noauth
+        run: make test-frontend
+        # Vitest catches import errors from any auth file left behind or newly
+        # added to the template without a corresponding noauth.sh deletion.
+        # e.g. if src/api/auth.ts is re-added, any test importing authApi fails.
 
       - name: Build (TypeScript compilation + Go binary)
         working-directory: /tmp/test-noauth
