@@ -14,10 +14,10 @@ assignees: ''
 - Status は起票直後 "議論中" にする
 - 「選択肢」は全候補を列挙する。「お好みで」等の曖昧表現は禁止
 - 「決定」セクションは議論完了後に記入し、close コマンドを実行する
-- Status 凡例: ✅ closed / ⏳ in-progress / 🔴 blocked / ⏸ on-hold
+- Status 凡例（議論用 sub-issue）: 議論中 / 決定済み
 -->
 
-**Status:** ⏳ 議論中
+**Status:** 議論中
 
 **Parent:** #親issue番号
 

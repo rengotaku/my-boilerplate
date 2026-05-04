@@ -20,8 +20,9 @@ Closes: #sub-issue番号
 
 <!--
 このPR が他の sub-issue の前提仕様を変える場合に記載する。
-例: Affects: #N (〇〇の前提仕様が変わる)
+記入例: Affects: #N (〇〇の前提仕様が変わる。例: Project 番号が X から Y に切り替わるため #M の設定値も変更が必要)
 なければ「なし」と記載する。
+前提変更がある場合は、影響先 sub-issue の「前提仕様」セクションを更新し、親 issue の Decision Log に転記する。
 -->
 
 なし

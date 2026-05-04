@@ -10,13 +10,14 @@ assignees: ''
 ⚠️ AI実装者へ:
 - description には 1〜2 行の要約と「元要望全文:」リンクのみ書く
 - 元要望全文はこの issue の **first comment** として投稿する（description には書かない）
-- Status は起票直後 "実装待ち" にする。絵文字は後から付与しない（Status テキストで管理）
+- Status は起票直後 "議論中" にする。emoji は任意補助。テキスト必須・emoji 単独は禁止
 - Decision Log は議論が進むたびに追記する。番号は通し番号。「お好みで」等の判断を残す表現は使わない
+- Decision Log の論点には「議論↔回答」双方向リンクを記載する（記法例は下記参照）
 - Sub-issues 欄は sub-issue が作成されたら追記する
-- Status 凡例: ✅ closed / ⏳ in-progress / 🔴 blocked / ⏸ on-hold
+- Status 凡例（親 issue）: 議論中 / 実装フェーズ / 完了
 -->
 
-**Status:** 実装待ち
+**Status:** 議論中
 
 <!-- 1〜2 行で目的・背景を書く。詳細は first comment の元要望全文を参照 -->
 
@@ -28,10 +29,11 @@ assignees: ''
 
 ## Decision Log
 
-<!-- 議論が進むたびに追記する。番号は通し番号 -->
+<!-- 議論が進むたびに追記する。番号は通し番号。論点には「議論↔回答」双方向リンクを記載する -->
 
 | # | 論点 | 決定 | 日付 |
 |---|------|------|------|
+| 1 | 〇〇をどうするか ([議論](URL_TO_DISCUSSION) → [回答](URL_TO_ANSWER)) | 案 A を採用 | YYYY-MM-DD |
 
 ## Sub-issues
 
