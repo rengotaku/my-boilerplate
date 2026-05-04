@@ -1,0 +1,138 @@
+name: Scaffold Verify go-react-spa-noauth
+
+# Verifies that the --no-auth scaffold transformation produces a project that:
+#   1. Has no auth-related source files
+#   2. Has no auth symbols in index barrels
+#   3. Compiles cleanly (TypeScript + Go)
+#   4. Passes frontend tests (Vitest) — catches import errors from any auth file
+#      left behind or newly added without updating noauth.sh
+#
+# Tested via two equivalent paths:
+#   - template=go-react-spa-noauth  (template alias)
+#   - template=go-react-spa + no-auth=1  (explicit flag)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-react-spa/**'
+      - 'go-react-spa-noauth/**'
+      - 'react-spa/**'
+      - 'shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-spa-noauth.yml'
+  pull_request:
+    paths:
+      - 'go-react-spa/**'
+      - 'go-react-spa-noauth/**'
+      - 'react-spa/**'
+      - 'shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-spa-noauth.yml'
+
+jobs:
+  scaffold-go-react-spa-noauth:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        method:
+          - template-alias   # go-react-spa-noauth
+          - flag             # go-react-spa + no-auth=1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go-react-spa/go.mod
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: react-spa/.node-version
+
+      - name: Scaffold (template alias)
+        if: matrix.method == 'template-alias'
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=go-react-spa-noauth \
+            dest=/tmp/test-noauth \
+            name=test-noauth \
+            go-module-name=github.com/test/test-noauth
+
+      - name: Scaffold (--no-auth flag)
+        if: matrix.method == 'flag'
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=go-react-spa \
+            dest=/tmp/test-noauth \
+            name=test-noauth \
+            go-module-name=github.com/test/test-noauth \
+            no-auth=1
+
+      - name: Verify auth files are absent
+        run: |
+          dest=/tmp/test-noauth/frontend
+          fail=0
+          for f in \
+            src/api/auth.ts \
+            src/api/users.ts \
+            src/api/client.test.ts \
+            src/hooks/useAuthStore.ts \
+            src/hooks/useUsers.ts \
+            src/schemas/auth.ts \
+            src/schemas/user.ts \
+            src/types/auth.ts \
+            src/types/user.ts \
+            src/pages/LoginPage.tsx \
+            src/pages/UsersPage.tsx; do
+            if [ -f "$dest/$f" ]; then
+              echo "FAIL (should be absent): $f"
+              fail=1
+            else
+              echo "OK (absent): $f"
+            fi
+          done
+          exit $fail
+
+      - name: Verify index barrels contain no auth symbols
+        run: |
+          dest=/tmp/test-noauth/frontend
+          fail=0
+          check_absent() {
+            local file="$1" symbol="$2"
+            if grep -q "$symbol" "$dest/$file" 2>/dev/null; then
+              echo "FAIL: $file still references '$symbol'"
+              fail=1
+            else
+              echo "OK: $file has no '$symbol'"
+            fi
+          }
+          check_absent src/api/index.ts     authApi
+          check_absent src/api/index.ts     usersApi
+          check_absent src/api/index.ts     UNAUTHORIZED_EVENT
+          check_absent src/hooks/index.ts   useAuthStore
+          check_absent src/hooks/index.ts   useUsers
+          check_absent src/pages/index.ts   LoginPage
+          check_absent src/pages/index.ts   UsersPage
+          check_absent src/App.tsx          LoginPage
+          check_absent src/App.tsx          UNAUTHORIZED_EVENT
+          check_absent src/components/Layout.tsx  useAuthStore
+          exit $fail
+
+      - name: Install dependencies
+        working-directory: /tmp/test-noauth
+        run: make install
+
+      - name: Frontend tests (Vitest)
+        working-directory: /tmp/test-noauth
+        run: make test-frontend
+        # Vitest catches import errors from any auth file left behind or newly
+        # added to the template without a corresponding noauth.sh deletion.
+        # e.g. if src/api/auth.ts is re-added, any test importing authApi fails.
+
+      - name: Build (TypeScript compilation + Go binary)
+        working-directory: /tmp/test-noauth
+        run: make build

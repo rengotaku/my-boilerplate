@@ -158,3 +158,31 @@ If the project will be published, after scaffolding run:
 ```bash
 go mod edit -module github.com/<user>/<repo>
 ```
+
+## Removing authentication
+
+If your project does not need JWT authentication, scaffold without it:
+
+```bash
+# Option A: dedicated no-auth template
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-react-spa-noauth ~/projects/my-app
+
+# Option B: --no-auth flag on go-react-spa
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- go-react-spa ~/projects/my-app --no-auth
+```
+
+Both options remove the following frontend files and clean up their index re-exports:
+
+| Removed | Cleaned up |
+|---|---|
+| `src/api/auth.ts`, `users.ts`, `users.test.ts` | `src/api/index.ts` |
+| `src/api/client.test.ts` | auth-specific tests |
+| `src/hooks/useAuthStore.ts`, `useUsers.ts`, `useUsers.test.tsx` | `src/hooks/index.ts` |
+| `src/schemas/auth.ts`, `user.ts` | `src/schemas/index.ts` |
+| `src/types/auth.ts`, `user.ts` | `src/types/index.ts` |
+| `src/pages/LoginPage.tsx`, `LoginPage.test.tsx`, `UsersPage.tsx`, `UsersPage.test.tsx` | `App.tsx`, `src/pages/index.ts` |
+
+`Layout.tsx`, `App.tsx`, and their tests are rewritten to remove auth UI and routes.
+`src/api/client.ts` is rewritten to remove Bearer-token injection and 401-redirect logic.

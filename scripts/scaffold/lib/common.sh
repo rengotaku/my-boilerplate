@@ -11,6 +11,7 @@ VALID_TEMPLATES=(
   go-ssr-web
   go-ssr-web-minimal
   go-react-spa
+  go-react-spa-noauth
   go-cli
   react-spa
   react-spa-graphql
@@ -142,6 +143,40 @@ validate_module() {
   if [[ ! "$module" =~ ^[a-zA-Z0-9._-]+(/[a-zA-Z0-9._-]+)*$ ]]; then
     die "Invalid module path: $module"
   fi
+}
+
+# Resolve a bare major Node.js version in .node-version / .nvmrc to a full
+# patch version (e.g. "22" -> "22.15.0"). Tries nodenv first, then falls back
+# to the currently active `node` binary if the major matches. Leaves the file
+# unchanged and emits a warning when neither source is available.
+resolve_node_version_files() {
+  local dir="$1"
+  local f ver resolved cur_ver
+  for f in "$dir/.node-version" "$dir/.nvmrc"; do
+    [[ -f "$f" ]] || continue
+    ver=$(tr -d '[:space:]' < "$f")
+    # Only process bare major versions like "22"
+    [[ "$ver" =~ ^[0-9]+$ ]] || continue
+    resolved=""
+    if command -v nodenv >/dev/null 2>&1; then
+      resolved=$(nodenv install --list 2>/dev/null \
+        | grep -E "^[[:space:]]+${ver}\.[0-9]+\.[0-9]+$" \
+        | tail -1 \
+        | tr -d '[:space:]' || true)
+    fi
+    if [[ -z "$resolved" ]] && command -v node >/dev/null 2>&1; then
+      cur_ver=$(node --version 2>/dev/null | tr -d 'v' || true)
+      if [[ "$cur_ver" =~ ^${ver}\. ]]; then
+        resolved="$cur_ver"
+      fi
+    fi
+    if [[ -n "$resolved" ]]; then
+      info "[node-version] $(basename "$f"): $ver -> $resolved"
+      printf '%s\n' "$resolved" > "$f"
+    else
+      warn "[node-version] cannot resolve Node.js $ver to a full version in $(basename "$f"); leaving as-is"
+    fi
+  done
 }
 
 # Copy template and remove build artifacts

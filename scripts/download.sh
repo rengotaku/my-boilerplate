@@ -67,7 +67,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: download.sh <template> <dest> [--name=NAME] [--no-github-templates]
+Usage: download.sh <template> <dest> [--name=NAME] [--no-github-templates] [--no-auth]
 
 See https://github.com/rengotaku/my-boilerplate#usage for full documentation.
 Run with an unknown <template> to see the currently available list.
@@ -78,6 +78,7 @@ template=""
 dest=""
 name=""
 no_github_templates=""
+no_auth=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -87,6 +88,7 @@ while [ $# -gt 0 ]; do
       ;;
     --name=*) name="${1#--name=}" ;;
     --no-github-templates) no_github_templates="1" ;;
+    --no-auth) no_auth="1" ;;
     --*) die "Unknown option: $1 (see --help)" ;;
     *)
       if [ -z "$template" ]; then
@@ -171,10 +173,11 @@ fi
 # `.compose.toml`, e.g. go-react-spa) read sibling templates from $extracted
 # during scaffolding, so the full tarball must remain available — do not
 # pre-trim it down to $extracted/$template here.
-info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module})"
+info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module}${no_auth:+ no-auth})"
 scaffold_args="template=$template dest=$dest name=$name"
 [ -n "$module" ] && scaffold_args="$scaffold_args go-module-name=$module"
 [ -n "$no_github_templates" ] && scaffold_args="$scaffold_args no-github-templates=1"
+[ -n "$no_auth" ] && scaffold_args="$scaffold_args no-auth=1"
 # shellcheck disable=SC2086
 bash "$extracted/scripts/scaffold/scaffold.sh" $scaffold_args
 
