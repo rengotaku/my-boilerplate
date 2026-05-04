@@ -15,7 +15,8 @@ assignees: ''
 - 「やってはいけないこと」は最低 3 項目。実装中に追加する
 - DoD は完了条件を具体的に書く。「動作する」は DoD にならない
 - PR には `Refs: #親issue番号` を含める。`Fixes:` は使わない（親をcloseさせない）
-- Status 凡例: ✅ closed / ⏳ in-progress / 🔴 blocked / ⏸ on-hold
+- PR マージ後、completion-comment.md を使って親 issue に完了報告を投稿する
+- Status 凡例（sub-issue）: 実装待ち / 実装中 / 実装完了 / 保留 / 中断
 -->
 
 **Status:** 実装待ち
