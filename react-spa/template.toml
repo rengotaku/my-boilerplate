@@ -1,0 +1,4 @@
+name = "react-spa"
+language = "React"
+description = "Vite + TypeScript + Tailwind + Zustand の最小 React SPA"
+tags = ["spa", "vite", "react"]

@@ -1,0 +1,4 @@
+name = "python-web"
+language = "Python"
+description = "FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite の Web ボイラープレート"
+tags = ["web", "fastapi", "jinja2", "alpine", "tailwind"]

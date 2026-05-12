@@ -1,0 +1,4 @@
+name = "go-grpc-api"
+language = "Go"
+description = "クリーンアーキテクチャな Go gRPC API ボイラープレート"
+tags = ["api", "grpc"]

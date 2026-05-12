@@ -1,0 +1,4 @@
+name = "go-ssr-web-minimal"
+language = "Go"
+description = "最小構成の Go SSR Web（gin + html/template + embed + slog + envconfig + 素の CSS）"
+tags = ["web", "ssr", "gin", "minimal"]

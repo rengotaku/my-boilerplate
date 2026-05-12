@@ -1,0 +1,4 @@
+name = "go-cli"
+language = "Go"
+description = "Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット）"
+tags = ["cli", "cobra"]

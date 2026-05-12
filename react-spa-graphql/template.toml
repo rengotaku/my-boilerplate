@@ -1,0 +1,4 @@
+name = "react-spa-graphql"
+language = "React"
+description = "Apollo Client + codegen で GraphQL を扱う React SPA"
+tags = ["spa", "vite", "react", "graphql", "apollo"]

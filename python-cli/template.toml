@@ -1,0 +1,4 @@
+name = "python-cli"
+language = "Python"
+description = "uv + Typer + ruff + mypy + pytest の Python CLI"
+tags = ["cli", "typer", "uv"]

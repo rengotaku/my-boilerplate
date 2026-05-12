@@ -79,6 +79,11 @@ if [[ -f "$dest/.compose.toml" ]]; then
   compose_template "$dest" "$REPO_ROOT" "$name"
 fi
 
+# template.toml is metadata consumed by `download.sh --list` / `--tree`; the
+# scaffolded project does not need it. Composite templates may also drag in
+# the base template's template.toml under frontend/ — drop that too.
+rm -f "$dest/template.toml" "$dest/frontend/template.toml"
+
 # --- shared-react-ui merge (runs after compose_template so composed sub-trees
 #     can also opt-in via their own .shared-ui.toml). ---
 if [[ -f "$dest/.shared-ui.toml" ]]; then
