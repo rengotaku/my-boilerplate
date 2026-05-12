@@ -1,0 +1,4 @@
+name = "go-rest-api"
+language = "Go"
+description = "Gin + GORM + JWT の Batteries Included な REST API"
+tags = ["api", "rest", "gin", "gorm", "jwt"]

@@ -1,0 +1,4 @@
+name = "go-react-spa-noauth"
+language = "Go+React"
+description = "go-react-spa から JWT 認証を除いた版（scaffold 時に自動展開）"
+tags = ["spa", "fullstack", "gin", "react", "embed", "no-auth"]
