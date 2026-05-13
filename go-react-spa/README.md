@@ -28,8 +28,9 @@ its Makefile.
 ```
 go-react-spa/
 ├── .compose.toml         # composite manifest (base + overlay)
-├── cmd/server/main.go    # binary entrypoint
+├── cmd/server/main.go    # binary entrypoint (signal wiring + server.Run)
 ├── internal/
+│   ├── server/           # Run(ctx) error — config + DB + HTTP lifecycle
 │   ├── handler/          # HTTP + JSON API
 │   └── static/
 │       ├── static.go         # FileSystem interface
@@ -158,6 +159,47 @@ If the project will be published, after scaffolding run:
 ```bash
 go mod edit -module github.com/<user>/<repo>
 ```
+
+## cobra subcommand への組み込み
+
+Server lifecycle は `internal/server` パッケージの `Run(ctx context.Context) error`
+に切り出されている。`cmd/server/main.go` は `signal.NotifyContext` でシグナルを
+受ける薄ラッパで、本体は `server.Run()` 一行。
+
+既存の cobra CLI に「サーバ起動」サブコマンドとして組み込む場合、`Run()` を
+import してそのまま `RunE` に渡せる:
+
+```go
+package main
+
+import (
+	"github.com/spf13/cobra"
+
+	// このテンプレートを scaffold した module path に合わせて差し替え:
+	"<your-module>/internal/server"
+)
+
+func newServeCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "serve",
+		Short: "Start the API server (graceful shutdown on SIGINT/SIGTERM)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			// cobra が `cmd.SetContext(signal.NotifyContext(...))` で
+			// シグナル付き ctx を流していれば、ここで再度 signal.Notify は不要。
+			return server.Run(cmd.Context())
+		},
+	}
+}
+```
+
+`Run()` は内部で `envconfig` から `PORT` / `DATABASE_DSN` / `SHUTDOWN_TIMEOUT`
+等を読み込み、`ctx` が cancel されたら `SHUTDOWN_TIMEOUT` 内で graceful
+shutdown して `nil` を返す。サーバ起動が失敗した場合は wrapped error を返すので、
+cobra 側の `SilenceErrors` / `SilenceUsage` と組み合わせて適切に表示できる。
+
+`scripts/download.sh go-react-spa <existing-cobra-repo> --pick=internal/server/,internal/handler/,internal/service/,internal/repository/,internal/model/,internal/static/`
+で必要な内部パッケージだけ既存リポジトリへ取り込んで使うパターンも想定している
+（pick 後に import path を自分の module 名に rewrite する手間は別途必要）。
 
 ## Removing authentication
 
