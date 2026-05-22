@@ -280,11 +280,29 @@ json_escape() {
 # Discover the templates we know about by looking for template.toml files. This
 # is the single source of truth for --list output — adding a new template
 # requires dropping template.toml into the template directory, nothing else.
+# Root-level templates (depth 2) are discovered by name directly. Templates
+# nested under meta/ (depth 3) are discovered by their leaf name so that
+# github-workflow is the user-facing name rather than meta/github-workflow.
 discover_templates() {
   ( cd "$extracted" && \
-    find . -mindepth 2 -maxdepth 2 -type f -name 'template.toml' \
-      | sed -E 's|^\./([^/]+)/template\.toml$|\1|' \
-      | sort )
+    {
+      find . -mindepth 2 -maxdepth 2 -type f -name 'template.toml' \
+        | sed -E 's|^\./([^/]+)/template\.toml$|\1|'
+      find . -mindepth 3 -maxdepth 3 -path './meta/*/template.toml' -type f \
+        | sed -E 's|^\./meta/([^/]+)/template\.toml$|\1|'
+    } | sort )
+}
+
+# Resolve a template name to its absolute directory path inside $extracted.
+# Root-level templates live at $extracted/<name>; templates nested under meta/
+# live at $extracted/meta/<name>. Returns empty string if not found.
+resolve_template_dir() {
+  _t="$1"
+  if [ -d "$extracted/$_t" ]; then
+    printf '%s' "$extracted/$_t"
+  elif [ -d "$extracted/meta/$_t" ]; then
+    printf '%s' "$extracted/meta/$_t"
+  fi
 }
 
 emit_list_text() {
@@ -299,7 +317,8 @@ emit_list_text() {
   for t in $templates; do
     nlen=${#t}
     [ "$nlen" -gt "$name_w" ] && name_w=$nlen
-    lang=$(toml_string_field "$extracted/$t/template.toml" language)
+    tdir=$(resolve_template_dir "$t")
+    lang=$(toml_string_field "$tdir/template.toml" language)
     llen=${#lang}
     [ "$llen" -gt "$lang_w" ] && lang_w=$llen
   done
@@ -307,8 +326,9 @@ emit_list_text() {
   lang_w=$((lang_w + 2))
 
   for t in $templates; do
-    lang=$(toml_string_field "$extracted/$t/template.toml" language)
-    desc=$(toml_string_field "$extracted/$t/template.toml" description)
+    tdir=$(resolve_template_dir "$t")
+    lang=$(toml_string_field "$tdir/template.toml" language)
+    desc=$(toml_string_field "$tdir/template.toml" description)
     printf "%-${name_w}s%-${lang_w}s%s\n" "$t" "$lang" "$desc"
   done
 }
@@ -318,9 +338,10 @@ emit_list_json() {
   printf '['
   first=1
   for t in $templates; do
-    lang=$(toml_string_field "$extracted/$t/template.toml" language)
-    desc=$(toml_string_field "$extracted/$t/template.toml" description)
-    tags=$(toml_array_field "$extracted/$t/template.toml" tags)
+    tdir=$(resolve_template_dir "$t")
+    lang=$(toml_string_field "$tdir/template.toml" language)
+    desc=$(toml_string_field "$tdir/template.toml" description)
+    tags=$(toml_array_field "$tdir/template.toml" tags)
     if [ "$first" = 1 ]; then
       first=0
     else
@@ -356,12 +377,13 @@ run_list() {
 }
 
 run_tree() {
-  [ -d "$extracted/$template" ] || die "Template '$template' not found at ${REPO}@${REF}"
+  tdir=$(resolve_template_dir "$template")
+  [ -n "$tdir" ] || die "Template '$template' not found at ${REPO}@${REF}"
   printf '%s/\n' "$template"
-  ( cd "$extracted/$template" && find . -mindepth 1 -type f \
+  ( cd "$tdir" && find . -mindepth 1 -type f \
       | sed -E 's|^\./|  |' \
       | sort )
-  if [ -f "$extracted/$template/.compose.toml" ]; then
+  if [ -f "$tdir/.compose.toml" ]; then
     printf '\n'
     printf 'Note: composite template — frontend/ is materialized from a sibling\n'
     printf '      template at scaffold time (see .compose.toml). The tree above\n'
@@ -370,15 +392,16 @@ run_tree() {
 }
 
 run_pick() {
-  [ -d "$extracted/$template" ] || die "Template '$template' not found at ${REPO}@${REF}"
+  tdir=$(resolve_template_dir "$template")
+  [ -n "$tdir" ] || die "Template '$template' not found at ${REPO}@${REF}"
 
   is_composite=""
-  [ -f "$extracted/$template/.compose.toml" ] && is_composite="1"
+  [ -f "$tdir/.compose.toml" ] && is_composite="1"
 
   prefix="[DRY-RUN] "
   [ -n "$apply" ] && prefix=""
 
-  src_root="$extracted/$template"
+  src_root="$tdir"
 
   # Split pick on comma into a newline-separated list, then iterate. Using a
   # while/read loop (instead of word-splitting the comma list) keeps paths with
@@ -437,7 +460,8 @@ run_pick() {
 }
 
 run_scaffold() {
-  if [ ! -d "$extracted/$template" ]; then
+  tdir=$(resolve_template_dir "$template")
+  if [ -z "$tdir" ]; then
     available=$(discover_templates | tr '\n' ' ')
     die "Template '$template' not found at ${REPO}@${REF}. Available: $available"
   fi
