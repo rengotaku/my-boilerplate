@@ -13,31 +13,74 @@
 #   - react-spa:     $dest
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
-#   - internal/middleware/auth.go and auth_test.go
+#   - files listed in $go_root/.noauth-remove
 #   - JWTSecret / JWTTTL fields from internal/server/server.go
 #   - Unused golang-jwt dependency via go mod tidy (requires go in PATH)
+#
+# File deletion is driven by .noauth-remove manifests placed in the template
+# roots. Each line in the manifest is a path relative to that root; blank
+# lines and lines starting with # are ignored.  The manifest is removed from
+# the scaffolded project after processing (it is scaffold metadata, not user
+# content).
+
+# _remove_from_manifest <root> — delete every path listed in <root>/.noauth-remove
+# then remove the manifest itself.  Falls back to a hardcoded list when the
+# manifest is absent (backwards-compatibility for custom templates).
+_remove_frontend_files() {
+  local root="$1"
+  local manifest="$root/.noauth-remove"
+  if [[ -f "$manifest" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      [[ "$line" =~ ^[[:space:]]*# ]] && continue
+      [[ -z "${line// }" ]] && continue
+      rm -f "$root/$line"
+    done < "$manifest"
+    rm -f "$manifest"
+  else
+    warn "[no-auth] No .noauth-remove found in $root; using hardcoded list."
+    rm -f \
+      "$root/src/api/auth.ts" \
+      "$root/src/api/users.ts" \
+      "$root/src/api/users.test.ts" \
+      "$root/src/api/client.test.ts" \
+      "$root/src/hooks/useAuthStore.ts" \
+      "$root/src/hooks/useUsers.ts" \
+      "$root/src/hooks/useUsers.test.tsx" \
+      "$root/src/schemas/auth.ts" \
+      "$root/src/schemas/user.ts" \
+      "$root/src/types/auth.ts" \
+      "$root/src/types/user.ts" \
+      "$root/src/pages/LoginPage.tsx" \
+      "$root/src/pages/LoginPage.test.tsx" \
+      "$root/src/pages/UsersPage.tsx" \
+      "$root/src/pages/UsersPage.test.tsx"
+  fi
+}
+
+_remove_go_files() {
+  local root="$1"
+  local manifest="$root/.noauth-remove"
+  if [[ -f "$manifest" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      [[ "$line" =~ ^[[:space:]]*# ]] && continue
+      [[ -z "${line// }" ]] && continue
+      rm -f "$root/$line"
+    done < "$manifest"
+    rm -f "$manifest"
+  else
+    warn "[no-auth] No .noauth-remove found in $root; using hardcoded list."
+    rm -f \
+      "$root/internal/middleware/auth.go" \
+      "$root/internal/middleware/auth_test.go"
+  fi
+}
 
 apply_noauth() {
   local fdir="$1"
   local go_root="${2:-}"
 
   info "[no-auth] Removing auth files..."
-  rm -f \
-    "$fdir/src/api/auth.ts" \
-    "$fdir/src/api/users.ts" \
-    "$fdir/src/api/users.test.ts" \
-    "$fdir/src/api/client.test.ts" \
-    "$fdir/src/hooks/useAuthStore.ts" \
-    "$fdir/src/hooks/useUsers.ts" \
-    "$fdir/src/hooks/useUsers.test.tsx" \
-    "$fdir/src/schemas/auth.ts" \
-    "$fdir/src/schemas/user.ts" \
-    "$fdir/src/types/auth.ts" \
-    "$fdir/src/types/user.ts" \
-    "$fdir/src/pages/LoginPage.tsx" \
-    "$fdir/src/pages/LoginPage.test.tsx" \
-    "$fdir/src/pages/UsersPage.tsx" \
-    "$fdir/src/pages/UsersPage.test.tsx"
+  _remove_frontend_files "$fdir"
 
   info "[no-auth] Rewriting index files and core modules..."
 
@@ -214,9 +257,7 @@ NOAUTH_EOF
   # Backend cleanup (only when go_root is provided)
   if [[ -n "$go_root" ]]; then
     info "[no-auth] Removing Go backend auth files..."
-    rm -f \
-      "$go_root/internal/middleware/auth.go" \
-      "$go_root/internal/middleware/auth_test.go"
+    _remove_go_files "$go_root"
 
     local server_go="$go_root/internal/server/server.go"
     if [[ -f "$server_go" ]]; then
