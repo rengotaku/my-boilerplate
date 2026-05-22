@@ -3,16 +3,23 @@
 #
 # Removes authentication-related files and rewrites index barrels, App.tsx,
 # Layout.tsx, and client.ts so the scaffolded project compiles without auth.
+# When <go_root> is provided, also removes Go backend JWT auth code.
 #
 # Usage:
-#   apply_noauth <frontend_dir>
+#   apply_noauth <frontend_dir> [<go_root>]
 #
 # <frontend_dir> is the root of the React source tree:
 #   - go-react-spa:  $dest/frontend
 #   - react-spa:     $dest
+#
+# <go_root> (optional) is the Go project root. When provided, removes:
+#   - internal/middleware/auth.go and auth_test.go
+#   - JWTSecret / JWTTTL fields from internal/server/server.go
+#   - Unused golang-jwt dependency via go mod tidy (requires go in PATH)
 
 apply_noauth() {
   local fdir="$1"
+  local go_root="${2:-}"
 
   info "[no-auth] Removing auth files..."
   rm -f \
@@ -203,6 +210,28 @@ describe("App", () => {
   });
 });
 NOAUTH_EOF
+
+  # Backend cleanup (only when go_root is provided)
+  if [[ -n "$go_root" ]]; then
+    info "[no-auth] Removing Go backend auth files..."
+    rm -f \
+      "$go_root/internal/middleware/auth.go" \
+      "$go_root/internal/middleware/auth_test.go"
+
+    local server_go="$go_root/internal/server/server.go"
+    if [[ -f "$server_go" ]]; then
+      info "[no-auth] Removing JWT fields from Config struct..."
+      sed_inplace '/JWTSecret/d' "$server_go"
+      sed_inplace '/JWTTTL/d' "$server_go"
+    fi
+
+    if command -v go >/dev/null 2>&1; then
+      info "[no-auth] Running go mod tidy..."
+      (cd "$go_root" && go mod tidy)
+    else
+      warn "[no-auth] 'go' not found; skipping go mod tidy. Run 'go mod tidy' manually."
+    fi
+  fi
 
   info "[no-auth] Done."
 }
