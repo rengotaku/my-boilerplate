@@ -174,7 +174,7 @@ resolve_node_version_files() {
       info "[node-version] $(basename "$f"): $ver -> $resolved"
       printf '%s\n' "$resolved" > "$f"
     else
-      warn "[node-version] cannot resolve Node.js $ver to a full version in $(basename "$f"); leaving as-is"
+      die "[node-version] cannot resolve Node.js $ver to a full version in $(basename "$f"). Install nodenv or activate Node.js ${ver}.x and re-run scaffold."
     fi
   done
 }
