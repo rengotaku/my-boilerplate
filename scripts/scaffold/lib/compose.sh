@@ -118,6 +118,29 @@ compose_template() {
   rm -f "$manifest"
   rm -rf "$overlay_src"
 
+  # Replace the monorepo-specific "frontend/ is composed at build time" gitignore
+  # block with artifact-only entries so the scaffolded project tracks its own
+  # frontend/ source tree normally.
+  if [[ -f "$dest/.gitignore" ]]; then
+    local tmp
+    tmp="$(mktemp)"
+    awk '
+      /^# `frontend\/` is composed at build time/ { skip = 1; next }
+      skip && /^frontend\/$/ {
+        skip = 0
+        print "# Frontend build artifacts"
+        print "frontend/node_modules/"
+        print "frontend/dist/"
+        print "frontend/coverage/"
+        next
+      }
+      skip { next }
+      { print }
+    ' "$dest/.gitignore" > "$tmp"
+    mv "$tmp" "$dest/.gitignore"
+    info "[compose] .gitignore: replaced monorepo frontend/ block with artifact entries"
+  fi
+
   if [[ -f "$dest/Makefile" ]]; then
     strip_compose_makefile "$dest/Makefile"
   fi
