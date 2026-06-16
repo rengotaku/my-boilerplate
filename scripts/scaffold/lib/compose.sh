@@ -149,15 +149,22 @@ compose_template() {
 # Output globals from parse_shared_ui_toml
 SHARED_UI_SRC=""
 SHARED_UI_DEST=""
+SHARED_ADMIN_SRC=""
+SHARED_ADMIN_DEST=""
 
 # parse_shared_ui_toml <manifest>
 #
 # Reuses the same minimal TOML reader as parse_compose_toml. Recognises a
-# single [ui] section with `src` and `dest` keys.
+# required [ui] section and an optional [admin] section, each with `src` and
+# `dest` keys. The [admin] section carries the domain-agnostic admin pattern
+# layer (DataTable, timelines, charts, ...) consumed by go-react-admin; older
+# templates omit it and are unaffected.
 parse_shared_ui_toml() {
   local manifest="$1"
   SHARED_UI_SRC=""
   SHARED_UI_DEST=""
+  SHARED_ADMIN_SRC=""
+  SHARED_ADMIN_DEST=""
 
   local section="" line key value
   while IFS= read -r line || [[ -n "$line" ]]; do
@@ -175,6 +182,8 @@ parse_shared_ui_toml() {
       case "${section}.${key}" in
         ui.src) SHARED_UI_SRC="$value" ;;
         ui.dest) SHARED_UI_DEST="$value" ;;
+        admin.src) SHARED_ADMIN_SRC="$value" ;;
+        admin.dest) SHARED_ADMIN_DEST="$value" ;;
       esac
     fi
   done < "$manifest"
@@ -211,6 +220,17 @@ merge_shared_ui() {
   info "[shared-ui] $SHARED_UI_SRC -> $SHARED_UI_DEST (excl. *.stories.tsx)"
   mkdir -p "$ui_dest"
   rsync -a --exclude='*.stories.tsx' "$ui_src/" "$ui_dest/"
+
+  # Optional [admin] section: the domain-agnostic admin pattern layer.
+  if [[ -n "$SHARED_ADMIN_SRC" ]]; then
+    [[ -z "$SHARED_ADMIN_DEST" ]] && die "[shared-ui] $manifest: [admin].src set but [admin].dest missing"
+    local admin_src="$repo_root/$SHARED_ADMIN_SRC"
+    local admin_dest="$dest/$SHARED_ADMIN_DEST"
+    [[ -d "$admin_src" ]] || die "[shared-ui] admin source dir not found: $admin_src"
+    info "[shared-ui] $SHARED_ADMIN_SRC -> $SHARED_ADMIN_DEST (excl. *.stories.tsx)"
+    mkdir -p "$admin_dest"
+    rsync -a --exclude='*.stories.tsx' "$admin_src/" "$admin_dest/"
+  fi
 
   # Strip the shared-react-ui-managed:begin/end block from .gitignore so the
   # scaffolded project tracks the materialized UI files normally. The block
