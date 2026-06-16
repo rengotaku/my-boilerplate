@@ -11,6 +11,10 @@ COVERAGE_FILE := coverage.out
 PORT ?= 8084
 FRONTEND_PORT ?= 5175
 FRONTEND_DIR := frontend
+# Go source roots only. Listing them explicitly keeps `go test ./...` from
+# walking into frontend/node_modules, where vendored packages (e.g. flatted's
+# golang sample) would otherwise show up as 0%-covered and skew coverage.
+GO_PKGS := ./cmd/... ./internal/...
 
 # shared-react-ui: composed in-place from the sibling repo dir during local dev.
 # Outside the monorepo (after scaffold) the source dir is absent and the
@@ -99,7 +103,7 @@ format-check: compose-ui
 
 ## test: Run Go tests
 test:
-	go test ./...
+	go test $(GO_PKGS)
 
 ## test-frontend: Run frontend tests
 test-frontend: compose-ui
@@ -107,7 +111,7 @@ test-frontend: compose-ui
 
 ## test-cov: Run Go tests with coverage
 test-cov:
-	go test -coverprofile=$(COVERAGE_FILE) ./...
+	go test -coverprofile=$(COVERAGE_FILE) $(GO_PKGS)
 	go tool cover -func=$(COVERAGE_FILE) | tail -1
 
 ## test-watch: Run frontend tests in watch mode

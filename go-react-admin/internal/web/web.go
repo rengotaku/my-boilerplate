@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"go-react-admin/internal/config"
 	"go-react-admin/internal/observability"
 	"go-react-admin/internal/persistlog"
 	"go-react-admin/internal/store"
@@ -20,10 +21,11 @@ import (
 
 // Deps are the runtime dependencies of the web server.
 type Deps struct {
-	Store   *store.Store
-	Logs    *persistlog.Writer
-	Metrics *observability.Metrics
-	Config  any // returned verbatim by GET /api/config
+	Store          *store.Store
+	Logs           *persistlog.Writer
+	Metrics        *observability.Metrics
+	RequestRestart func()
+	Config         config.Config
 }
 
 // Server holds the handler dependencies.
@@ -51,6 +53,8 @@ func (s *Server) Routes(staticHandler http.Handler) http.Handler {
 		api.GET("/runs/:id", s.getRun)
 		api.GET("/metrics/aggregate", s.metricsAggregate)
 		api.GET("/config", s.getConfig)
+		api.PUT("/config", s.updateConfig)
+		api.POST("/restart", s.restart)
 	}
 
 	r.NoRoute(gin.WrapH(staticHandler))
@@ -182,8 +186,83 @@ func (s *Server) metricsAggregate(c *gin.Context) {
 	c.JSON(http.StatusOK, metricsAggregateResponse{From: from, To: to, Bucket: bucketStr, Series: series})
 }
 
+// configItem is one setting shown on the Config screen, tagged with its source
+// so the UI can render env values read-only and toml values as editable.
+type configItem struct {
+	Key      string `json:"key"`
+	Label    string `json:"label"`
+	Value    string `json:"value"`
+	Source   string `json:"source"`   // "env" | "toml"
+	Editable bool   `json:"editable"` // env: false, toml: true
+}
+
+type configResponse struct {
+	ConfigPath string       `json:"configPath"`
+	Items      []configItem `json:"items"`
+}
+
 func (s *Server) getConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, s.deps.Config)
+	cfg := s.deps.Config
+	c.JSON(http.StatusOK, configResponse{
+		ConfigPath: cfg.ConfigFile,
+		Items: []configItem{
+			{Key: "port", Label: "Port", Value: cfg.Port, Source: "env", Editable: false},
+			{Key: "database_dsn", Label: "Database DSN", Value: cfg.DatabaseDSN, Source: "env", Editable: false},
+			{Key: "log_dir", Label: "Log directory", Value: cfg.LogDir, Source: "env", Editable: false},
+			{Key: "worker_interval", Label: "Worker interval", Value: cfg.WorkerInterval.String(), Source: "toml", Editable: true},
+			{Key: "shutdown_timeout", Label: "Shutdown timeout", Value: cfg.ShutdownTimeout.String(), Source: "toml", Editable: true},
+		},
+	})
+}
+
+type updateConfigRequest struct {
+	WorkerInterval  string `json:"worker_interval"`
+	ShutdownTimeout string `json:"shutdown_timeout"`
+}
+
+// updateConfig persists the editable (toml) settings. Env settings are not
+// accepted here. Changes take effect on the next restart (POST /api/restart),
+// not immediately — the response says so via "restartRequired".
+func (s *Server) updateConfig(c *gin.Context) {
+	var req updateConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	// Start from the current file so a partial update keeps the other value.
+	current, err := config.ReadFile(s.deps.Config.ConfigFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if req.WorkerInterval != "" {
+		current.WorkerInterval = req.WorkerInterval
+	}
+	if req.ShutdownTimeout != "" {
+		current.ShutdownTimeout = req.ShutdownTimeout
+	}
+
+	if err := config.WriteFile(s.deps.Config.ConfigFile, current); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"workerInterval":  current.WorkerInterval,
+		"shutdownTimeout": current.ShutdownTimeout,
+		"restartRequired": true,
+	})
+}
+
+// restart triggers a graceful restart so saved toml values are reloaded.
+func (s *Server) restart(c *gin.Context) {
+	if s.deps.RequestRestart == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "restart not supported"})
+		return
+	}
+	s.deps.RequestRestart()
+	c.JSON(http.StatusAccepted, gin.H{"status": "restarting"})
 }
 
 func atoiDefault(s string, def int) int {
