@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/*
+ * src/components/ui and src/components/admin are composed from shared-react-ui
+ * and kept out of VCS in the monorepo (see .gitignore). Tailwind v4's automatic
+ * source detection skips .gitignored paths, which would drop every utility used
+ * only by those components. Register them explicitly so their classes are always
+ * generated. (Harmless once scaffolded — the files are tracked there.)
+ */
+@source "./components/ui";
+@source "./components/admin";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
