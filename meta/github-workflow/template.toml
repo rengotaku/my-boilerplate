@@ -1,0 +1,4 @@
+name = "github-workflow"
+language = "docs"
+description = "GitHub ワークフロー用ドキュメント（PR/Issue テンプレートなど）"
+tags = ["github", "github-workflow", "docs"]

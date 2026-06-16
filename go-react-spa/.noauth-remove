@@ -1,0 +1,9 @@
+# Go backend auth files to remove when applying --no-auth transformation.
+# Each line is a path relative to the Go project root.
+# Lines starting with # and blank lines are ignored.
+#
+# Keep this list in sync with the auth-related source files in this template.
+# Adding a new Go auth file here is enough — noauth.sh reads this manifest at
+# scaffold time and deletes every listed path.
+internal/middleware/auth.go
+internal/middleware/auth_test.go

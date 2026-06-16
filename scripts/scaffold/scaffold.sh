@@ -143,7 +143,7 @@ if [[ -n "$no_auth" && "$no_auth" != "0" ]]; then
   # shellcheck source=lib/noauth.sh
   source "$SCRIPT_DIR/lib/noauth.sh"
   if [[ -d "$dest/frontend" ]]; then
-    apply_noauth "$dest/frontend"
+    apply_noauth "$dest/frontend" "$dest"
   else
     apply_noauth "$dest"
   fi

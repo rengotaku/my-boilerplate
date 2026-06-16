@@ -130,6 +130,29 @@ MY_BOILERPLATE_REPO=myorg/my-fork MY_BOILERPLATE_REF=v1.0.0 \
 
 リポジトリをクローン済みなら直接 [`scripts/scaffold/scaffold.sh`](./scripts/scaffold/scaffold.sh) も使えます。`download.sh` はそれをラップして「リポジトリ未取得」状態から実行できるようにしたものです。
 
+### github-workflow テンプレートを既存プロジェクトに取り込む
+
+`meta/github-workflow/` の PR/Issue テンプレートを既存プロジェクトへコピーするには `--pick` モードを使います（scaffold は不要）。
+
+```bash
+# 取り込み可能なファイル一覧を確認 (dry-run)
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- github-workflow . \
+    --pick=PR-template.md,parent-issue.md,sub-issue.md,discussion-issue.md
+
+# 実際にコピー (--apply)
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- github-workflow . \
+    --pick=PR-template.md,parent-issue.md,sub-issue.md,discussion-issue.md \
+    --apply
+```
+
+ファイル一覧の確認:
+```bash
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- github-workflow --tree
+```
+
 ## Dependabot Policy
 
 dependabot PR は以下のルールで運用しています:

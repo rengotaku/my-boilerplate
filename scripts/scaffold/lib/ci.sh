@@ -133,6 +133,7 @@ transform_workflow() {
   BEGIN {
     in_paths = 0
     in_defaults = 0
+    in_compose_step = 0
   }
 
   # Replace workflow name
@@ -174,17 +175,40 @@ transform_workflow() {
     next
   }
 
-  # Strip template prefix from cache-dependency-path
-  /cache-dependency-path:/ {
+  # Strip template prefix from go-version-file
+  /go-version-file:/ {
     gsub(template "/", "")
     print
     next
   }
 
-  # Strip template prefix from node-version-file / python-version-file / go-version-file
-  /node-version-file:/ || /python-version-file:/ || /go-version-file:/ {
+  # Strip template prefix from cache-dependency-path; also remap
+  # react-spa/ -> frontend/ for the go-react-spa composite template
+  /cache-dependency-path:/ {
     gsub(template "/", "")
+    gsub("react-spa/", "frontend/")
     print
+    next
+  }
+
+  # Strip template prefix from node-version-file / python-version-file; also
+  # remap react-spa/ -> frontend/ for the go-react-spa composite template
+  /node-version-file:/ || /python-version-file:/ {
+    gsub(template "/", "")
+    gsub("react-spa/", "frontend/")
+    print
+    next
+  }
+
+  # Skip the "Compose frontend" step (pre-composed during scaffold; make compose is a no-op)
+  /^      - name: Compose frontend/ {
+    in_compose_step = 1
+    next
+  }
+  in_compose_step && /^      - / {
+    in_compose_step = 0
+  }
+  in_compose_step {
     next
   }
 

@@ -1,4 +1,4 @@
-.PHONY: stop-all status e2e e2e-install e2e-update-snapshots scaffold help
+.PHONY: stop-all status e2e e2e-install e2e-update-snapshots scaffold download-test help
 
 # Keep in sync with @playwright/test version in e2e/package-lock.json
 # and the container image tag in .github/workflows/e2e.yml.
@@ -27,6 +27,10 @@ e2e:
 ## e2e-update-snapshots: Regenerate VRT baselines inside the Playwright container (matches CI pixels)
 e2e-update-snapshots:
 	PLAYWRIGHT_IMAGE=$(PLAYWRIGHT_IMAGE) ./scripts/e2e-update-snapshots.sh
+
+## download-test: Run download.sh tests against a local tarball
+download-test:
+	@sh scripts/download.test.sh
 
 ## scaffold: Generate standalone project from template (template= dest= name= [go-module-name=])
 scaffold:
