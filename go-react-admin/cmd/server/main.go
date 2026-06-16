@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -22,39 +23,44 @@ import (
 var version = "dev"
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	if err := run(ctx, os.Args[1:], os.Stdout); err != nil {
+		slog.Error("server error", "error", err)
+		os.Exit(1)
+	}
+}
+
+// run parses flags and dispatches: --version / --config short-circuit, otherwise
+// it boots the server. Split out of main() so the flag paths are testable.
+func run(ctx context.Context, args []string, stdout io.Writer) error {
+	fs := flag.NewFlagSet("server", flag.ContinueOnError)
+	fs.SetOutput(stdout)
 	var (
 		showVersion bool
 		showConfig  bool
 	)
-	flag.BoolVar(&showVersion, "version", false, "print version and exit")
-	flag.BoolVar(&showConfig, "config", false, "print the resolved configuration and exit")
-	flag.Parse()
-
-	if showVersion {
-		fmt.Println(version)
-		return
+	fs.BoolVar(&showVersion, "version", false, "print version and exit")
+	fs.BoolVar(&showConfig, "config", false, "print the resolved configuration and exit")
+	if err := fs.Parse(args); err != nil {
+		return err
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+	if showVersion {
+		_, err := fmt.Fprintln(stdout, version)
+		return err
+	}
 
 	if showConfig {
 		cfg, err := config.Load(ctx)
 		if err != nil {
-			slog.Error("load config", "error", err)
-			os.Exit(1)
+			return err
 		}
-		enc := json.NewEncoder(os.Stdout)
+		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")
-		if err := enc.Encode(cfg); err != nil {
-			slog.Error("encode config", "error", err)
-			os.Exit(1)
-		}
-		return
+		return enc.Encode(cfg)
 	}
 
-	if err := server.Run(ctx); err != nil {
-		slog.Error("server error", "error", err)
-		os.Exit(1)
-	}
+	return server.Run(ctx)
 }

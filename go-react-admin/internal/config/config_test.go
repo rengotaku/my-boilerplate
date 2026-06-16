@@ -22,6 +22,13 @@ func TestLoad_Defaults(t *testing.T) {
 	}
 }
 
+func TestLoad_InvalidDurationReturnsError(t *testing.T) {
+	t.Setenv("WORKER_INTERVAL", "not-a-duration")
+	if _, err := Load(context.Background()); err == nil {
+		t.Error("Load() with invalid duration = nil error, want error")
+	}
+}
+
 func TestLoad_EnvOverride(t *testing.T) {
 	t.Setenv("PORT", "9999")
 	t.Setenv("WORKER_INTERVAL", "2s")
