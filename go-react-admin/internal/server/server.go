@@ -21,10 +21,17 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"go-react-admin/internal/config"
+	"go-react-admin/internal/observability"
+	"go-react-admin/internal/persistlog"
 	"go-react-admin/internal/static"
+	"go-react-admin/internal/store"
 	"go-react-admin/internal/web"
 	"go-react-admin/internal/worker"
 )
+
+// perPhaseDelay spaces out worker phases so runs look realistic on the
+// timeline. Kept small so a fresh install fills the console quickly.
+const perPhaseDelay = 300 * time.Millisecond
 
 // Run boots the worker daemon and the web server in one process and blocks
 // until ctx is canceled (graceful shutdown, returns nil) or one of the
@@ -41,11 +48,31 @@ func Run(ctx context.Context) error {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	wrk := worker.New(cfg.WorkerInterval)
+	st, err := store.Open(cfg.DatabaseDSN)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = st.Close() }()
+
+	logs, err := persistlog.New(cfg.LogDir)
+	if err != nil {
+		return err
+	}
+
+	metrics := observability.New()
+
+	wrk := worker.New(cfg.WorkerInterval, perPhaseDelay, st, logs, metrics)
+
+	handler := web.New(web.Deps{
+		Store:   st,
+		Logs:    logs,
+		Metrics: metrics,
+		Config:  cfg,
+	}).Routes(static.Handler())
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      web.New().Routes(static.Handler()),
+		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,

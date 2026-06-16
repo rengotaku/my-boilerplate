@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -12,6 +13,8 @@ func TestRun_GracefulShutdown(t *testing.T) {
 	t.Setenv("PORT", "0") // random free port, avoids collisions in CI
 	t.Setenv("WORKER_INTERVAL", "10ms")
 	t.Setenv("SHUTDOWN_TIMEOUT", "2s")
+	t.Setenv("DATABASE_DSN", filepath.Join(t.TempDir(), "server.db"))
+	t.Setenv("LOG_DIR", filepath.Join(t.TempDir(), "logs"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 
