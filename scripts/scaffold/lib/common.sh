@@ -12,6 +12,7 @@ VALID_TEMPLATES=(
   go-ssr-web-minimal
   go-react-spa
   go-react-spa-noauth
+  go-react-admin
   go-cli
   react-spa
   react-spa-graphql

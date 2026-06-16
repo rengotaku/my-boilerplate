@@ -11,8 +11,8 @@ func TestLoad_Defaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if cfg.Port != "8080" {
-		t.Errorf("Port = %q, want 8080", cfg.Port)
+	if cfg.Port != "8084" {
+		t.Errorf("Port = %q, want 8084", cfg.Port)
 	}
 	if cfg.WorkerInterval != 15*time.Second {
 		t.Errorf("WorkerInterval = %v, want 15s", cfg.WorkerInterval)

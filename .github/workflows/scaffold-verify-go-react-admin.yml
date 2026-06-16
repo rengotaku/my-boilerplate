@@ -1,0 +1,58 @@
+name: Scaffold Verify go-react-admin
+
+# go-react-admin is a standalone Go + React admin-console template whose
+# frontend composes shared UI + admin components from shared-react-ui/ at
+# scaffold time. This workflow scaffolds the template into a temp dir and runs
+# the full lint + test pipeline (make ci) to prove the scaffolded project is
+# self-contained. Triggered by changes to go-react-admin/, the shared UI
+# source, the scaffold scripts, or this workflow itself.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'go-react-admin/**'
+      - 'shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-admin.yml'
+  pull_request:
+    paths:
+      - 'go-react-admin/**'
+      - 'shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-go-react-admin.yml'
+
+jobs:
+  scaffold-go-react-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go-react-admin/go.mod
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: go-react-admin/frontend/.node-version
+
+      - name: Install golangci-lint
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.11.2
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=go-react-admin \
+            dest=/tmp/test-go-react-admin \
+            name=test-go-react-admin \
+            go-module-name=github.com/test/test-go-react-admin
+
+      - name: Install dependencies (Go modules + npm install)
+        working-directory: /tmp/test-go-react-admin
+        run: make install
+
+      - name: Lint and test (Go + frontend)
+        working-directory: /tmp/test-go-react-admin
+        run: make ci

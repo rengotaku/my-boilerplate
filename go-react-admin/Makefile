@@ -8,8 +8,8 @@
 BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
-PORT ?= 8080
-FRONTEND_PORT ?= 5174
+PORT ?= 8084
+FRONTEND_PORT ?= 5175
 FRONTEND_DIR := frontend
 
 # shared-react-ui: composed in-place from the sibling repo dir during local dev.
