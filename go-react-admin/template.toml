@@ -1,0 +1,4 @@
+name = "go-react-admin"
+language = "Go+React"
+description = "管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / shadcn + recharts 管理画面"
+tags = ["admin", "dashboard", "fullstack", "gin", "react", "embed", "worker", "observability"]

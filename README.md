@@ -57,6 +57,7 @@ Collection of project boilerplates.
 | [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
 | [go-ssr-web](./go-ssr-web) | Go SSR Web with Chi, html/template |
 | [go-ssr-web-minimal](./go-ssr-web-minimal) | Minimal Go SSR (gin + html/template + embed; no DB / auth / Tailwind) |
+| [go-react-admin](./go-react-admin) | 管理コンソール特化の Go + React フルスタック（worker+web 単一バイナリ / gin + embed / SQLite + jsonl + Prometheus / shadcn + recharts） |
 
 ## Roadmap
 
@@ -87,6 +88,7 @@ make stop-all
 | go-grpc-api | 50051 | gRPC |
 | go-ssr-web | 8082 | SSR Web |
 | go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
+| go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
 | react-spa | 5173 | Vite dev |
 
 ### New Project Checklist

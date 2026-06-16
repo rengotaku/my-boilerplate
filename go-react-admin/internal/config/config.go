@@ -16,7 +16,7 @@ import (
 // Config is the resolved runtime configuration. It is safe to print via
 // `server --config`; no secrets are stored here.
 type Config struct {
-	Port            string        `env:"PORT, default=8080" json:"port"`
+	Port            string        `env:"PORT, default=8084" json:"port"`
 	DatabaseDSN     string        `env:"DATABASE_DSN, default=admin.db" json:"database_dsn"`
 	LogDir          string        `env:"LOG_DIR, default=./data/logs" json:"log_dir"`
 	WorkerInterval  time.Duration `env:"WORKER_INTERVAL, default=15s" json:"worker_interval"`

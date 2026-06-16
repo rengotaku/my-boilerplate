@@ -11,8 +11,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5174,
-    proxy: { "/api": "http://localhost:8080" },
+    port: 5175,
+    proxy: { "/api": "http://localhost:8084" },
   },
   build: {
     outDir: "../internal/static/dist",

@@ -181,8 +181,8 @@ transform_workflow() {
     next
   }
 
-  # Strip template prefix from node-version-file / python-version-file
-  /node-version-file:/ || /python-version-file:/ {
+  # Strip template prefix from node-version-file / python-version-file / go-version-file
+  /node-version-file:/ || /python-version-file:/ || /go-version-file:/ {
     gsub(template "/", "")
     print
     next
