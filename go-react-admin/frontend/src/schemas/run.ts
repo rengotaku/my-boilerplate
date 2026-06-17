@@ -68,10 +68,23 @@ export const metricsAggregateResponseSchema = z.object({
   series: z.array(metricSeriesSchema),
 });
 
+export const configSourceSchema = z.enum(["env", "toml"]);
+
+export const configItemSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  value: z.string(),
+  source: configSourceSchema,
+  editable: z.boolean(),
+});
+
 export const configResponseSchema = z.object({
-  port: z.string(),
-  database_dsn: z.string(),
-  log_dir: z.string(),
-  worker_interval: z.number(),
-  shutdown_timeout: z.number(),
+  configPath: z.string(),
+  items: z.array(configItemSchema),
+});
+
+export const updateConfigResponseSchema = z.object({
+  workerInterval: z.string(),
+  shutdownTimeout: z.string(),
+  restartRequired: z.boolean(),
 });

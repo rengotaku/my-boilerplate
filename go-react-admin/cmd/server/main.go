@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -62,5 +63,14 @@ func run(ctx context.Context, args []string, stdout io.Writer) error {
 		return enc.Encode(cfg)
 	}
 
-	return server.Run(ctx)
+	// Run until a real stop. A restart request (POST /api/restart) returns
+	// ErrRestart; loop so the editable toml config is reloaded in-process,
+	// rather than exiting. SIGINT/SIGTERM cancels ctx → Run returns nil → exit.
+	for {
+		err := server.Run(ctx)
+		if errors.Is(err, server.ErrRestart) && ctx.Err() == nil {
+			continue
+		}
+		return err
+	}
 }

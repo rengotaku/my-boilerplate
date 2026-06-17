@@ -6,11 +6,13 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"go-react-admin/internal/config"
 	"go-react-admin/internal/observability"
 	"go-react-admin/internal/persistlog"
 	"go-react-admin/internal/store"
@@ -49,7 +51,11 @@ func newTestServer(t *testing.T) (http.Handler, int64) {
 		Store:   st,
 		Logs:    logs,
 		Metrics: observability.New(),
-		Config:  map[string]string{"port": "8080"},
+		Config: config.Config{
+			Port: "8084", DatabaseDSN: "admin.db", LogDir: "data/logs",
+			ConfigFile:     filepath.Join(t.TempDir(), "config.toml"),
+			WorkerInterval: 15 * time.Second, ShutdownTimeout: 10 * time.Second,
+		},
 	}).Routes(staticStub())
 	return h, run.ID
 }
@@ -153,11 +159,102 @@ func TestMetricsAggregate_BadBucket(t *testing.T) {
 	}
 }
 
-func TestConfig(t *testing.T) {
+func TestConfig_TagsEnvAndTomlSources(t *testing.T) {
 	h, _ := newTestServer(t)
 	rec := do(h, "/api/config")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
+	}
+	var resp configResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	byKey := map[string]configItem{}
+	for _, it := range resp.Items {
+		byKey[it.Key] = it
+	}
+	if byKey["port"].Source != "env" || byKey["port"].Editable {
+		t.Errorf("port should be env/non-editable: %+v", byKey["port"])
+	}
+	if byKey["worker_interval"].Source != "toml" || !byKey["worker_interval"].Editable {
+		t.Errorf("worker_interval should be toml/editable: %+v", byKey["worker_interval"])
+	}
+	if byKey["worker_interval"].Value != "15s" {
+		t.Errorf("worker_interval value = %q, want 15s", byKey["worker_interval"].Value)
+	}
+}
+
+// newConfigServer builds a server whose config file lives in a temp dir, and
+// returns the handler, the config path, and a pointer that records whether a
+// restart was requested.
+func newConfigServer(t *testing.T) (http.Handler, string, *bool) {
+	t.Helper()
+	st, _ := store.Open(filepath.Join(t.TempDir(), "c.db"))
+	t.Cleanup(func() { _ = st.Close() })
+	logs, _ := persistlog.New(t.TempDir())
+	cfgPath := filepath.Join(t.TempDir(), "config.toml")
+
+	restarted := false
+	h := New(Deps{
+		Store: st, Logs: logs, Metrics: observability.New(),
+		Config: config.Config{
+			Port: "8084", ConfigFile: cfgPath,
+			WorkerInterval: 15 * time.Second, ShutdownTimeout: 10 * time.Second,
+		},
+		RequestRestart: func() { restarted = true },
+	}).Routes(staticStub())
+	return h, cfgPath, &restarted
+}
+
+func putJSON(h http.Handler, target, body string) *httptest.ResponseRecorder {
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, target, strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	h.ServeHTTP(rec, req)
+	return rec
+}
+
+func TestUpdateConfig_WritesTomlFile(t *testing.T) {
+	h, cfgPath, _ := newConfigServer(t)
+	rec := putJSON(h, "/api/config", `{"worker_interval":"20s","shutdown_timeout":"25s"}`)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	fc, err := config.ReadFile(cfgPath)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if fc.WorkerInterval != "20s" || fc.ShutdownTimeout != "25s" {
+		t.Errorf("toml not persisted: %+v", fc)
+	}
+}
+
+func TestUpdateConfig_RejectsInvalidDuration(t *testing.T) {
+	h, _, _ := newConfigServer(t)
+	rec := putJSON(h, "/api/config", `{"worker_interval":"banana"}`)
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want 400", rec.Code)
+	}
+}
+
+func TestRestart_InvokesRequestRestart(t *testing.T) {
+	h, _, restarted := newConfigServer(t)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/restart", nil))
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202", rec.Code)
+	}
+	if !*restarted {
+		t.Error("RequestRestart was not invoked")
+	}
+}
+
+func TestRestart_UnsupportedWhenNil(t *testing.T) {
+	h, _ := newTestServer(t) // newTestServer leaves RequestRestart nil
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/restart", nil))
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Errorf("status = %d, want 503", rec.Code)
 	}
 }
 

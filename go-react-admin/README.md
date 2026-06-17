@@ -80,7 +80,9 @@ go-react-admin/
 | GET    | /api/runs                     | run 一覧（`job_id` / ページング クエリ対応） |
 | GET    | /api/runs/:id                 | run 詳細（phases / metrics / ログ含む）      |
 | GET    | /api/metrics/aggregate        | メトリクスの集計（ダッシュボード用）         |
-| GET    | /api/config                   | 実行中の設定（secrets を含まない）           |
+| GET    | /api/config                   | 設定一覧（env=読み取り専用 / toml=編集可 を判別）|
+| PUT    | /api/config                   | toml 設定の更新（再起動で反映。env は不可）  |
+| POST   | /api/restart                  | worker+web の再起動（toml 値を再読込）        |
 | GET    | /{anything-else}              | SPA fallback（埋め込み dist/、クライアント側ルーティング用） |
 
 ### shared-react-ui の admin compose
@@ -147,13 +149,33 @@ make clean           # bin/ / coverage.out / *.db / data/ / node_modules / dist/
 
 ## Configuration
 
-| Variable          | Default        | Description                                     |
-|-------------------|----------------|-------------------------------------------------|
-| PORT              | 8084           | worker+web バイナリの HTTP ポート               |
-| DATABASE_DSN      | admin.db       | SQLite データベースファイルパス                 |
-| LOG_DIR           | ./data/logs    | jsonl ログの出力先ディレクトリ                  |
-| WORKER_INTERVAL   | 15s            | worker デーモンの実行間隔                       |
-| SHUTDOWN_TIMEOUT  | 10s            | graceful shutdown のタイムアウト                |
+設定は 2 層に分かれる。**env（インフラ。読み取り専用）** と **toml ファイル（実行時調整値。Config 画面から編集可）**。
+
+### env（読み取り専用）
+
+| Variable     | Default       | Description                                  |
+|--------------|---------------|----------------------------------------------|
+| PORT         | 8084          | worker+web バイナリの HTTP ポート            |
+| DATABASE_DSN | admin.db      | SQLite データベースファイルパス              |
+| LOG_DIR      | ./data/logs   | jsonl ログの出力先ディレクトリ               |
+| CONFIG_FILE  | config.toml   | 編集可能設定の toml ファイルパス             |
+
+### toml ファイル（編集可。`config.toml`）
+
+初回起動時に既定値で自動生成される。Config 画面のフォームから編集 → 保存（`PUT /api/config`）→
+**Restart & apply**（`POST /api/restart`）で worker+web が in-process で再起動し反映される。
+保存しただけでは実行中の設定は変わらない（再起動で適用）。
+
+| Key              | Default | Description                      |
+|------------------|---------|----------------------------------|
+| worker_interval  | 15s     | worker デーモンの実行間隔         |
+| shutdown_timeout | 10s     | graceful shutdown のタイムアウト  |
+
+```toml
+# config.toml
+worker_interval = "15s"
+shutdown_timeout = "10s"
+```
 
 ## Scaffolding
 

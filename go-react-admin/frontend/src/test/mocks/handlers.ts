@@ -116,11 +116,38 @@ export const mockMetrics: MetricsAggregateResponse = {
 };
 
 export const mockConfig: ConfigResponse = {
-  port: "8080",
-  database_dsn: "file:admin.db",
-  log_dir: "/var/log/admin",
-  worker_interval: 30,
-  shutdown_timeout: 10,
+  configPath: "config.toml",
+  items: [
+    { key: "port", label: "Port", value: "8084", source: "env", editable: false },
+    {
+      key: "database_dsn",
+      label: "Database DSN",
+      value: "file:admin.db",
+      source: "env",
+      editable: false,
+    },
+    {
+      key: "log_dir",
+      label: "Log directory",
+      value: "/var/log/admin",
+      source: "env",
+      editable: false,
+    },
+    {
+      key: "worker_interval",
+      label: "Worker interval",
+      value: "30s",
+      source: "toml",
+      editable: true,
+    },
+    {
+      key: "shutdown_timeout",
+      label: "Shutdown timeout",
+      value: "10s",
+      source: "toml",
+      editable: true,
+    },
+  ],
 };
 
 export const handlers = [
@@ -151,5 +178,21 @@ export const handlers = [
 
   http.get("*/api/config", () => {
     return HttpResponse.json(mockConfig);
+  }),
+
+  http.put("*/api/config", async ({ request }) => {
+    const body = (await request.json()) as {
+      worker_interval?: string;
+      shutdown_timeout?: string;
+    };
+    return HttpResponse.json({
+      workerInterval: body.worker_interval ?? "30s",
+      shutdownTimeout: body.shutdown_timeout ?? "10s",
+      restartRequired: true,
+    });
+  }),
+
+  http.post("*/api/restart", () => {
+    return HttpResponse.json({ status: "restarting" }, { status: 202 });
   }),
 ];

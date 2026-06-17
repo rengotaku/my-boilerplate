@@ -33,15 +33,29 @@ import (
 // timeline. Kept small so a fresh install fills the console quickly.
 const perPhaseDelay = 300 * time.Millisecond
 
+// ErrRestart is returned by Run when the admin console requested a restart
+// (POST /api/restart). main() treats it as "reload": it calls Run again so the
+// editable toml config is re-read, instead of exiting the process.
+var ErrRestart = errors.New("restart requested")
+
 // Run boots the worker daemon and the web server in one process and blocks
-// until ctx is canceled (graceful shutdown, returns nil) or one of the
-// components returns a fatal error (returns that error).
+// until ctx is canceled (graceful shutdown, returns nil), a restart is
+// requested (returns ErrRestart), or a component fails (returns that error).
 func Run(ctx context.Context) error {
 	setupLogger()
 
 	cfg, err := config.Load(ctx)
 	if err != nil {
 		return err
+	}
+
+	// Materialize the toml file on first boot so the console always has a
+	// concrete file to edit. Failure here is non-fatal (e.g. read-only FS).
+	if ferr := config.EnsureFile(cfg.ConfigFile, config.FileConfig{
+		WorkerInterval:  cfg.WorkerInterval.String(),
+		ShutdownTimeout: cfg.ShutdownTimeout.String(),
+	}); ferr != nil {
+		slog.Warn("could not materialize config file", "path", cfg.ConfigFile, "error", ferr)
 	}
 
 	if os.Getenv("APP_ENV") == "production" {
@@ -63,11 +77,22 @@ func Run(ctx context.Context) error {
 
 	wrk := worker.New(cfg.WorkerInterval, perPhaseDelay, st, logs, metrics)
 
+	// requestRestart is invoked by the web handler (POST /api/restart). It is
+	// non-blocking and idempotent within a single boot.
+	restartCh := make(chan struct{}, 1)
+	requestRestart := func() {
+		select {
+		case restartCh <- struct{}{}:
+		default:
+		}
+	}
+
 	handler := web.New(web.Deps{
-		Store:   st,
-		Logs:    logs,
-		Metrics: metrics,
-		Config:  cfg,
+		Store:          st,
+		Logs:           logs,
+		Metrics:        metrics,
+		Config:         cfg,
+		RequestRestart: requestRestart,
 	}).Routes(static.Handler())
 
 	srv := &http.Server{
@@ -79,6 +104,18 @@ func Run(ctx context.Context) error {
 	}
 
 	g, gctx := errgroup.WithContext(ctx)
+
+	// Restart watcher: a restart request returns ErrRestart, which cancels gctx
+	// (via errgroup) and tears down the worker + web for a clean reload.
+	g.Go(func() error {
+		select {
+		case <-gctx.Done():
+			return nil
+		case <-restartCh:
+			slog.Info("restart requested; reloading config")
+			return ErrRestart
+		}
+	})
 
 	// Worker daemon: runs until gctx is canceled.
 	g.Go(func() error {

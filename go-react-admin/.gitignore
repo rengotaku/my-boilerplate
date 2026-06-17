@@ -3,3 +3,6 @@ tmp/
 coverage.out
 *.db
 data/
+# Runtime config written by the admin console (editable worker_interval /
+# shutdown_timeout). Regenerated with defaults on first boot.
+config.toml
