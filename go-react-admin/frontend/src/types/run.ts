@@ -32,4 +32,5 @@ export type UpdateConfigResponse = z.infer<typeof updateConfigResponseSchema>;
 export interface UpdateConfigInput {
   worker_interval?: string;
   shutdown_timeout?: string;
+  time_zone?: string;
 }

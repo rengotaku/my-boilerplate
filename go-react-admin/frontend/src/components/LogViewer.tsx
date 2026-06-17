@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { formatInstant } from "@/lib/datetime";
 import type { LogLine } from "@/types/run";
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -17,9 +18,16 @@ export interface LogViewerProps {
   logs: LogLine[];
   emptyMessage?: string;
   className?: string;
+  /** IANA time zone for formatting log timestamps. */
+  timeZone?: string;
 }
 
-export function LogViewer({ logs, emptyMessage = "No logs", className }: LogViewerProps) {
+export function LogViewer({
+  logs,
+  emptyMessage = "No logs",
+  className,
+  timeZone,
+}: LogViewerProps) {
   if (logs.length === 0) {
     return (
       <div className="rounded-md border border-slate-200 bg-white px-3 py-6 text-center text-sm text-slate-400">
@@ -37,7 +45,9 @@ export function LogViewer({ logs, emptyMessage = "No logs", className }: LogView
     >
       {logs.map((log, index) => (
         <div key={index} className="flex gap-2 whitespace-pre-wrap py-0.5">
-          <span className="shrink-0 text-slate-500">{log.ts}</span>
+          <span className="shrink-0 text-slate-500">
+            {formatInstant(log.ts, timeZone)}
+          </span>
           <span className={cn("shrink-0 uppercase", levelColor(log.level))}>
             {log.level}
           </span>

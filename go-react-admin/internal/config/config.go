@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"os"
 	"time"
+	_ "time/tzdata" // embed the IANA tz database so LoadLocation works anywhere
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/sethvargo/go-envconfig"
@@ -34,6 +35,7 @@ type envConfig struct {
 type FileConfig struct {
 	WorkerInterval  string `toml:"worker_interval"`
 	ShutdownTimeout string `toml:"shutdown_timeout"`
+	TimeZone        string `toml:"time_zone"`
 }
 
 // Defaults for the file-backed settings, used when the toml file or a key is
@@ -41,17 +43,16 @@ type FileConfig struct {
 const (
 	defaultWorkerInterval  = "15s"
 	defaultShutdownTimeout = "10s"
+	defaultTimeZone        = "Asia/Tokyo" // JST
 )
 
 // Config is the fully resolved runtime configuration.
 type Config struct {
-	// env-sourced (read-only)
-	Port        string `json:"port"`
-	DatabaseDSN string `json:"database_dsn"`
-	LogDir      string `json:"log_dir"`
-	ConfigFile  string `json:"config_file"`
-
-	// file-sourced (editable), resolved to durations
+	Port            string        `json:"port"`
+	DatabaseDSN     string        `json:"database_dsn"`
+	LogDir          string        `json:"log_dir"`
+	ConfigFile      string        `json:"config_file"`
+	TimeZone        string        `json:"time_zone"`
 	WorkerInterval  time.Duration `json:"worker_interval"`
 	ShutdownTimeout time.Duration `json:"shutdown_timeout"`
 }
@@ -78,6 +79,9 @@ func Load(ctx context.Context) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("config %s: shutdown_timeout %q: %w", ec.ConfigFile, fc.ShutdownTimeout, err)
 	}
+	if _, err := time.LoadLocation(fc.TimeZone); err != nil {
+		return Config{}, fmt.Errorf("config %s: time_zone %q: %w", ec.ConfigFile, fc.TimeZone, err)
+	}
 
 	return Config{
 		Port:            ec.Port,
@@ -86,13 +90,18 @@ func Load(ctx context.Context) (Config, error) {
 		ConfigFile:      ec.ConfigFile,
 		WorkerInterval:  workerInterval,
 		ShutdownTimeout: shutdownTimeout,
+		TimeZone:        fc.TimeZone,
 	}, nil
 }
 
 // ReadFile reads the toml file, falling back to defaults for a missing file or
 // any unset key. The returned FileConfig always has both fields populated.
 func ReadFile(path string) (FileConfig, error) {
-	fc := FileConfig{WorkerInterval: defaultWorkerInterval, ShutdownTimeout: defaultShutdownTimeout}
+	fc := FileConfig{
+		WorkerInterval:  defaultWorkerInterval,
+		ShutdownTimeout: defaultShutdownTimeout,
+		TimeZone:        defaultTimeZone,
+	}
 
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -112,6 +121,9 @@ func ReadFile(path string) (FileConfig, error) {
 	if parsed.ShutdownTimeout != "" {
 		fc.ShutdownTimeout = parsed.ShutdownTimeout
 	}
+	if parsed.TimeZone != "" {
+		fc.TimeZone = parsed.TimeZone
+	}
 	return fc, nil
 }
 
@@ -123,6 +135,9 @@ func WriteFile(path string, fc FileConfig) error {
 	}
 	if _, err := time.ParseDuration(fc.ShutdownTimeout); err != nil {
 		return fmt.Errorf("shutdown_timeout %q: %w", fc.ShutdownTimeout, err)
+	}
+	if _, err := time.LoadLocation(fc.TimeZone); err != nil {
+		return fmt.Errorf("time_zone %q: %w", fc.TimeZone, err)
 	}
 
 	data, err := toml.Marshal(fc)

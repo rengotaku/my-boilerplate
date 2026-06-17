@@ -6,7 +6,9 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { useJob, useDeleteJob } from "@/hooks/useJobs";
 import { useRuns } from "@/hooks/useRuns";
+import { useTimeZone } from "@/hooks/useConfig";
 import { statusTone, formatDuration } from "@/lib/status";
+import { formatInstant } from "@/lib/datetime";
 import type { JobView } from "@/types/job";
 import type { Run } from "@/types/run";
 
@@ -51,6 +53,7 @@ function JobBody({
 }) {
   const navigate = useNavigate();
   const deleteJob = useDeleteJob();
+  const tz = useTimeZone();
   const [page, setPage] = useState(1);
 
   const { data: runs, isLoading: runsLoading } = useRuns({
@@ -75,8 +78,8 @@ function JobBody({
     {
       key: "startedAt",
       header: "Started",
-      cell: (row) => row.startedAt,
-      title: (row) => row.startedAt,
+      cell: (row) => formatInstant(row.startedAt, tz),
+      title: (row) => formatInstant(row.startedAt, tz),
     },
     {
       key: "duration",
@@ -118,9 +121,9 @@ function JobBody({
         <Field label="Kind" value={job.kind} />
         <Field label="Schedule" value={job.schedule} mono />
         <Field label="Runs" value={String(job.runCount)} />
-        <Field label="Last run" value={job.lastRunAt ?? "—"} />
-        <Field label="Next run" value={job.nextRunAt ?? "—"} />
-        <Field label="Created" value={job.createdAt} />
+        <Field label="Last run" value={formatInstant(job.lastRunAt, tz)} />
+        <Field label="Next run" value={formatInstant(job.nextRunAt, tz)} />
+        <Field label="Created" value={formatInstant(job.createdAt, tz)} />
       </dl>
 
       <section className="flex flex-col gap-3">

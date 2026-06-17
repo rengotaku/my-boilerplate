@@ -36,3 +36,11 @@ describe("ConfigPage", () => {
     });
   });
 });
+
+describe("ConfigPage time zone", () => {
+  it("shows Time zone as an editable field seeded from config", async () => {
+    render(<ConfigPage />);
+    const input = await screen.findByDisplayValue("Asia/Tokyo");
+    expect(input).toBeInTheDocument();
+  });
+});

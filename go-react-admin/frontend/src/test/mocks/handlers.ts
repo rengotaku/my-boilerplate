@@ -173,6 +173,13 @@ export const mockConfig: ConfigResponse = {
       source: "toml",
       editable: true,
     },
+    {
+      key: "time_zone",
+      label: "Time zone",
+      value: "Asia/Tokyo",
+      source: "toml",
+      editable: true,
+    },
   ],
 };
 

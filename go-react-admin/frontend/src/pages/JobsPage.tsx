@@ -8,6 +8,8 @@ import { Drawer } from "@/components/admin/drawer";
 import { Button } from "@/components/ui/button";
 import { JobDetailContent } from "@/components/JobDetailContent";
 import { useJobs } from "@/hooks/useJobs";
+import { useTimeZone } from "@/hooks/useConfig";
+import { formatInstant } from "@/lib/datetime";
 import type { JobView } from "@/types/job";
 
 const ENABLED_OPTIONS = [
@@ -19,6 +21,7 @@ export function JobsPage() {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useJobs();
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const tz = useTimeZone();
 
   const columns: DataTableColumn<JobView>[] = [
     {
@@ -62,14 +65,14 @@ export function JobsPage() {
     {
       key: "lastRunAt",
       header: "Last run",
-      cell: (row) => row.lastRunAt ?? "—",
-      title: (row) => row.lastRunAt ?? "",
+      cell: (row) => formatInstant(row.lastRunAt, tz),
+      title: (row) => formatInstant(row.lastRunAt, tz),
     },
     {
       key: "nextRunAt",
       header: "Next run",
-      cell: (row) => row.nextRunAt ?? "—",
-      title: (row) => row.nextRunAt ?? "",
+      cell: (row) => formatInstant(row.nextRunAt, tz),
+      title: (row) => formatInstant(row.nextRunAt, tz),
     },
     {
       key: "runCount",
