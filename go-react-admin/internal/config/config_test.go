@@ -135,3 +135,33 @@ func TestEnsureFile_CreatesWhenAbsent(t *testing.T) {
 		t.Errorf("EnsureFile overwrote existing file: %+v", fc)
 	}
 }
+
+func TestLoad_DefaultTimeZoneIsJST(t *testing.T) {
+	t.Setenv("CONFIG_FILE", filepath.Join(t.TempDir(), "absent.toml"))
+	cfg, err := Load(context.Background())
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if cfg.TimeZone != "Asia/Tokyo" {
+		t.Errorf("TimeZone = %q, want Asia/Tokyo (JST default)", cfg.TimeZone)
+	}
+}
+
+func TestLoad_InvalidTimeZoneReturnsError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.toml")
+	if err := os.WriteFile(path, []byte(`time_zone = "Mars/Phobos"`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CONFIG_FILE", path)
+	if _, err := Load(context.Background()); err == nil {
+		t.Error("Load with invalid time_zone = nil, want error")
+	}
+}
+
+func TestWriteFile_RejectsInvalidTimeZone(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.toml")
+	err := WriteFile(path, FileConfig{WorkerInterval: "15s", ShutdownTimeout: "10s", TimeZone: "Nope/Nope"})
+	if err == nil {
+		t.Error("WriteFile with invalid time_zone = nil, want error")
+	}
+}

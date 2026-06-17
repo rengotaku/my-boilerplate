@@ -3,7 +3,9 @@ import { PhaseTimeline } from "@/components/admin/phase-timeline";
 import { EventTimeline } from "@/components/admin/event-timeline";
 import { LogViewer } from "@/components/LogViewer";
 import { useRun } from "@/hooks/useRuns";
+import { useTimeZone } from "@/hooks/useConfig";
 import { statusTone, formatDuration } from "@/lib/status";
+import { formatInstant } from "@/lib/datetime";
 import type { AdminEvent, Phase } from "@/types/run";
 
 // RunDetailContent renders a run's detail (summary + timelines + logs). It is
@@ -11,6 +13,7 @@ import type { AdminEvent, Phase } from "@/types/run";
 // full-page route /runs/:id, so it owns no page chrome (no back link).
 export function RunDetailContent({ runId }: { runId: number }) {
   const { data, isLoading, isError, error } = useRun(runId);
+  const tz = useTimeZone();
 
   if (isLoading) {
     return <div className="text-sm text-slate-500">Loading…</div>;
@@ -53,7 +56,7 @@ export function RunDetailContent({ runId }: { runId: number }) {
         <EventTimeline<AdminEvent>
           items={events}
           getKey={(e, i) => `${e.ts}-${i}`}
-          getTimestamp={(e) => e.ts}
+          getTimestamp={(e) => formatInstant(e.ts, tz)}
           getTitle={(e) => `${e.type} · ${e.phase}`}
           getTone={(e) => statusTone(e.status)}
         />
@@ -61,7 +64,7 @@ export function RunDetailContent({ runId }: { runId: number }) {
 
       <section className="flex flex-col gap-2">
         <h3 className="text-sm font-medium text-slate-500">Logs</h3>
-        <LogViewer logs={logs} />
+        <LogViewer logs={logs} timeZone={tz} />
       </section>
     </div>
   );

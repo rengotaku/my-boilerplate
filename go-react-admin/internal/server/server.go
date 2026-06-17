@@ -54,6 +54,7 @@ func Run(ctx context.Context) error {
 	if ferr := config.EnsureFile(cfg.ConfigFile, config.FileConfig{
 		WorkerInterval:  cfg.WorkerInterval.String(),
 		ShutdownTimeout: cfg.ShutdownTimeout.String(),
+		TimeZone:        cfg.TimeZone,
 	}); ferr != nil {
 		slog.Warn("could not materialize config file", "path", cfg.ConfigFile, "error", ferr)
 	}

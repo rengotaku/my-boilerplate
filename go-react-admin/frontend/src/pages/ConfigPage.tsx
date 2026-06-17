@@ -41,6 +41,7 @@ export function ConfigPage() {
     const input: UpdateConfigInput = {
       worker_interval: edits["worker_interval"],
       shutdown_timeout: edits["shutdown_timeout"],
+      time_zone: edits["time_zone"],
     };
     updateConfig.mutate(input, {
       onSuccess: () => {

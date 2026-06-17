@@ -399,6 +399,7 @@ func (s *Server) getConfig(c *gin.Context) {
 			{Key: "log_dir", Label: "Log directory", Value: cfg.LogDir, Source: "env", Editable: false},
 			{Key: "worker_interval", Label: "Worker interval", Value: cfg.WorkerInterval.String(), Source: "toml", Editable: true},
 			{Key: "shutdown_timeout", Label: "Shutdown timeout", Value: cfg.ShutdownTimeout.String(), Source: "toml", Editable: true},
+			{Key: "time_zone", Label: "Time zone", Value: cfg.TimeZone, Source: "toml", Editable: true},
 		},
 	})
 }
@@ -406,6 +407,7 @@ func (s *Server) getConfig(c *gin.Context) {
 type updateConfigRequest struct {
 	WorkerInterval  string `json:"worker_interval"`
 	ShutdownTimeout string `json:"shutdown_timeout"`
+	TimeZone        string `json:"time_zone"`
 }
 
 // updateConfig persists the editable (toml) settings. Env settings are not
@@ -430,6 +432,9 @@ func (s *Server) updateConfig(c *gin.Context) {
 	if req.ShutdownTimeout != "" {
 		current.ShutdownTimeout = req.ShutdownTimeout
 	}
+	if req.TimeZone != "" {
+		current.TimeZone = req.TimeZone
+	}
 
 	if err := config.WriteFile(s.deps.Config.ConfigFile, current); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -439,6 +444,7 @@ func (s *Server) updateConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"workerInterval":  current.WorkerInterval,
 		"shutdownTimeout": current.ShutdownTimeout,
+		"timeZone":        current.TimeZone,
 		"restartRequired": true,
 	})
 }

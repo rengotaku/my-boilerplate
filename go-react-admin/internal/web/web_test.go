@@ -206,9 +206,9 @@ func newConfigServer(t *testing.T) (http.Handler, string, *bool) {
 	return h, cfgPath, &restarted
 }
 
-func putJSON(h http.Handler, target, body string) *httptest.ResponseRecorder {
+func putJSON(h http.Handler, body string) *httptest.ResponseRecorder {
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPut, target, strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPut, "/api/config", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	h.ServeHTTP(rec, req)
 	return rec
@@ -216,7 +216,7 @@ func putJSON(h http.Handler, target, body string) *httptest.ResponseRecorder {
 
 func TestUpdateConfig_WritesTomlFile(t *testing.T) {
 	h, cfgPath, _ := newConfigServer(t)
-	rec := putJSON(h, "/api/config", `{"worker_interval":"20s","shutdown_timeout":"25s"}`)
+	rec := putJSON(h, `{"worker_interval":"20s","shutdown_timeout":"25s"}`)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
 	}
@@ -231,7 +231,7 @@ func TestUpdateConfig_WritesTomlFile(t *testing.T) {
 
 func TestUpdateConfig_RejectsInvalidDuration(t *testing.T) {
 	h, _, _ := newConfigServer(t)
-	rec := putJSON(h, "/api/config", `{"worker_interval":"banana"}`)
+	rec := putJSON(h, `{"worker_interval":"banana"}`)
 	if rec.Code != http.StatusBadRequest {
 		t.Errorf("status = %d, want 400", rec.Code)
 	}
@@ -420,5 +420,48 @@ func TestQueryParamFallbacks(t *testing.T) {
 	// garbage from/to fall back to defaults (parseTimeDefault error branch)
 	if rec := do(h, "/api/metrics/aggregate?from=nope&to=nope"); rec.Code != http.StatusOK {
 		t.Errorf("garbage range status = %d, want 200 (fallback)", rec.Code)
+	}
+}
+
+func TestConfig_IncludesEditableTimeZone(t *testing.T) {
+	h, _ := newTestServer(t)
+	rec := do(h, "/api/config")
+	var resp configResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	var found *configItem
+	for i := range resp.Items {
+		if resp.Items[i].Key == "time_zone" {
+			found = &resp.Items[i]
+		}
+	}
+	if found == nil {
+		t.Fatal("time_zone item missing from /api/config")
+	}
+	if found.Source != "toml" || !found.Editable {
+		t.Errorf("time_zone should be toml/editable: %+v", *found)
+	}
+}
+
+func TestUpdateConfig_PersistsTimeZone(t *testing.T) {
+	h, cfgPath, _ := newConfigServer(t)
+	rec := putJSON(h, `{"time_zone":"America/New_York"}`)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	fc, err := config.ReadFile(cfgPath)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if fc.TimeZone != "America/New_York" {
+		t.Errorf("time_zone not persisted: %+v", fc)
+	}
+}
+
+func TestUpdateConfig_RejectsInvalidTimeZone(t *testing.T) {
+	h, _, _ := newConfigServer(t)
+	if rec := putJSON(h, `{"time_zone":"Nope/Nope"}`); rec.Code != http.StatusBadRequest {
+		t.Errorf("status = %d, want 400", rec.Code)
 	}
 }

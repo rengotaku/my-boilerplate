@@ -5,7 +5,9 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Drawer } from "@/components/admin/drawer";
 import { RunDetailContent } from "@/components/RunDetailContent";
 import { useRuns } from "@/hooks/useRuns";
+import { useTimeZone } from "@/hooks/useConfig";
 import { statusTone, formatDuration } from "@/lib/status";
+import { formatInstant } from "@/lib/datetime";
 import type { Run } from "@/types/run";
 
 const PAGE_SIZE = 20;
@@ -20,6 +22,7 @@ const STATUS_OPTIONS = [
 export function RunsPage() {
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const tz = useTimeZone();
 
   const { data, isLoading, isError, error } = useRuns({ page, pageSize: PAGE_SIZE });
 
@@ -43,8 +46,8 @@ export function RunsPage() {
     {
       key: "startedAt",
       header: "Started",
-      cell: (row) => row.startedAt,
-      title: (row) => row.startedAt,
+      cell: (row) => formatInstant(row.startedAt, tz),
+      title: (row) => formatInstant(row.startedAt, tz),
     },
     {
       key: "duration",

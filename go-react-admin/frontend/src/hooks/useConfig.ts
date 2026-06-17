@@ -9,6 +9,13 @@ export function useConfig() {
   });
 }
 
+// useTimeZone returns the configured display time zone (Config → time_zone),
+// defaulting to Asia/Tokyo (JST) before config loads or if unset.
+export function useTimeZone(): string {
+  const { data } = useConfig();
+  return data?.items.find((i) => i.key === "time_zone")?.value || "Asia/Tokyo";
+}
+
 // useUpdateConfig persists edited toml settings (applied on restart).
 export function useUpdateConfig() {
   const queryClient = useQueryClient();
