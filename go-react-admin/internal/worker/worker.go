@@ -1,7 +1,7 @@
-// Package worker is the background daemon half of the single binary. It is the
-// example "jobs/runs" domain: on each tick it executes a job, producing a run
-// with phases, per-phase metrics, and JSONL log lines so every admin-console
-// screen has data to display.
+// Package worker is the background daemon half of the single binary. It is a
+// cron scheduler over the example "jobs/runs" domain: on every check tick it
+// runs each enabled job whose schedule is due, producing a run with phases,
+// per-phase metrics, and JSONL log lines so every admin-console screen has data.
 package worker
 
 import (
@@ -13,26 +13,25 @@ import (
 
 	"go-react-admin/internal/observability"
 	"go-react-admin/internal/persistlog"
+	"go-react-admin/internal/schedule"
 	"go-react-admin/internal/store"
 )
 
 // phaseNames are the steps every run walks through, in order.
 var phaseNames = []string{"prepare", "execute", "report"}
 
-// Daemon periodically executes jobs and records runs until ctx is canceled.
+// Daemon evaluates job schedules on a fixed check interval and runs due jobs.
 type Daemon struct {
 	store    *store.Store
 	logs     *persistlog.Writer
 	metrics  *observability.Metrics
 	rng      *rand.Rand
-	interval time.Duration
-	step     time.Duration
-	next     int
+	interval time.Duration // how often schedules are evaluated
+	step     time.Duration // per-phase delay (0 in tests)
 }
 
-// New returns a Daemon. deps may be nil only in the skeleton; in production the
-// server wires a real store, log writer, and metrics. New seeds example jobs if
-// the store is empty.
+// New returns a Daemon. interval is the schedule-check cadence. New seeds a few
+// example jobs (with cron schedules) the first time the store is used.
 func New(interval, step time.Duration, st *store.Store, logs *persistlog.Writer, m *observability.Metrics) *Daemon {
 	d := &Daemon{
 		interval: interval,
@@ -46,7 +45,7 @@ func New(interval, step time.Duration, st *store.Store, logs *persistlog.Writer,
 	return d
 }
 
-// seed inserts a couple of example jobs the first time the store is used.
+// seed inserts example jobs (with schedules) the first time the store is used.
 func (d *Daemon) seed() {
 	if d.store == nil {
 		return
@@ -59,49 +58,75 @@ func (d *Daemon) seed() {
 	if len(jobs) > 0 {
 		return
 	}
-	for _, j := range []struct{ name, kind string }{
-		{"nightly-export", "batch"},
-		{"metrics-rollup", "aggregate"},
-		{"cleanup-temp", "maintenance"},
+	for _, j := range []struct{ name, kind, schedule string }{
+		{"demo-sync", "sync", "@every 20s"}, // frequent, keeps the console lively
+		{"nightly-export", "batch", "0 2 * * *"},
+		{"hourly-rollup", "aggregate", "@hourly"},
 	} {
-		if _, err := d.store.CreateJob(j.name, j.kind, true); err != nil {
+		if _, err := d.store.CreateJob(j.name, j.kind, j.schedule, true); err != nil {
 			slog.Error("worker seed: create job", "error", err)
 		}
 	}
 }
 
-// Run blocks, executing a job on every tick, until ctx is canceled.
+// Run blocks, evaluating schedules every interval, until ctx is canceled.
 func (d *Daemon) Run(ctx context.Context) error {
 	ticker := time.NewTicker(d.interval)
 	defer ticker.Stop()
 
-	slog.Info("worker started", "interval", d.interval)
+	slog.Info("worker started", "check_interval", d.interval)
 	for {
 		select {
 		case <-ctx.Done():
 			slog.Info("worker stopped")
 			return nil
 		case <-ticker.C:
-			if _, err := d.RunOnce(ctx); err != nil {
-				slog.Error("worker run failed", "error", err)
+			d.evaluate(ctx, time.Now().UTC())
+		}
+	}
+}
+
+// evaluate runs every enabled job whose schedule is due at `now`.
+func (d *Daemon) evaluate(ctx context.Context, now time.Time) {
+	jobs, err := d.store.ListJobs()
+	if err != nil {
+		slog.Error("worker evaluate: list jobs", "error", err)
+		return
+	}
+	for _, job := range jobs {
+		if !job.Enabled {
+			continue
+		}
+		if d.due(job, now) {
+			if _, err := d.execute(ctx, job); err != nil {
+				slog.Error("worker execute failed", "job", job.Name, "error", err)
 			}
 		}
 	}
 }
 
-// RunOnce executes a single job end to end and returns the resulting run. It is
-// exported so tests can drive one deterministic cycle without a ticker.
-func (d *Daemon) RunOnce(ctx context.Context) (store.Run, error) {
-	jobs, err := d.store.ListJobs()
+// due reports whether job's schedule fires at or before `now`, given its last
+// run (or creation time for a job that has never run).
+func (d *Daemon) due(job store.Job, now time.Time) bool {
+	sched, err := schedule.Parse(job.Schedule)
 	if err != nil {
-		return store.Run{}, fmt.Errorf("list jobs: %w", err)
+		slog.Warn("worker: invalid schedule", "job", job.Name, "schedule", job.Schedule, "error", err)
+		return false
 	}
-	if len(jobs) == 0 {
-		return store.Run{}, fmt.Errorf("no jobs to run")
+	last, err := d.store.LastRunStart(job.ID)
+	if err != nil {
+		slog.Error("worker: last run lookup", "job", job.Name, "error", err)
+		return false
 	}
-	job := jobs[d.next%len(jobs)]
-	d.next++
+	base := job.CreatedAt
+	if last != nil {
+		base = *last
+	}
+	return !sched.Next(base).After(now)
+}
 
+// execute runs a single job end to end and returns the resulting run.
+func (d *Daemon) execute(ctx context.Context, job store.Job) (store.Run, error) {
 	start := time.Now().UTC()
 	run, err := d.store.CreateRun(job.ID, start)
 	if err != nil {
@@ -127,7 +152,6 @@ func (d *Daemon) RunOnce(ctx context.Context) (store.Run, error) {
 
 		d.sleep(ctx)
 
-		// Emit a token-like metric sample for the phase.
 		tokens := float64(50 + d.rng.Intn(450))
 		if err := d.store.AddMetric(run.ID, "tokens", tokens, time.Now().UTC()); err != nil {
 			return run, err

@@ -16,8 +16,13 @@ export const apiClient = ky.create({
         const { response } = error;
         if (response) {
           try {
-            const body = await response.json();
-            const message = (body as { message?: string }).message || error.message;
+            const body = (await response.json()) as {
+              message?: string;
+              error?: string;
+            };
+            // Most endpoints use { message }; the jobs API uses { error } (e.g.
+            // invalid cron). Fall back to either so the UI can surface the reason.
+            const message = body.message || body.error || error.message;
             logger.error(`API ${response.url} failed: ${response.status}`, message);
             error.message = message;
           } catch {

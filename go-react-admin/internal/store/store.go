@@ -25,11 +25,12 @@ const (
 	StatusFailed    RunStatus = "failed"
 )
 
-// Job is a unit of work the worker executes periodically.
+// Job is a unit of work the worker runs on a cron schedule.
 type Job struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Name      string    `json:"name"`
 	Kind      string    `json:"kind"`
+	Schedule  string    `json:"schedule"` // cron spec (see internal/schedule)
 	ID        int64     `json:"id"`
 	Enabled   bool      `json:"enabled"`
 }
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   name       TEXT NOT NULL,
   kind       TEXT NOT NULL,
+  schedule   TEXT NOT NULL DEFAULT '',
   enabled    INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL
 );
@@ -128,6 +130,42 @@ func Open(dsn string) (*Store, error) {
 func (s *Store) migrate() error {
 	if _, err := s.db.Exec(schema); err != nil {
 		return fmt.Errorf("apply schema: %w", err)
+	}
+	// Additive migration for databases created before `schedule` existed.
+	if err := s.addColumnIfMissing("jobs", "schedule", "TEXT NOT NULL DEFAULT ''"); err != nil {
+		return err
+	}
+	return nil
+}
+
+// addColumnIfMissing performs an idempotent ALTER TABLE ADD COLUMN, so upgrading
+// an existing database picks up new columns without a migration tool.
+func (s *Store) addColumnIfMissing(table, column, ddl string) error {
+	rows, err := s.db.Query(fmt.Sprintf("PRAGMA table_info(%s)", table))
+	if err != nil {
+		return fmt.Errorf("inspect %s: %w", table, err)
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var (
+			cid        int
+			name, ctyp string
+			notnull    int
+			dflt       sql.NullString
+			pk         int
+		)
+		if err := rows.Scan(&cid, &name, &ctyp, &notnull, &dflt, &pk); err != nil {
+			return err
+		}
+		if name == column {
+			return rows.Close()
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	if _, err := s.db.Exec(fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, ddl)); err != nil {
+		return fmt.Errorf("add column %s.%s: %w", table, column, err)
 	}
 	return nil
 }

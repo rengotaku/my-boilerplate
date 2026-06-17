@@ -19,7 +19,7 @@ func newTestStore(t *testing.T) *Store {
 func TestJobsAndRunsLifecycle(t *testing.T) {
 	s := newTestStore(t)
 
-	job, err := s.CreateJob("nightly", "batch", true)
+	job, err := s.CreateJob("nightly", "batch", "@every 1m", true)
 	if err != nil {
 		t.Fatalf("CreateJob: %v", err)
 	}
@@ -90,7 +90,7 @@ func TestGetRun_NotFound(t *testing.T) {
 
 func TestListRuns_FilterAndPaging(t *testing.T) {
 	s := newTestStore(t)
-	job, _ := s.CreateJob("j", "k", true)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
 	base := time.Now().UTC()
 	for i := 0; i < 5; i++ {
 		r, _ := s.CreateRun(job.ID, base.Add(time.Duration(i)*time.Second))
@@ -137,7 +137,7 @@ func TestListRuns_FilterAndPaging(t *testing.T) {
 
 func TestListRuns_DefaultPaging(t *testing.T) {
 	s := newTestStore(t)
-	job, _ := s.CreateJob("j", "k", true)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
 	for i := 0; i < 3; i++ {
 		_, _ = s.CreateRun(job.ID, time.Now().UTC())
 	}
@@ -153,7 +153,7 @@ func TestListRuns_DefaultPaging(t *testing.T) {
 
 func TestAggregateMetrics_EmptyAndRawBuckets(t *testing.T) {
 	s := newTestStore(t)
-	job, _ := s.CreateJob("j", "k", true)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
 	run, _ := s.CreateRun(job.ID, time.Now().UTC())
 
 	// No metrics in range → empty series.
@@ -180,7 +180,7 @@ func TestAggregateMetrics_EmptyAndRawBuckets(t *testing.T) {
 
 func TestAggregateMetrics(t *testing.T) {
 	s := newTestStore(t)
-	job, _ := s.CreateJob("j", "k", true)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
 	run, _ := s.CreateRun(job.ID, time.Now().UTC())
 
 	t0 := time.Date(2026, 6, 16, 10, 5, 0, 0, time.UTC)
@@ -208,4 +208,106 @@ func TestAggregateMetrics(t *testing.T) {
 	if tokens[0].Value != 150 {
 		t.Errorf("first tokens bucket = %v, want 150 (100+50 summed)", tokens[0].Value)
 	}
+}
+
+func TestJobCRUD(t *testing.T) {
+	s := newTestStore(t)
+
+	job, err := s.CreateJob("export", "batch", "@every 1m", true)
+	if err != nil {
+		t.Fatalf("CreateJob: %v", err)
+	}
+	if job.Schedule != "@every 1m" {
+		t.Errorf("schedule = %q", job.Schedule)
+	}
+
+	got, err := s.GetJob(job.ID)
+	if err != nil || got.Name != "export" {
+		t.Fatalf("GetJob = %+v, %v", got, err)
+	}
+
+	upd, err := s.UpdateJob(job.ID, "export2", "cron", "0 3 * * *", false)
+	if err != nil {
+		t.Fatalf("UpdateJob: %v", err)
+	}
+	if upd.Name != "export2" || upd.Schedule != "0 3 * * *" || upd.Enabled {
+		t.Errorf("UpdateJob result = %+v", upd)
+	}
+
+	if _, err := s.GetJob(9999); err != ErrNotFound {
+		t.Errorf("GetJob(missing) = %v, want ErrNotFound", err)
+	}
+	if _, err := s.UpdateJob(9999, "x", "y", "@every 1m", true); err != ErrNotFound {
+		t.Errorf("UpdateJob(missing) = %v, want ErrNotFound", err)
+	}
+}
+
+func TestDeleteJob_CascadesRunsPhasesMetrics(t *testing.T) {
+	s := newTestStore(t)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
+	start := time.Now().UTC()
+	run, _ := s.CreateRun(job.ID, start)
+	pid, _ := s.AddPhase(run.ID, 0, "p", start)
+	_ = s.FinishPhase(pid, StatusSucceeded, start)
+	_ = s.AddMetric(run.ID, "tokens", 1, start)
+	_ = s.FinishRun(run.ID, StatusSucceeded, start)
+
+	if err := s.DeleteJob(job.ID); err != nil {
+		t.Fatalf("DeleteJob: %v", err)
+	}
+
+	if _, err := s.GetJob(job.ID); err != ErrNotFound {
+		t.Error("job should be gone")
+	}
+	if runs, _, _ := s.ListRuns(RunFilter{JobID: job.ID}, 1, 10); len(runs) != 0 {
+		t.Error("runs should be cascade-deleted")
+	}
+	if ph, _ := s.ListPhases(run.ID); len(ph) != 0 {
+		t.Error("phases should be cascade-deleted")
+	}
+
+	if err := s.DeleteJob(9999); err != ErrNotFound {
+		t.Errorf("DeleteJob(missing) = %v, want ErrNotFound", err)
+	}
+}
+
+func TestLastRunStartAndCount(t *testing.T) {
+	s := newTestStore(t)
+	job, _ := s.CreateJob("j", "k", "@every 1m", true)
+
+	last, err := s.LastRunStart(job.ID)
+	if err != nil {
+		t.Fatalf("LastRunStart: %v", err)
+	}
+	if last != nil {
+		t.Error("never-run job should have nil last run")
+	}
+
+	t0 := time.Date(2026, 6, 16, 10, 0, 0, 0, time.UTC)
+	_, _ = s.CreateRun(job.ID, t0)
+	_, _ = s.CreateRun(job.ID, t0.Add(time.Hour))
+
+	last, _ = s.LastRunStart(job.ID)
+	if last == nil || !last.Equal(t0.Add(time.Hour)) {
+		t.Errorf("LastRunStart = %v, want %v", last, t0.Add(time.Hour))
+	}
+	n, _ := s.CountRunsByJob(job.ID)
+	if n != 2 {
+		t.Errorf("CountRunsByJob = %d, want 2", n)
+	}
+}
+
+func TestMigrate_IdempotentScheduleColumn(t *testing.T) {
+	// Opening the same database twice must not fail re-adding the column.
+	path := filepath.Join(t.TempDir(), "m.db")
+	s1, err := Open(path)
+	if err != nil {
+		t.Fatalf("Open 1: %v", err)
+	}
+	_ = s1.Close()
+	s2, err := Open(path)
+	if err != nil {
+		t.Fatalf("Open 2 (re-migrate): %v", err)
+	}
+	_ = s2.Close()
 }

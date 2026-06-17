@@ -38,7 +38,7 @@ func newTestServer(t *testing.T) (http.Handler, int64) {
 	t.Cleanup(func() { _ = st.Close() })
 	logs, _ := persistlog.New(t.TempDir())
 
-	job, _ := st.CreateJob("nightly", "batch", true)
+	job, _ := st.CreateJob("nightly", "batch", "@every 1m", true)
 	start := time.Now().UTC()
 	run, _ := st.CreateRun(job.ID, start)
 	pid, _ := st.AddPhase(run.ID, 0, "prepare", start)
@@ -275,3 +275,150 @@ func TestSPAFallback(t *testing.T) {
 }
 
 func itoa(n int64) string { return strconv.FormatInt(n, 10) }
+
+func reqJSON(h http.Handler, method, target, body string) *httptest.ResponseRecorder {
+	rec := httptest.NewRecorder()
+	var r *http.Request
+	if body == "" {
+		r = httptest.NewRequest(method, target, nil)
+	} else {
+		r = httptest.NewRequest(method, target, strings.NewReader(body))
+		r.Header.Set("Content-Type", "application/json")
+	}
+	h.ServeHTTP(rec, r)
+	return rec
+}
+
+func TestListJobs(t *testing.T) {
+	h, _ := newTestServer(t)
+	rec := do(h, "/api/jobs")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	var resp struct {
+		Items []struct {
+			Name     string `json:"name"`
+			Schedule string `json:"schedule"`
+			RunCount int    `json:"runCount"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(resp.Items) == 0 {
+		t.Fatal("expected at least one job")
+	}
+}
+
+func TestCreateJob_ValidatesCron(t *testing.T) {
+	h, _ := newTestServer(t)
+
+	// invalid cron rejected
+	if rec := reqJSON(h, http.MethodPost, "/api/jobs", `{"name":"x","schedule":"nope"}`); rec.Code != http.StatusBadRequest {
+		t.Errorf("invalid cron status = %d, want 400", rec.Code)
+	}
+	// missing name rejected
+	if rec := reqJSON(h, http.MethodPost, "/api/jobs", `{"schedule":"@every 1m"}`); rec.Code != http.StatusBadRequest {
+		t.Errorf("missing name status = %d, want 400", rec.Code)
+	}
+	// valid create
+	rec := reqJSON(h, http.MethodPost, "/api/jobs", `{"name":"new","kind":"task","schedule":"@every 30s","enabled":true}`)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestJobLifecycle_UpdateAndDelete(t *testing.T) {
+	h, _ := newTestServer(t)
+	rec := reqJSON(h, http.MethodPost, "/api/jobs", `{"name":"lc","schedule":"@every 1m"}`)
+	var created struct {
+		ID int64 `json:"id"`
+	}
+	_ = json.Unmarshal(rec.Body.Bytes(), &created)
+	if created.ID == 0 {
+		t.Fatal("no id returned")
+	}
+
+	// get
+	if rec := do(h, "/api/jobs/"+itoa(created.ID)); rec.Code != http.StatusOK {
+		t.Fatalf("get status = %d", rec.Code)
+	}
+	// update
+	if rec := reqJSON(h, http.MethodPut, "/api/jobs/"+itoa(created.ID), `{"name":"lc2","schedule":"@hourly","enabled":false}`); rec.Code != http.StatusOK {
+		t.Fatalf("update status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	// delete
+	if rec := reqJSON(h, http.MethodDelete, "/api/jobs/"+itoa(created.ID), ""); rec.Code != http.StatusNoContent {
+		t.Fatalf("delete status = %d", rec.Code)
+	}
+	// now gone
+	if rec := do(h, "/api/jobs/"+itoa(created.ID)); rec.Code != http.StatusNotFound {
+		t.Errorf("get after delete = %d, want 404", rec.Code)
+	}
+}
+
+func TestJob_NotFoundAndBadID(t *testing.T) {
+	h, _ := newTestServer(t)
+	if rec := do(h, "/api/jobs/9999"); rec.Code != http.StatusNotFound {
+		t.Errorf("missing get = %d, want 404", rec.Code)
+	}
+	if rec := do(h, "/api/jobs/abc"); rec.Code != http.StatusBadRequest {
+		t.Errorf("bad id = %d, want 400", rec.Code)
+	}
+	if rec := reqJSON(h, http.MethodPut, "/api/jobs/9999", `{"name":"x","schedule":"@every 1m"}`); rec.Code != http.StatusNotFound {
+		t.Errorf("update missing = %d, want 404", rec.Code)
+	}
+	if rec := reqJSON(h, http.MethodDelete, "/api/jobs/9999", ""); rec.Code != http.StatusNotFound {
+		t.Errorf("delete missing = %d, want 404", rec.Code)
+	}
+}
+
+func TestCreateJob_DefaultsKindAndComputesNextRun(t *testing.T) {
+	h, _ := newTestServer(t)
+	rec := reqJSON(h, http.MethodPost, "/api/jobs", `{"name":"nokind","schedule":"@every 30s"}`)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	var view struct {
+		NextRunAt *string `json:"nextRunAt"`
+		Kind      string  `json:"kind"`
+		RunCount  int     `json:"runCount"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &view); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if view.Kind != "task" {
+		t.Errorf("kind = %q, want defaulted 'task'", view.Kind)
+	}
+	if view.NextRunAt == nil {
+		t.Error("nextRunAt should be computed from the schedule")
+	}
+	if view.RunCount != 0 {
+		t.Errorf("runCount = %d, want 0 for a new job", view.RunCount)
+	}
+}
+
+func TestCreateJob_BadBody(t *testing.T) {
+	h, _ := newTestServer(t)
+	if rec := reqJSON(h, http.MethodPost, "/api/jobs", `{not json`); rec.Code != http.StatusBadRequest {
+		t.Errorf("bad body status = %d, want 400", rec.Code)
+	}
+}
+
+func TestQueryParamFallbacks(t *testing.T) {
+	h, _ := newTestServer(t)
+
+	// non-numeric page/page_size fall back to defaults (atoiDefault error branch)
+	if rec := do(h, "/api/runs?page=abc&page_size=xyz"); rec.Code != http.StatusOK {
+		t.Errorf("bad paging status = %d, want 200 (fallback)", rec.Code)
+	}
+
+	// explicit valid from/to (parseTimeDefault success branch)
+	if rec := do(h, "/api/metrics/aggregate?from=2026-06-16T00:00:00Z&to=2026-06-16T12:00:00Z&bucket=1h"); rec.Code != http.StatusOK {
+		t.Errorf("explicit range status = %d, want 200", rec.Code)
+	}
+	// garbage from/to fall back to defaults (parseTimeDefault error branch)
+	if rec := do(h, "/api/metrics/aggregate?from=nope&to=nope"); rec.Code != http.StatusOK {
+		t.Errorf("garbage range status = %d, want 200 (fallback)", rec.Code)
+	}
+}

@@ -8,22 +8,40 @@ import (
 )
 
 // CreateJob inserts a job and returns it with its assigned ID.
-func (s *Store) CreateJob(name, kind string, enabled bool) (Job, error) {
+func (s *Store) CreateJob(name, kind, schedule string, enabled bool) (Job, error) {
 	now := time.Now().UTC()
 	res, err := s.db.Exec(
-		`INSERT INTO jobs (name, kind, enabled, created_at) VALUES (?, ?, ?, ?)`,
-		name, kind, boolToInt(enabled), fmtTime(now),
+		`INSERT INTO jobs (name, kind, schedule, enabled, created_at) VALUES (?, ?, ?, ?, ?)`,
+		name, kind, schedule, boolToInt(enabled), fmtTime(now),
 	)
 	if err != nil {
 		return Job{}, fmt.Errorf("insert job: %w", err)
 	}
 	id, _ := res.LastInsertId()
-	return Job{ID: id, Name: name, Kind: kind, Enabled: enabled, CreatedAt: now}, nil
+	return Job{ID: id, Name: name, Kind: kind, Schedule: schedule, Enabled: enabled, CreatedAt: now}, nil
+}
+
+const jobColumns = `id, name, kind, schedule, enabled, created_at`
+
+func scanJob(sc rowScanner) (Job, error) {
+	var j Job
+	var enabled int
+	var created string
+	if err := sc.Scan(&j.ID, &j.Name, &j.Kind, &j.Schedule, &enabled, &created); err != nil {
+		return Job{}, err
+	}
+	j.Enabled = enabled != 0
+	t, err := parseTime(created)
+	if err != nil {
+		return Job{}, err
+	}
+	j.CreatedAt = t
+	return j, nil
 }
 
 // ListJobs returns all jobs ordered by id.
 func (s *Store) ListJobs() ([]Job, error) {
-	rows, err := s.db.Query(`SELECT id, name, kind, enabled, created_at FROM jobs ORDER BY id`)
+	rows, err := s.db.Query(`SELECT ` + jobColumns + ` FROM jobs ORDER BY id`)
 	if err != nil {
 		return nil, fmt.Errorf("query jobs: %w", err)
 	}
@@ -31,19 +49,87 @@ func (s *Store) ListJobs() ([]Job, error) {
 
 	var jobs []Job
 	for rows.Next() {
-		var j Job
-		var enabled int
-		var created string
-		if err = rows.Scan(&j.ID, &j.Name, &j.Kind, &enabled, &created); err != nil {
-			return nil, err
-		}
-		j.Enabled = enabled != 0
-		if j.CreatedAt, err = parseTime(created); err != nil {
+		j, err := scanJob(rows)
+		if err != nil {
 			return nil, err
 		}
 		jobs = append(jobs, j)
 	}
 	return jobs, rows.Err()
+}
+
+// GetJob returns one job by id, or ErrNotFound.
+func (s *Store) GetJob(id int64) (Job, error) {
+	j, err := scanJob(s.db.QueryRow(`SELECT `+jobColumns+` FROM jobs WHERE id = ?`, id))
+	if errors.Is(err, sql.ErrNoRows) {
+		return Job{}, ErrNotFound
+	}
+	return j, err
+}
+
+// UpdateJob updates a job's mutable fields. Returns ErrNotFound if absent.
+func (s *Store) UpdateJob(id int64, name, kind, schedule string, enabled bool) (Job, error) {
+	res, err := s.db.Exec(
+		`UPDATE jobs SET name = ?, kind = ?, schedule = ?, enabled = ? WHERE id = ?`,
+		name, kind, schedule, boolToInt(enabled), id,
+	)
+	if err != nil {
+		return Job{}, fmt.Errorf("update job: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return Job{}, ErrNotFound
+	}
+	return s.GetJob(id)
+}
+
+// DeleteJob removes a job and all of its runs/phases/metrics in one
+// transaction. Returns ErrNotFound if the job does not exist.
+func (s *Store) DeleteJob(id int64) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if _, err = tx.Exec(
+		`DELETE FROM phases WHERE run_id IN (SELECT id FROM runs WHERE job_id = ?)`, id); err != nil {
+		return fmt.Errorf("delete phases: %w", err)
+	}
+	if _, err = tx.Exec(
+		`DELETE FROM metrics WHERE run_id IN (SELECT id FROM runs WHERE job_id = ?)`, id); err != nil {
+		return fmt.Errorf("delete metrics: %w", err)
+	}
+	if _, err = tx.Exec(`DELETE FROM runs WHERE job_id = ?`, id); err != nil {
+		return fmt.Errorf("delete runs: %w", err)
+	}
+	res, err := tx.Exec(`DELETE FROM jobs WHERE id = ?`, id)
+	if err != nil {
+		return fmt.Errorf("delete job: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return tx.Commit()
+}
+
+// LastRunStart returns the most recent run start time for a job, or nil if the
+// job has never run.
+func (s *Store) LastRunStart(jobID int64) (*time.Time, error) {
+	var started sql.NullString
+	err := s.db.QueryRow(`SELECT MAX(started_at) FROM runs WHERE job_id = ?`, jobID).Scan(&started)
+	if err != nil {
+		return nil, fmt.Errorf("last run start: %w", err)
+	}
+	return parseNullTime(started)
+}
+
+// CountRunsByJob returns how many runs a job has produced.
+func (s *Store) CountRunsByJob(jobID int64) (int, error) {
+	var n int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM runs WHERE job_id = ?`, jobID).Scan(&n); err != nil {
+		return 0, fmt.Errorf("count runs by job: %w", err)
+	}
+	return n, nil
 }
 
 // CreateRun inserts a run in the running state and returns it.

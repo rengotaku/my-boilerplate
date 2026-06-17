@@ -9,6 +9,7 @@ package web
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ import (
 	"go-react-admin/internal/config"
 	"go-react-admin/internal/observability"
 	"go-react-admin/internal/persistlog"
+	"go-react-admin/internal/schedule"
 	"go-react-admin/internal/store"
 )
 
@@ -49,6 +51,11 @@ func (s *Server) Routes(staticHandler http.Handler) http.Handler {
 
 	api := r.Group("/api")
 	{
+		api.GET("/jobs", s.listJobs)
+		api.POST("/jobs", s.createJob)
+		api.GET("/jobs/:id", s.getJob)
+		api.PUT("/jobs/:id", s.updateJob)
+		api.DELETE("/jobs/:id", s.deleteJob)
 		api.GET("/runs", s.listRuns)
 		api.GET("/runs/:id", s.getRun)
 		api.GET("/metrics/aggregate", s.metricsAggregate)
@@ -63,6 +70,187 @@ func (s *Server) Routes(staticHandler http.Handler) http.Handler {
 
 func (s *Server) health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// jobView augments a stored job with scheduling/run info for the Jobs screen.
+type jobView struct {
+	LastRunAt *time.Time `json:"lastRunAt"`
+	NextRunAt *time.Time `json:"nextRunAt"`
+	store.Job
+	RunCount int `json:"runCount"`
+}
+
+func (s *Server) toJobView(job store.Job) (jobView, error) {
+	last, err := s.deps.Store.LastRunStart(job.ID)
+	if err != nil {
+		return jobView{}, err
+	}
+	count, err := s.deps.Store.CountRunsByJob(job.ID)
+	if err != nil {
+		return jobView{}, err
+	}
+	view := jobView{Job: job, LastRunAt: last, RunCount: count}
+	if sched, perr := schedule.Parse(job.Schedule); perr == nil {
+		base := job.CreatedAt
+		if last != nil {
+			base = *last
+		}
+		next := sched.Next(base)
+		view.NextRunAt = &next
+	}
+	return view, nil
+}
+
+func (s *Server) listJobs(c *gin.Context) {
+	jobs, err := s.deps.Store.ListJobs()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	views := make([]jobView, 0, len(jobs))
+	for _, job := range jobs {
+		v, err := s.toJobView(job)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		views = append(views, v)
+	}
+	c.JSON(http.StatusOK, gin.H{"items": views})
+}
+
+type jobRequest struct {
+	Enabled  *bool  `json:"enabled"`
+	Name     string `json:"name"`
+	Kind     string `json:"kind"`
+	Schedule string `json:"schedule"`
+}
+
+// validate trims input and checks the required fields and the cron spec.
+func (req *jobRequest) validate() (enabled bool, err string) {
+	req.Name = strings.TrimSpace(req.Name)
+	req.Kind = strings.TrimSpace(req.Kind)
+	req.Schedule = strings.TrimSpace(req.Schedule)
+	if req.Name == "" {
+		return false, "name is required"
+	}
+	if req.Kind == "" {
+		req.Kind = "task"
+	}
+	if verr := schedule.Valid(req.Schedule); verr != nil {
+		return false, verr.Error()
+	}
+	en := true
+	if req.Enabled != nil {
+		en = *req.Enabled
+	}
+	return en, ""
+}
+
+func (s *Server) createJob(c *gin.Context) {
+	var req jobRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+	enabled, verr := req.validate()
+	if verr != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": verr})
+		return
+	}
+	job, err := s.deps.Store.CreateJob(req.Name, req.Kind, req.Schedule, enabled)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	view, err := s.toJobView(job)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, view)
+}
+
+func (s *Server) getJob(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+	job, err := s.deps.Store.GetJob(id)
+	if err == store.ErrNotFound {
+		c.JSON(http.StatusNotFound, gin.H{"error": "job not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	view, err := s.toJobView(job)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, view)
+}
+
+func (s *Server) updateJob(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+	var req jobRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+	enabled, verr := req.validate()
+	if verr != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": verr})
+		return
+	}
+	job, err := s.deps.Store.UpdateJob(id, req.Name, req.Kind, req.Schedule, enabled)
+	if err == store.ErrNotFound {
+		c.JSON(http.StatusNotFound, gin.H{"error": "job not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	view, err := s.toJobView(job)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, view)
+}
+
+func (s *Server) deleteJob(c *gin.Context) {
+	id, ok := parseID(c)
+	if !ok {
+		return
+	}
+	err := s.deps.Store.DeleteJob(id)
+	if err == store.ErrNotFound {
+		c.JSON(http.StatusNotFound, gin.H{"error": "job not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// parseID extracts the :id path param, writing a 400 and returning false on
+// malformed input.
+func parseID(c *gin.Context) (int64, bool) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return 0, false
+	}
+	return id, true
 }
 
 type listRunsResponse struct {
