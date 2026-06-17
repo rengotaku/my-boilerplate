@@ -7,6 +7,7 @@ require (
 	github.com/lmittmann/tint v1.1.3
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/prometheus/client_golang v1.19.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/sethvargo/go-envconfig v1.3.0
 	golang.org/x/sync v0.20.0
 	modernc.org/sqlite v1.52.0

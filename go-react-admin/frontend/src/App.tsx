@@ -4,6 +4,9 @@ import { Layout } from "@/components";
 import {
   RunsPage,
   RunDetailPage,
+  JobsPage,
+  JobDetailPage,
+  JobFormPage,
   MetricsPage,
   LogsPage,
   ConfigPage,
@@ -28,6 +31,10 @@ function App() {
             <Route index element={<Navigate to="/runs" replace />} />
             <Route path="runs" element={<RunsPage />} />
             <Route path="runs/:id" element={<RunDetailPage />} />
+            <Route path="jobs" element={<JobsPage />} />
+            <Route path="jobs/new" element={<JobFormPage />} />
+            <Route path="jobs/:id" element={<JobDetailPage />} />
+            <Route path="jobs/:id/edit" element={<JobFormPage />} />
             <Route path="metrics" element={<MetricsPage />} />
             <Route path="logs" element={<LogsPage />} />
             <Route path="config" element={<ConfigPage />} />

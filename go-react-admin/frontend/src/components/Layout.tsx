@@ -1,5 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Activity, BarChart3, FileText, ListChecks, Settings } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  CalendarClock,
+  FileText,
+  ListChecks,
+  Settings,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -10,6 +17,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/runs", label: "Runs", icon: ListChecks },
+  { to: "/jobs", label: "Jobs", icon: CalendarClock },
   { to: "/metrics", label: "Metrics", icon: BarChart3 },
   { to: "/logs", label: "Logs", icon: FileText },
   { to: "/config", label: "Config", icon: Settings },
