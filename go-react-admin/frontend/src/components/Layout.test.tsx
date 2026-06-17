@@ -22,3 +22,27 @@ describe("Layout", () => {
     expect(screen.getByText("child content")).toBeInTheDocument();
   });
 });
+
+describe("Layout sidebar collapse", () => {
+  it("toggles the sidebar labels via the collapse button", async () => {
+    const userEvent = (await import("@testing-library/user-event")).default;
+    const user = userEvent.setup();
+    render(
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<div>child</div>} />
+        </Route>
+      </Routes>,
+      { initialEntries: ["/"] }
+    );
+
+    // expanded by default → labels visible
+    expect(screen.getByText("Runs")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+
+    // collapsed → text labels hidden, expand control available
+    expect(screen.queryByText("Runs")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
+  });
+});
