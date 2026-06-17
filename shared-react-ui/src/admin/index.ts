@@ -25,7 +25,15 @@ export { PhaseTimeline } from "./phase-timeline";
 export type { PhaseTimelineProps } from "./phase-timeline";
 
 export { DataTable } from "./data-table";
-export type { DataTableColumn, DataTableProps } from "./data-table";
+export type {
+  ColumnAlign,
+  ColumnFilter,
+  DataTableColumn,
+  DataTableProps,
+} from "./data-table";
+
+export { Drawer } from "./drawer";
+export type { DrawerProps } from "./drawer";
 
 export { StackedBarChart } from "./stacked-bar-chart";
 export type { StackedBarSeries, StackedBarChartProps } from "./stacked-bar-chart";
