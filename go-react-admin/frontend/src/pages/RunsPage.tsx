@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { DataTable } from "@/components/admin/data-table";
+import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { Pagination } from "@/components/admin/pagination";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { MetricsFilters } from "@/components/admin/metrics-filters";
+import { Drawer } from "@/components/admin/drawer";
+import { RunDetailContent } from "@/components/RunDetailContent";
 import { useRuns } from "@/hooks/useRuns";
 import { statusTone, formatDuration } from "@/lib/status";
-import type { Run, RunStatus } from "@/types/run";
+import type { Run } from "@/types/run";
 
 const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS = [
-  { value: "", label: "All" },
   { value: "queued", label: "Queued" },
   { value: "running", label: "Running" },
   { value: "succeeded", label: "Succeeded" },
@@ -19,30 +18,40 @@ const STATUS_OPTIONS = [
 ];
 
 export function RunsPage() {
-  const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<RunStatus | "">("");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const { data, isLoading, isError, error } = useRuns({
-    page,
-    pageSize: PAGE_SIZE,
-    status,
-  });
+  const { data, isLoading, isError, error } = useRuns({ page, pageSize: PAGE_SIZE });
 
-  const columns = [
-    { header: "ID", cell: (row: Run) => row.id, align: "right" as const },
-    { header: "Job", cell: (row: Run) => row.jobName },
+  const columns: DataTableColumn<Run>[] = [
+    { key: "id", header: "ID", width: "5rem", align: "right", cell: (row) => row.id },
     {
-      header: "Status",
-      cell: (row: Run) => (
-        <StatusBadge tone={statusTone(row.status)} label={row.status} />
-      ),
+      key: "jobName",
+      header: "Job",
+      width: "14rem",
+      cell: (row) => row.jobName,
+      title: (row) => row.jobName,
+      filter: { kind: "text", accessor: (row) => row.jobName, placeholder: "job…" },
     },
-    { header: "Started", cell: (row: Run) => row.startedAt },
     {
+      key: "status",
+      header: "Status",
+      width: "10rem",
+      cell: (row) => <StatusBadge tone={statusTone(row.status)} label={row.status} />,
+      filter: { kind: "select", accessor: (row) => row.status, options: STATUS_OPTIONS },
+    },
+    {
+      key: "startedAt",
+      header: "Started",
+      cell: (row) => row.startedAt,
+      title: (row) => row.startedAt,
+    },
+    {
+      key: "duration",
       header: "Duration",
-      cell: (row: Run) => formatDuration(row.startedAt, row.finishedAt),
-      align: "right" as const,
+      width: "8rem",
+      align: "right",
+      cell: (row) => formatDuration(row.startedAt, row.finishedAt),
     },
   ];
 
@@ -50,20 +59,6 @@ export function RunsPage() {
     <div className="flex flex-col gap-4">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Runs</h1>
-        <MetricsFilters
-          fields={[
-            {
-              name: "status",
-              label: "Status",
-              options: STATUS_OPTIONS,
-              value: status,
-            },
-          ]}
-          onChange={(_name, value) => {
-            setStatus(value as RunStatus | "");
-            setPage(1);
-          }}
-        />
       </header>
 
       {isError ? (
@@ -76,7 +71,7 @@ export function RunsPage() {
             columns={columns}
             rows={data?.items ?? []}
             getRowKey={(row) => row.id}
-            onRowClick={(row) => navigate(`/runs/${row.id}`)}
+            onRowClick={(row) => setSelectedId(row.id)}
             emptyMessage={isLoading ? "Loading…" : "No runs"}
           />
           <Pagination
@@ -87,6 +82,14 @@ export function RunsPage() {
           />
         </>
       )}
+
+      <Drawer
+        open={selectedId !== null}
+        onClose={() => setSelectedId(null)}
+        title={selectedId !== null ? `Run #${selectedId}` : ""}
+      >
+        {selectedId !== null && <RunDetailContent runId={selectedId} />}
+      </Drawer>
     </div>
   );
 }

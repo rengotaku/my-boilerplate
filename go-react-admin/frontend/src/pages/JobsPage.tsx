@@ -1,69 +1,82 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { DataTable } from "@/components/admin/data-table";
+import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { KindBadge } from "@/components/admin/kind-badge";
+import { Drawer } from "@/components/admin/drawer";
 import { Button } from "@/components/ui/button";
-import { useJobs, useDeleteJob } from "@/hooks/useJobs";
+import { JobDetailContent } from "@/components/JobDetailContent";
+import { useJobs } from "@/hooks/useJobs";
 import type { JobView } from "@/types/job";
+
+const ENABLED_OPTIONS = [
+  { value: "true", label: "Enabled" },
+  { value: "false", label: "Disabled" },
+];
 
 export function JobsPage() {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useJobs();
-  const deleteJob = useDeleteJob();
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const onDelete = (job: JobView) => {
-    if (!window.confirm(`Delete job "${job.name}"?`)) return;
-    deleteJob.mutate(job.id);
-  };
-
-  const columns = [
-    { header: "Name", cell: (row: JobView) => row.name },
+  const columns: DataTableColumn<JobView>[] = [
     {
+      key: "name",
+      header: "Name",
+      width: "14rem",
+      cell: (row) => row.name,
+      title: (row) => row.name,
+      filter: { kind: "text", accessor: (row) => row.name, placeholder: "name…" },
+    },
+    {
+      key: "kind",
       header: "Kind",
-      cell: (row: JobView) => <KindBadge label={row.kind} />,
+      width: "9rem",
+      cell: (row) => <KindBadge label={row.kind} />,
+      filter: { kind: "text", accessor: (row) => row.kind, placeholder: "kind…" },
     },
     {
+      key: "schedule",
       header: "Schedule",
-      cell: (row: JobView) => <span className="font-mono text-xs">{row.schedule}</span>,
+      width: "12rem",
+      cell: (row) => <span className="font-mono text-xs">{row.schedule}</span>,
+      title: (row) => row.schedule,
     },
     {
+      key: "enabled",
       header: "Enabled",
-      cell: (row: JobView) => (
+      width: "9rem",
+      cell: (row) => (
         <StatusBadge
           tone={row.enabled ? "success" : "neutral"}
           label={row.enabled ? "enabled" : "disabled"}
         />
       ),
+      filter: {
+        kind: "select",
+        accessor: (row) => String(row.enabled),
+        options: ENABLED_OPTIONS,
+      },
     },
-    { header: "Last run", cell: (row: JobView) => row.lastRunAt ?? "—" },
-    { header: "Next run", cell: (row: JobView) => row.nextRunAt ?? "—" },
     {
+      key: "lastRunAt",
+      header: "Last run",
+      cell: (row) => row.lastRunAt ?? "—",
+      title: (row) => row.lastRunAt ?? "",
+    },
+    {
+      key: "nextRunAt",
+      header: "Next run",
+      cell: (row) => row.nextRunAt ?? "—",
+      title: (row) => row.nextRunAt ?? "",
+    },
+    {
+      key: "runCount",
       header: "Runs",
-      cell: (row: JobView) => row.runCount,
-      align: "right" as const,
-    },
-    {
-      header: "",
-      cell: (row: JobView) => (
-        <div
-          className="flex items-center justify-end gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/jobs/${row.id}/edit`}>Edit</Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDelete(row)}
-            disabled={deleteJob.isPending}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-      align: "right" as const,
+      width: "5rem",
+      align: "right",
+      cell: (row) => row.runCount,
     },
   ];
 
@@ -88,10 +101,24 @@ export function JobsPage() {
           columns={columns}
           rows={data?.items ?? []}
           getRowKey={(row) => row.id}
-          onRowClick={(row) => navigate(`/jobs/${row.id}`)}
+          onRowClick={(row) => setSelectedId(row.id)}
           emptyMessage={isLoading ? "Loading…" : "No jobs"}
         />
       )}
+
+      <Drawer
+        open={selectedId !== null}
+        onClose={() => setSelectedId(null)}
+        title={selectedId !== null ? "Job detail" : ""}
+      >
+        {selectedId !== null && (
+          <JobDetailContent
+            jobId={selectedId}
+            onEdit={() => navigate(`/jobs/${selectedId}/edit`)}
+            onDeleted={() => setSelectedId(null)}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }
