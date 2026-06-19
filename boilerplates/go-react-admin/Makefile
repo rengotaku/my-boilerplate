@@ -1,4 +1,4 @@
-.PHONY: install build build-frontend compose-ui run run-binary run-server run-frontend stop status \
+.PHONY: install build build-frontend compose-ui embed-dist run run-binary run-server run-frontend stop status \
   lint lint-frontend lint-fix format format-check \
   test test-frontend test-cov test-watch coverage \
   check ci clean help
@@ -81,8 +81,16 @@ status:
 	@lsof -i :$(PORT) >/dev/null 2>&1 && echo "go-react-admin (Go): running (:$(PORT))" || echo "go-react-admin (Go): stopped"
 	@lsof -i :$(FRONTEND_PORT) >/dev/null 2>&1 && echo "go-react-admin (Vite): running (:$(FRONTEND_PORT))" || echo "go-react-admin (Vite): stopped"
 
+## embed-dist: Ensure internal/static/dist/ exists so the //go:embed all:dist
+## typecheck in static_embed.go resolves before `make build-frontend`. Fresh
+## checkouts (dist/* is gitignored) and scaffolded projects (dist/ is stripped
+## as a build artifact) have no dist/ yet, which would otherwise fail any Go
+## compile under the default !dev build tag.
+embed-dist:
+	@mkdir -p internal/static/dist && touch internal/static/dist/.gitkeep
+
 ## lint: Run golangci-lint
-lint:
+lint: embed-dist
 	golangci-lint run
 
 ## lint-frontend: Run the frontend linter
@@ -102,7 +110,7 @@ format-check: compose-ui
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run format:check; else echo "no frontend/ yet"; fi
 
 ## test: Run Go tests
-test:
+test: embed-dist
 	go test $(GO_PKGS)
 
 ## test-frontend: Run frontend tests
@@ -110,7 +118,7 @@ test-frontend: compose-ui
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run test; else echo "no frontend/ yet"; fi
 
 ## test-cov: Run Go tests with coverage
-test-cov:
+test-cov: embed-dist
 	go test -coverprofile=$(COVERAGE_FILE) $(GO_PKGS)
 	go tool cover -func=$(COVERAGE_FILE) | tail -1
 
