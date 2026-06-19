@@ -147,9 +147,12 @@ validate_module() {
 }
 
 # Resolve a bare major Node.js version in .node-version / .nvmrc to a full
-# patch version (e.g. "22" -> "22.15.0"). Tries nodenv first, then falls back
-# to the currently active `node` binary if the major matches. Leaves the file
-# unchanged and emits a warning when neither source is available.
+# patch version (e.g. "22" -> "22.15.0"). Tries, in order, any version manager
+# that is installed (nodenv / mise / asdf / fnm), then the currently active
+# `node` binary if its major matches. When none can resolve the version it
+# leaves the file unchanged (a bare major is still valid for CI's setup-node
+# and most managers) and emits a warning — it never aborts scaffolding (#244),
+# so the rest of the pipeline (no-auth, module rename, CI generation) still runs.
 resolve_node_version_files() {
   local dir="$1"
   local f ver resolved cur_ver
@@ -158,26 +161,55 @@ resolve_node_version_files() {
     ver=$(tr -d '[:space:]' < "$f")
     # Only process bare major versions like "22"
     [[ "$ver" =~ ^[0-9]+$ ]] || continue
-    resolved=""
-    if command -v nodenv >/dev/null 2>&1; then
-      resolved=$(nodenv install --list 2>/dev/null \
-        | grep -E "^[[:space:]]+${ver}\.[0-9]+\.[0-9]+$" \
-        | tail -1 \
-        | tr -d '[:space:]' || true)
-    fi
-    if [[ -z "$resolved" ]] && command -v node >/dev/null 2>&1; then
-      cur_ver=$(node --version 2>/dev/null | tr -d 'v' || true)
-      if [[ "$cur_ver" =~ ^${ver}\. ]]; then
-        resolved="$cur_ver"
-      fi
-    fi
+    resolved="$(resolve_node_full_version "$ver")"
     if [[ -n "$resolved" ]]; then
       info "[node-version] $(basename "$f"): $ver -> $resolved"
       printf '%s\n' "$resolved" > "$f"
     else
-      die "[node-version] cannot resolve Node.js $ver to a full version in $(basename "$f"). Install nodenv or activate Node.js ${ver}.x and re-run scaffold."
+      warn "[node-version] could not resolve Node.js $ver to a full version (no nodenv/mise/asdf/fnm match and active node is not ${ver}.x); keeping bare '$ver' in $(basename "$f"). CI's setup-node and most managers accept a bare major, so this is non-fatal."
     fi
   done
+}
+
+# Resolve a bare Node.js major (e.g. "22") to the highest known full patch
+# version using whatever manager is installed, falling back to the active
+# `node` binary. Prints the resolved version (or nothing) on stdout. Each
+# manager probe is best-effort and silently skipped when unavailable.
+resolve_node_full_version() {
+  local ver="$1"
+  local resolved="" cur_ver
+
+  # Pick the highest "<ver>.x.y" from a manager's remote list. Normalizes each
+  # line (strips leading spaces and an optional "v" prefix, trims trailing
+  # space) BEFORE matching so newline-separated lists stay line-oriented, then
+  # takes the last match (these lists are sorted ascending).
+  if command -v nodenv >/dev/null 2>&1; then
+    resolved=$(nodenv install --list 2>/dev/null | _pick_node_patch "$ver")
+  fi
+  if [[ -z "$resolved" ]] && command -v mise >/dev/null 2>&1; then
+    resolved=$( { mise ls-remote node 2>/dev/null || true; } | _pick_node_patch "$ver")
+  fi
+  if [[ -z "$resolved" ]] && command -v asdf >/dev/null 2>&1; then
+    resolved=$( { asdf list all nodejs 2>/dev/null || true; } | _pick_node_patch "$ver")
+  fi
+  if [[ -z "$resolved" ]] && command -v fnm >/dev/null 2>&1; then
+    resolved=$( { fnm ls-remote 2>/dev/null || true; } | _pick_node_patch "$ver")
+  fi
+  if [[ -z "$resolved" ]] && command -v node >/dev/null 2>&1; then
+    cur_ver=$(node --version 2>/dev/null | tr -d 'v' || true)
+    if [[ "$cur_ver" =~ ^${ver}\. ]]; then
+      resolved="$cur_ver"
+    fi
+  fi
+  printf '%s' "$resolved"
+}
+
+# Read a version list on stdin and print the highest full "<major>.x.y" line.
+_pick_node_patch() {
+  local ver="$1"
+  sed -E 's/^[[:space:]]*v?//; s/[[:space:]]*$//' \
+    | grep -E "^${ver}\.[0-9]+\.[0-9]+$" \
+    | tail -1 || true
 }
 
 # Copy template and remove build artifacts
