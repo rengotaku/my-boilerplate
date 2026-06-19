@@ -6,9 +6,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func resetHelpFlag(c *cobra.Command) {
+	if f := c.Flags().Lookup("help"); f != nil {
+		_ = f.Value.Set("false")
+		f.Changed = false
+	}
+}
 
 func runRoot(t *testing.T, args ...string) (stdout, stderr string, err error) {
 	t.Helper()
@@ -20,6 +28,14 @@ func runRoot(t *testing.T, args ...string) (stdout, stderr string, err error) {
 	t.Cleanup(func() {
 		rootCmd.SetArgs(nil)
 		logOut = nil
+		// cobra commands are package-level singletons, so the auto-added
+		// `help` flag retains its value across Execute calls. Reset it (on the
+		// root and every subcommand) so a `--help` run can't leak into the
+		// next test and make it print usage instead of running.
+		resetHelpFlag(rootCmd)
+		for _, c := range rootCmd.Commands() {
+			resetHelpFlag(c)
+		}
 	})
 	err = rootCmd.ExecuteContext(context.Background())
 	return outBuf.String(), errBuf.String(), err
