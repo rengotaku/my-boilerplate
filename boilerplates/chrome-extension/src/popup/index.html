@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chrome-extension</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <h1 class="title">Chrome Extension</h1>
+
+      <section class="counter">
+        <span class="counter-label">Clicks</span>
+        <span id="count" class="counter-value">0</span>
+      </section>
+
+      <div class="actions">
+        <button id="btn-increment" type="button" class="btn btn-primary">+1</button>
+        <button id="btn-read-page" type="button" class="btn">Read this page</button>
+      </div>
+
+      <p id="page-info" class="page-info" role="status"></p>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
