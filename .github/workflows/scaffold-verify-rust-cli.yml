@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'rust-cli/**'
+      - 'boilerplates/rust-cli/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-rust-cli.yml'
   pull_request:
     paths:
-      - 'rust-cli/**'
+      - 'boilerplates/rust-cli/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-rust-cli.yml'
 

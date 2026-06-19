@@ -3,12 +3,12 @@ name: Sync Check
 on:
   push:
     paths:
-      - 'react-spa/**'
-      - 'react-spa-graphql/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/react-spa-graphql/**'
   pull_request:
     paths:
-      - 'react-spa/**'
-      - 'react-spa-graphql/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/react-spa-graphql/**'
 
 jobs:
   sync-check:
@@ -38,8 +38,8 @@ jobs:
           DRIFT_FOUND=false
 
           for file in "${SYNC_FILES[@]}"; do
-            SPA_FILE="react-spa/$file"
-            GRAPHQL_FILE="react-spa-graphql/$file"
+            SPA_FILE="boilerplates/react-spa/$file"
+            GRAPHQL_FILE="boilerplates/react-spa-graphql/$file"
 
             if [ ! -f "$SPA_FILE" ]; then
               echo "::warning::Missing in react-spa: $file"

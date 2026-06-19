@@ -4,15 +4,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa.yml'
       - '.github/workflows/scaffold-verify-react.yml'
   pull_request:
     paths:
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa.yml'
       - '.github/workflows/scaffold-verify-react.yml'

@@ -31,8 +31,8 @@ docker run --rm --ipc=host --network=host \
     go version
 
     echo "--> Composing shared-react-ui into React templates"
-    for dir in react-spa react-spa-graphql react-spa-cloudflare; do
-      src="shared-react-ui/src/ui"
+    for dir in boilerplates/react-spa boilerplates/react-spa-graphql boilerplates/react-spa-cloudflare; do
+      src="boilerplates/shared-react-ui/src/ui"
       dest="${dir}/src/components/ui"
       if [ -d "$src" ]; then
         echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
@@ -43,9 +43,9 @@ docker run --rm --ipc=host --network=host \
     done
 
     echo "--> Installing frontend dependencies"
-    (cd react-spa && npm ci)
-    (cd react-spa-graphql && npm ci)
-    (cd react-spa-cloudflare && npm ci)
+    (cd boilerplates/react-spa && npm ci)
+    (cd boilerplates/react-spa-graphql && npm ci)
+    (cd boilerplates/react-spa-cloudflare && npm ci)
     (cd e2e && npm ci)
 
     echo "--> Regenerating VRT baselines"

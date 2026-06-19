@@ -67,7 +67,7 @@ export default defineConfig({
     {
       command: process.env.GO_GRAPHQL_API_BIN
         ? process.env.GO_GRAPHQL_API_BIN
-        : "cd ../go-graphql-api && go run ./cmd/server",
+        : "cd ../boilerplates/go-graphql-api && go run ./cmd/server",
       url: "http://localhost:8080/health",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
@@ -75,33 +75,33 @@ export default defineConfig({
     {
       command: process.env.GO_REST_API_BIN
         ? `PORT=8081 ${process.env.GO_REST_API_BIN}`
-        : "cd ../go-rest-api && PORT=8081 go run ./cmd/server",
+        : "cd ../boilerplates/go-rest-api && PORT=8081 go run ./cmd/server",
       url: "http://localhost:8081/health",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },
     {
-      command: "cd ../react-spa-graphql && npm run build && npm run preview",
+      command: "cd ../boilerplates/react-spa-graphql && npm run build && npm run preview",
       url: "http://localhost:4173",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
     {
       command:
-        "cd ../react-spa && VITE_API_BASE_URL=http://localhost:8081 npm run build && npm run preview -- --port 4174",
+        "cd ../boilerplates/react-spa && VITE_API_BASE_URL=http://localhost:8081 npm run build && npm run preview -- --port 4174",
       url: "http://localhost:4174",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
     {
       command:
-        "cd ../react-spa-cloudflare && npm run build && npm run preview -- --port 4175",
+        "cd ../boilerplates/react-spa-cloudflare && npm run build && npm run preview -- --port 4175",
       url: "http://localhost:4175",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
     {
-      command: "../go-ssr-web/scripts/run-with-tailwind.sh",
+      command: "../boilerplates/go-ssr-web/scripts/run-with-tailwind.sh",
       env: { PORT: "8085" },
       url: "http://localhost:8085/",
       reuseExistingServer: !process.env.CI,

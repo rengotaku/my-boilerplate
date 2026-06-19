@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'go-grpc-api/**'
+      - 'boilerplates/go-grpc-api/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-grpc-api.yml'
       - '.github/workflows/scaffold-verify-go.yml'
   pull_request:
     paths:
-      - 'go-grpc-api/**'
+      - 'boilerplates/go-grpc-api/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-grpc-api.yml'
       - '.github/workflows/scaffold-verify-go.yml'

@@ -4,18 +4,18 @@ on:
   push:
     branches: [main]
     paths:
-      - 'react-spa-graphql/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/react-spa-graphql/**'
+      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa-graphql.yml'
   pull_request:
     paths:
-      - 'react-spa-graphql/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/react-spa-graphql/**'
+      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa-graphql.yml'
 
 defaults:
   run:
-    working-directory: react-spa-graphql
+    working-directory: boilerplates/react-spa-graphql
 
 jobs:
   test:
@@ -27,9 +27,9 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: react-spa-graphql/.node-version
+          node-version-file: boilerplates/react-spa-graphql/.node-version
           cache: 'npm'
-          cache-dependency-path: react-spa-graphql/package-lock.json
+          cache-dependency-path: boilerplates/react-spa-graphql/package-lock.json
 
       - name: Compose shared-react-ui
         run: make compose-ui

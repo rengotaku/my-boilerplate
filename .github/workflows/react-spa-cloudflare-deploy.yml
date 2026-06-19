@@ -7,13 +7,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'react-spa-cloudflare/**'
+      - 'boilerplates/react-spa-cloudflare/**'
       - '.github/workflows/react-spa-cloudflare-deploy.yml'
   workflow_dispatch:
 
 defaults:
   run:
-    working-directory: react-spa-cloudflare
+    working-directory: boilerplates/react-spa-cloudflare
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: react-spa-cloudflare/package-lock.json
+          cache-dependency-path: boilerplates/react-spa-cloudflare/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -44,4 +44,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=${{ env.PROJECT_NAME }}
-          workingDirectory: react-spa-cloudflare
+          workingDirectory: boilerplates/react-spa-cloudflare
