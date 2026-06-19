@@ -60,6 +60,7 @@ Collection of project boilerplates.
 | [go-ssr-web](./boilerplates/go-ssr-web) | Go SSR Web with Chi, html/template |
 | [go-ssr-web-minimal](./boilerplates/go-ssr-web-minimal) | Minimal Go SSR (gin + html/template + embed; no DB / auth / Tailwind) |
 | [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール特化の Go + React フルスタック（worker+web 単一バイナリ / gin + embed / SQLite + jsonl + Prometheus / shadcn + recharts） |
+| [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest (popup + background + content script) |
 
 ## Roadmap
 

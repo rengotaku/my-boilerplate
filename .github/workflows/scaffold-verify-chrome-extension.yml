@@ -1,0 +1,22 @@
+name: Scaffold Verify chrome-extension
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/chrome-extension/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-chrome-extension.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/chrome-extension/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-chrome-extension.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: chrome-extension

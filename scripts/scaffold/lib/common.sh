@@ -20,6 +20,7 @@ VALID_TEMPLATES=(
   python-cli
   python-web
   rust-cli
+  chrome-extension
 )
 
 # Artifacts to remove after copy.
@@ -87,9 +88,13 @@ die() {
 }
 
 # Detect template family: go, react, python, rust
+# chrome-extension is a Node/Vite/TypeScript project; it reuses the react
+# family's replacements (package.json name + .node-version resolution), which
+# are framework-agnostic.
 detect_family() {
   local template="$1"
   case "$template" in
+    chrome-extension) echo "react" ;;
     go-*) echo "go" ;;
     react-*) echo "react" ;;
     python-*) echo "python" ;;

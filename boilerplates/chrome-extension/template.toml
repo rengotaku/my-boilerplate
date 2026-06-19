@@ -1,0 +1,4 @@
+name = "chrome-extension"
+language = "TypeScript"
+description = "Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest"
+tags = ["chrome-extension", "mv3", "vite", "crxjs", "typescript"]
