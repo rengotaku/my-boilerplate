@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'go-ssr-web-minimal/**'
+      - 'boilerplates/go-ssr-web-minimal/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-ssr-web-minimal.yml'
       - '.github/workflows/scaffold-verify-go.yml'
   pull_request:
     paths:
-      - 'go-ssr-web-minimal/**'
+      - 'boilerplates/go-ssr-web-minimal/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-ssr-web-minimal.yml'
       - '.github/workflows/scaffold-verify-go.yml'

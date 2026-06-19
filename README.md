@@ -47,17 +47,19 @@ Collection of project boilerplates.
 
 ## Available Boilerplates
 
+各テンプレートは `boilerplates/<name>/` 配下に集約されています（`e2e/`, `meta/`, `scripts/`, `specs/` などテンプレ以外と分離）。`download.sh` / `scaffold.sh` に渡すのは従来どおりテンプレート名のみで、パスを意識する必要はありません。
+
 | Name | Description |
 |------|-------------|
-| [python-cli](./python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
-| [go-cli](./go-cli) | Go CLI with Cobra, golangci-lint, go test |
-| [rust-cli](./rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
-| [go-rest-api](./go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
-| [go-graphql-api](./go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |
-| [go-grpc-api](./go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
-| [go-ssr-web](./go-ssr-web) | Go SSR Web with Chi, html/template |
-| [go-ssr-web-minimal](./go-ssr-web-minimal) | Minimal Go SSR (gin + html/template + embed; no DB / auth / Tailwind) |
-| [go-react-admin](./go-react-admin) | 管理コンソール特化の Go + React フルスタック（worker+web 単一バイナリ / gin + embed / SQLite + jsonl + Prometheus / shadcn + recharts） |
+| [python-cli](./boilerplates/python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
+| [go-cli](./boilerplates/go-cli) | Go CLI with Cobra, golangci-lint, go test |
+| [rust-cli](./boilerplates/rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
+| [go-rest-api](./boilerplates/go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
+| [go-graphql-api](./boilerplates/go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |
+| [go-grpc-api](./boilerplates/go-grpc-api) | Go gRPC API with grpc-go, buf, protovalidate |
+| [go-ssr-web](./boilerplates/go-ssr-web) | Go SSR Web with Chi, html/template |
+| [go-ssr-web-minimal](./boilerplates/go-ssr-web-minimal) | Minimal Go SSR (gin + html/template + embed; no DB / auth / Tailwind) |
+| [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール特化の Go + React フルスタック（worker+web 単一バイナリ / gin + embed / SQLite + jsonl + Prometheus / shadcn + recharts） |
 
 ## Roadmap
 

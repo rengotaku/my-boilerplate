@@ -3,27 +3,27 @@ name: go-react-spa CI
 # go-react-spa is a composite template (Go monolith embedding the react-spa
 # SPA via .compose.toml + frontend.overlay/). It is fragile to changes in
 # either side, so this workflow exercises the full compose -> install ->
-# ci -> build -> smoke-test pipeline whenever go-react-spa/, the react-spa
+# ci -> build -> smoke-test pipeline whenever boilerplates/go-react-spa/, the react-spa
 # base template, or this workflow itself is modified.
 
 on:
   push:
     branches: [main]
     paths:
-      - 'go-react-spa/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/go-react-spa.yml'
   pull_request:
     paths:
-      - 'go-react-spa/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/go-react-spa.yml'
 
 defaults:
   run:
-    working-directory: go-react-spa
+    working-directory: boilerplates/go-react-spa
 
 jobs:
   ci:
@@ -34,15 +34,15 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go-react-spa/go.mod
-          cache-dependency-path: go-react-spa/go.sum
+          go-version-file: boilerplates/go-react-spa/go.mod
+          cache-dependency-path: boilerplates/go-react-spa/go.sum
 
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: react-spa/.node-version
+          node-version-file: boilerplates/react-spa/.node-version
           cache: 'npm'
-          cache-dependency-path: react-spa/package-lock.json
+          cache-dependency-path: boilerplates/react-spa/package-lock.json
 
       - name: Install golangci-lint
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.11.2

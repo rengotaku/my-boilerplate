@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - 'python-web/**'
+      - 'boilerplates/python-web/**'
       - '.github/workflows/python-web.yml'
   pull_request:
     paths:
-      - 'python-web/**'
+      - 'boilerplates/python-web/**'
       - '.github/workflows/python-web.yml'
 
 defaults:
   run:
-    working-directory: python-web
+    working-directory: boilerplates/python-web
 
 jobs:
   test:
@@ -34,7 +34,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: python-web/.node-version
+          node-version-file: boilerplates/python-web/.node-version
 
       - name: Install Node.js dependencies
         run: npm install

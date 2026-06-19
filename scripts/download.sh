@@ -280,26 +280,27 @@ json_escape() {
 # Discover the templates we know about by looking for template.toml files. This
 # is the single source of truth for --list output — adding a new template
 # requires dropping template.toml into the template directory, nothing else.
-# Root-level templates (depth 2) are discovered by name directly. Templates
-# nested under meta/ (depth 3) are discovered by their leaf name so that
-# github-workflow is the user-facing name rather than meta/github-workflow.
+# Templates live under boilerplates/<name>/ (depth 3) and are discovered by
+# their leaf name. Templates nested under meta/ (depth 3) are likewise
+# discovered by their leaf name so that github-workflow is the user-facing name
+# rather than meta/github-workflow.
 discover_templates() {
   ( cd "$extracted" && \
     {
-      find . -mindepth 2 -maxdepth 2 -type f -name 'template.toml' \
-        | sed -E 's|^\./([^/]+)/template\.toml$|\1|'
+      find . -mindepth 3 -maxdepth 3 -path './boilerplates/*/template.toml' -type f \
+        | sed -E 's|^\./boilerplates/([^/]+)/template\.toml$|\1|'
       find . -mindepth 3 -maxdepth 3 -path './meta/*/template.toml' -type f \
         | sed -E 's|^\./meta/([^/]+)/template\.toml$|\1|'
     } | sort )
 }
 
 # Resolve a template name to its absolute directory path inside $extracted.
-# Root-level templates live at $extracted/<name>; templates nested under meta/
+# Templates live at $extracted/boilerplates/<name>; templates nested under meta/
 # live at $extracted/meta/<name>. Returns empty string if not found.
 resolve_template_dir() {
   _t="$1"
-  if [ -d "$extracted/$_t" ]; then
-    printf '%s' "$extracted/$_t"
+  if [ -d "$extracted/boilerplates/$_t" ]; then
+    printf '%s' "$extracted/boilerplates/$_t"
   elif [ -d "$extracted/meta/$_t" ]; then
     printf '%s' "$extracted/meta/$_t"
   fi

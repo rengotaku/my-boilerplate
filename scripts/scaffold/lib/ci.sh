@@ -256,4 +256,12 @@ transform_workflow() {
 
   { print }
   ' "$src" > "$dest_file"
+
+  # Templates live under boilerplates/ in the monorepo (#229), so source
+  # workflow paths carry that prefix (e.g. boilerplates/go-rest-api/go.mod).
+  # The awk above strips the template-name segment but leaves "boilerplates/";
+  # a standalone scaffolded project has no such directory, so drop the prefix
+  # wholesale. This also collapses the composite remap boilerplates/react-spa/
+  # -> boilerplates/frontend/ down to frontend/.
+  sed_inplace 's#boilerplates/##g' "$dest_file"
 }

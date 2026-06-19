@@ -15,18 +15,18 @@ on:
   push:
     branches: [main]
     paths:
-      - 'go-react-spa/**'
-      - 'go-react-spa-noauth/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/go-react-spa-noauth/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa-noauth.yml'
   pull_request:
     paths:
-      - 'go-react-spa/**'
-      - 'go-react-spa-noauth/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/go-react-spa-noauth/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa-noauth.yml'
 
@@ -46,12 +46,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go-react-spa/go.mod
+          go-version-file: boilerplates/go-react-spa/go.mod
 
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: react-spa/.node-version
+          node-version-file: boilerplates/react-spa/.node-version
 
       - name: Scaffold (template alias)
         if: matrix.method == 'template-alias'

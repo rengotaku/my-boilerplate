@@ -3,25 +3,25 @@ name: E2E Integration Tests
 on:
   pull_request:
     paths:
-      - "react-spa-graphql/**"
-      - "go-graphql-api/**"
-      - "react-spa/**"
-      - "react-spa-cloudflare/**"
-      - "go-rest-api/**"
-      - "go-ssr-web/**"
-      - "shared-react-ui/**"
+      - "boilerplates/react-spa-graphql/**"
+      - "boilerplates/go-graphql-api/**"
+      - "boilerplates/react-spa/**"
+      - "boilerplates/react-spa-cloudflare/**"
+      - "boilerplates/go-rest-api/**"
+      - "boilerplates/go-ssr-web/**"
+      - "boilerplates/shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
     branches: [main]
     paths:
-      - "react-spa-graphql/**"
-      - "go-graphql-api/**"
-      - "react-spa/**"
-      - "react-spa-cloudflare/**"
-      - "go-rest-api/**"
-      - "go-ssr-web/**"
-      - "shared-react-ui/**"
+      - "boilerplates/react-spa-graphql/**"
+      - "boilerplates/go-graphql-api/**"
+      - "boilerplates/react-spa/**"
+      - "boilerplates/react-spa-cloudflare/**"
+      - "boilerplates/go-rest-api/**"
+      - "boilerplates/go-ssr-web/**"
+      - "boilerplates/shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 
@@ -42,24 +42,24 @@ jobs:
         with:
           go-version: "1.25"
           cache-dependency-path: |
-            go-graphql-api/go.sum
-            go-rest-api/go.sum
-            go-ssr-web/go.sum
+            boilerplates/go-graphql-api/go.sum
+            boilerplates/go-rest-api/go.sum
+            boilerplates/go-ssr-web/go.sum
 
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: |
-            react-spa-graphql/package-lock.json
-            react-spa/package-lock.json
-            react-spa-cloudflare/package-lock.json
+            boilerplates/react-spa-graphql/package-lock.json
+            boilerplates/react-spa/package-lock.json
+            boilerplates/react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
 
       - name: Compose shared-react-ui into all React templates
         run: |
-          for dir in react-spa-graphql react-spa react-spa-cloudflare; do
-            src="shared-react-ui/src/ui"
+          for dir in boilerplates/react-spa-graphql boilerplates/react-spa boilerplates/react-spa-cloudflare; do
+            src="boilerplates/shared-react-ui/src/ui"
             dest="${dir}/src/components/ui"
             if [ -d "$src" ]; then
               echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
@@ -70,15 +70,15 @@ jobs:
           done
 
       - name: Install React SPA GraphQL dependencies
-        working-directory: react-spa-graphql
+        working-directory: boilerplates/react-spa-graphql
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install React SPA dependencies
-        working-directory: react-spa
+        working-directory: boilerplates/react-spa
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install React SPA Cloudflare dependencies
-        working-directory: react-spa-cloudflare
+        working-directory: boilerplates/react-spa-cloudflare
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Install E2E dependencies
@@ -86,13 +86,13 @@ jobs:
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Build go-graphql-api binary
-        working-directory: go-graphql-api
+        working-directory: boilerplates/go-graphql-api
         env:
           CGO_ENABLED: "0"
         run: go build -buildvcs=false -o /tmp/go-graphql-api ./cmd/server
 
       - name: Build go-rest-api binary
-        working-directory: go-rest-api
+        working-directory: boilerplates/go-rest-api
         env:
           CGO_ENABLED: "0"
         run: go build -buildvcs=false -o /tmp/go-rest-api ./cmd/server

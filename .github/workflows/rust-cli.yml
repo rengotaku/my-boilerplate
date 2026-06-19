@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - 'rust-cli/**'
+      - 'boilerplates/rust-cli/**'
       - '.github/workflows/rust-cli.yml'
   pull_request:
     paths:
-      - 'rust-cli/**'
+      - 'boilerplates/rust-cli/**'
       - '.github/workflows/rust-cli.yml'
 
 defaults:
   run:
-    working-directory: rust-cli
+    working-directory: boilerplates/rust-cli
 
 jobs:
   test:
@@ -35,8 +35,8 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            rust-cli/target/
-          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('rust-cli/Cargo.lock') }}
+            boilerplates/rust-cli/target/
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('boilerplates/rust-cli/Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --check
@@ -62,7 +62,7 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run tests with coverage
-        working-directory: rust-cli
+        working-directory: boilerplates/rust-cli
         run: |
           cargo llvm-cov --lib --lcov --output-path lcov.info
           COVERAGE=$(cargo llvm-cov --lib --json | jq '.data[0].totals.lines.percent')

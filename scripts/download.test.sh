@@ -98,9 +98,9 @@ cp -r "$REPO_ROOT" "$tar_src"
 rm -rf \
   "$tar_src/.git" \
   "$tar_src/e2e/node_modules" \
-  "$tar_src/react-spa/node_modules" \
-  "$tar_src/react-spa-cloudflare/node_modules" \
-  "$tar_src/react-spa-graphql/node_modules" \
+  "$tar_src/boilerplates/react-spa/node_modules" \
+  "$tar_src/boilerplates/react-spa-cloudflare/node_modules" \
+  "$tar_src/boilerplates/react-spa-graphql/node_modules" \
   2>/dev/null || true
 tar -czf "$tarball" -C "$tmpdir" my-boilerplate-main
 printf '[setup] Tarball ready: %s\n\n' "$tarball"

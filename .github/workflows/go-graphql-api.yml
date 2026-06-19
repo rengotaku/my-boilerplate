@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'go-graphql-api/**'
+      - 'boilerplates/go-graphql-api/**'
       - '.github/workflows/go-graphql-api.yml'
       - '.github/workflows/go-ci.yml'
   pull_request:
     paths:
-      - 'go-graphql-api/**'
+      - 'boilerplates/go-graphql-api/**'
       - '.github/workflows/go-graphql-api.yml'
       - '.github/workflows/go-ci.yml'
 
@@ -17,5 +17,5 @@ jobs:
   ci:
     uses: ./.github/workflows/go-ci.yml
     with:
-      working-directory: go-graphql-api
+      working-directory: boilerplates/go-graphql-api
       test-paths: "./internal/service/... ./internal/repository/..."

@@ -2,23 +2,23 @@ name: Scaffold Verify go-react-spa
 
 # go-react-spa is a composite template (Go monolith embedding the react-spa
 # SPA via .compose.toml + frontend.overlay/). Triggered by changes to either
-# go-react-spa/, the react-spa base template, the scaffold scripts, or this
+# boilerplates/go-react-spa/, the react-spa base template, the scaffold scripts, or this
 # workflow itself.
 
 on:
   push:
     branches: [main]
     paths:
-      - 'go-react-spa/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa.yml'
   pull_request:
     paths:
-      - 'go-react-spa/**'
-      - 'react-spa/**'
-      - 'shared-react-ui/**'
+      - 'boilerplates/go-react-spa/**'
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-spa.yml'
 
@@ -31,12 +31,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go-react-spa/go.mod
+          go-version-file: boilerplates/go-react-spa/go.mod
 
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: react-spa/.node-version
+          node-version-file: boilerplates/react-spa/.node-version
 
       - name: Install golangci-lint
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.11.2

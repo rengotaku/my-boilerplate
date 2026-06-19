@@ -11,6 +11,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Templates live under boilerplates/ (#229). compose_template / merge_shared_ui
+# resolve sibling templates and shared-react-ui relative to this root, and the
+# manifests (.compose.toml / .shared-ui.toml) store template-root-relative paths.
+TEMPLATES_ROOT="$REPO_ROOT/boilerplates"
 
 # shellcheck source=lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
@@ -67,7 +71,7 @@ fi
 
 # --- Copy template ---
 info "Copying template '$template' to '$dest'..."
-copy_template "$REPO_ROOT/$template" "$dest"
+copy_template "$TEMPLATES_ROOT/$template" "$dest"
 
 # --- Composite-template merge (runs before family replacements so the
 #     materialized base tree is visible to subsequent steps). ---
@@ -76,7 +80,7 @@ source "$SCRIPT_DIR/lib/compose.sh"
 
 if [[ -f "$dest/.compose.toml" ]]; then
   info "Composing template '$template' (manifest: .compose.toml)..."
-  compose_template "$dest" "$REPO_ROOT" "$name"
+  compose_template "$dest" "$TEMPLATES_ROOT" "$name"
 fi
 
 # template.toml is metadata consumed by `download.sh --list` / `--tree`; the
@@ -88,13 +92,13 @@ rm -f "$dest/template.toml" "$dest/frontend/template.toml"
 #     can also opt-in via their own .shared-ui.toml). ---
 if [[ -f "$dest/.shared-ui.toml" ]]; then
   info "Merging shared-react-ui (manifest: .shared-ui.toml)..."
-  merge_shared_ui "$dest" "$REPO_ROOT"
+  merge_shared_ui "$dest" "$TEMPLATES_ROOT"
 fi
 # go-react-spa scaffolds frontend/ from the react-spa base; pick up the
 # manifest that landed inside the composed sub-tree, too.
 if [[ -f "$dest/frontend/.shared-ui.toml" ]]; then
   info "Merging shared-react-ui into frontend/..."
-  merge_shared_ui "$dest/frontend" "$REPO_ROOT"
+  merge_shared_ui "$dest/frontend" "$TEMPLATES_ROOT"
 fi
 
 # --- Node version resolution (go-react-spa: frontend/ was materialized above) ---
@@ -151,7 +155,7 @@ fi
 
 # --- GitHub workflow templates injection ---
 # Skip if: caller passed no-github-templates=1, OR the source template already ships .github/
-if [[ -z "$no_github_templates" && ! -d "$REPO_ROOT/$template/.github" ]]; then
+if [[ -z "$no_github_templates" && ! -d "$TEMPLATES_ROOT/$template/.github" ]]; then
   github_workflow_src="$REPO_ROOT/meta/github-workflow"
   if [[ -d "$github_workflow_src" ]]; then
     info "Injecting GitHub workflow templates..."
