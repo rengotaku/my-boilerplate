@@ -13,7 +13,6 @@ It ships the three surfaces almost every extension needs, wired together with ty
 
 ```bash
 make install   # npm install
-make run       # vite dev server with HMR (writes dist/ for an unpacked load)
 make build     # production build into dist/
 ```
 
@@ -22,6 +21,17 @@ Load it in Chrome:
 1. `make build`
 2. Open `chrome://extensions`, enable **Developer mode**
 3. **Load unpacked** → select the `dist/` directory
+
+## Dev mode (HMR)
+
+`make run` only updates an extension that is **already loaded**, so load it
+unpacked first, then start the dev server:
+
+```bash
+make build     # produce an initial dist/
+# → load dist/ unpacked once (steps above)
+make run       # vite dev server; edits hot-reload the loaded extension
+```
 
 ## Commands
 

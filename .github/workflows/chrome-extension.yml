@@ -39,7 +39,7 @@ jobs:
         run: npm run format:check
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Test with coverage
         run: |
