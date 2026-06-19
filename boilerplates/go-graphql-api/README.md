@@ -24,8 +24,8 @@ Go + gqlgen の GraphQL API ボイラープレート。
 ## Quick Start
 
 ```bash
-# Install dependencies
-make install
+# Bootstrap dev env (deps + dev tools: air, golangci-lint)
+make setup
 
 # Run server
 make run
@@ -37,8 +37,8 @@ open http://localhost:8080/
 ## Development (Hot Reload)
 
 ```bash
-# Install dependencies + air (once)
-make install
+# Install deps + dev tools (air, golangci-lint) (once)
+make setup
 
 # Run with hot reload
 make run
@@ -50,7 +50,8 @@ Air watches `.go` files and automatically rebuilds/restarts the server on change
 
 ```bash
 make help           # Show all commands
-make install        # Download dependencies and dev tools (air)
+make install        # Download dependencies (go modules only)
+make setup          # Bootstrap dev env: deps + dev tools (air, golangci-lint)
 make build          # Build the binary
 make run            # Run the server with hot reload (air)
 make run-bare       # Run the server without hot reload

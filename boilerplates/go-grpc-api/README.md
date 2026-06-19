@@ -61,8 +61,8 @@ go-grpc-api/
 ## Quick Start
 
 ```bash
-# Install dependencies
-make install
+# Bootstrap dev env (deps + dev tools: air, golangci-lint)
+make setup
 
 # Generate protobuf code
 make generate
@@ -74,8 +74,8 @@ make run
 ## Development (Hot Reload)
 
 ```bash
-# Install dependencies + air (once)
-make install
+# Install deps + dev tools (air, golangci-lint) (once)
+make setup
 
 # Run with hot reload
 make run
@@ -86,7 +86,8 @@ Air watches `.go` files and automatically rebuilds/restarts the server on change
 ## Available Commands
 
 ```bash
-make install        # Download dependencies and dev tools (air)
+make install        # Download dependencies (go modules only)
+make setup          # Bootstrap dev env: deps + dev tools (air, golangci-lint)
 make generate       # Generate protobuf code
 make build          # Build the binary
 make run            # Run the server with hot reload (air)

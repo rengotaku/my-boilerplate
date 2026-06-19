@@ -1,4 +1,4 @@
-.PHONY: install build build-frontend compose-ui embed-dist run run-binary run-server run-frontend stop status \
+.PHONY: install setup build build-frontend compose-ui embed-dist run run-binary run-server run-frontend stop status \
   lint lint-frontend lint-fix format format-check \
   test test-frontend test-cov test-watch coverage \
   check ci clean help
@@ -15,6 +15,9 @@ FRONTEND_DIR := frontend
 # walking into frontend/node_modules, where vendored packages (e.g. flatted's
 # golang sample) would otherwise show up as 0%-covered and skew coverage.
 GO_PKGS := ./cmd/... ./internal/...
+# golangci-lint version installed by `make setup`. Keep in sync with CI
+# (.github/workflows/go-react-admin.yml).
+GOLANGCI_VERSION := v2.11.2
 
 # shared-react-ui: composed in-place from the sibling repo dir during local dev.
 # Outside the monorepo (after scaffold) the source dir is absent and the
@@ -41,6 +44,13 @@ compose-ui:
 install: compose-ui
 	go mod download
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm ci; fi
+
+## setup: Bootstrap dev env — deps (install) + dev tools (air, golangci-lint)
+setup: install
+	go install github.com/air-verse/air@latest
+	@command -v golangci-lint >/dev/null 2>&1 || \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh \
+		| sh -s -- -b "$$(go env GOPATH)/bin" $(GOLANGCI_VERSION)
 
 ## build-frontend: Build the React admin console into internal/static/dist
 build-frontend: compose-ui

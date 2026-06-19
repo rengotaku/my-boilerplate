@@ -1,4 +1,4 @@
-.PHONY: install build run run-bare stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean help
+.PHONY: install setup build run run-bare stop status lint test test-cov check ci migrate migrate-diff migrate-apply migrate-hash clean help
 
 # Default target
 .DEFAULT_GOAL := help
@@ -8,17 +8,26 @@ BINARY_NAME := server
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
 PORT ?= 8080
+# golangci-lint version installed by `make setup`. Keep in sync with CI
+# (.github/workflows/go-ci.yml).
+GOLANGCI_VERSION := v2.11.2
 
-## install: Download dependencies and dev tools
+## install: Download dependencies (go modules only)
 install:
 	go mod download
+
+## setup: Bootstrap dev env — deps (install) + dev tools (air, golangci-lint)
+setup: install
 	go install github.com/air-verse/air@latest
+	@command -v golangci-lint >/dev/null 2>&1 || \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh \
+		| sh -s -- -b "$$(go env GOPATH)/bin" $(GOLANGCI_VERSION)
 
 ## build: Build the binary
 build:
 	go build -o $(BIN_DIR)/$(BINARY_NAME) ./cmd/server
 
-## run: Run the server with hot reload (requires air; installed by `make install`)
+## run: Run the server with hot reload (requires air; installed by `make setup`)
 run:
 	air
 
