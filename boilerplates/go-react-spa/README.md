@@ -60,14 +60,14 @@ default tag set so the bundle is embedded into the produced binary.
 
 - Go 1.25+
 - Node.js (matches `react-spa/.node-version`)
-- [air](https://github.com/cosmtrek/air) (only for `make run`)
-- [golangci-lint](https://golangci-lint.run/) v2.11+
+- [air](https://github.com/cosmtrek/air) and [golangci-lint](https://golangci-lint.run/) v2.11+
+  (both installed by `make setup`)
 
 ## Quick start
 
 ```bash
-# Install: composes frontend/ from base+overlay, then `go mod download` + `npm ci`
-make install
+# Bootstrap: install (compose + `go mod download` + `npm ci`) + dev tools (air, golangci-lint)
+make setup
 
 # Build: `vite build` -> internal/static/dist/, then `go build` embedding the bundle
 make build
@@ -92,6 +92,7 @@ make stop
 
 ```bash
 make install         # compose + download Go modules + npm ci
+make setup           # install + dev tools (air, golangci-lint)
 make compose         # materialize frontend/ from base + overlay
 make compose-clean   # remove frontend/
 make build-frontend  # vite build -> internal/static/dist/

@@ -24,8 +24,8 @@ Go + Gin + GORM + JWT の Batteries Included な REST API ボイラープレー�
 ## Quick Start
 
 ```bash
-# Install dependencies
-make install
+# Bootstrap dev env (deps + dev tools: air, golangci-lint)
+make setup
 
 # Run server (auto-migrates DB on startup)
 make run
@@ -47,10 +47,10 @@ curl http://localhost:10080/api/v1/users \
 
 ## Development (Hot Reload)
 
-`make install` installs `air` for hot reload, then `make run` starts the server with reload enabled.
+`make setup` installs dev tools (`air`, `golangci-lint`), then `make run` starts the server with reload enabled.
 
 ```bash
-make install
+make setup
 make run
 ```
 
@@ -58,7 +58,8 @@ make run
 
 ```bash
 make help            # Show all commands
-make install         # Download dependencies and dev tools (air)
+make install         # Download dependencies (go modules only)
+make setup           # Bootstrap dev env: deps + dev tools (air, golangci-lint)
 make build           # Build the binary
 make run             # Run the server with hot reload (air)
 make run-bare        # Run the server without hot reload

@@ -97,14 +97,14 @@ materialize する。これにより scaffold 後のプロジェクトは shared
 
 - Go 1.25+
 - Node.js（`frontend/.node-version` に従う）
-- [air](https://github.com/cosmtrek/air)（`make run` のみで使用）
-- [golangci-lint](https://golangci-lint.run/) v2.11+
+- [air](https://github.com/cosmtrek/air) と [golangci-lint](https://golangci-lint.run/) v2.11+
+  （いずれも `make setup` で導入）
 
 ## Quick start
 
 ```bash
-# Install: shared UI/admin を compose し、go mod download + npm ci
-make install
+# Bootstrap: install（shared UI/admin compose + go mod download + npm ci）+ 開発ツール（air, golangci-lint）
+make setup
 
 # Build: vite build -> internal/static/dist/、go build で dist/ を埋め込み
 make build
@@ -129,6 +129,7 @@ make stop
 
 ```bash
 make install         # compose-ui + go mod download + npm ci
+make setup           # install + 開発ツール（air, golangci-lint）
 make compose-ui      # shared-react-ui の ui/admin を frontend/ に materialize（monorepo 外では no-op）
 make build-frontend  # vite build -> internal/static/dist/
 make build           # build-frontend + go build（単一バイナリ）

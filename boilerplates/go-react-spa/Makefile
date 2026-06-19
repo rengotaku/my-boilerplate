@@ -1,4 +1,4 @@
-.PHONY: install build build-frontend run run-binary run-server run-frontend stop status \
+.PHONY: install setup build build-frontend run run-binary run-server run-frontend stop status \
 	compose compose-clean verify \
 	lint lint-frontend lint-fix format format-check \
 	test test-frontend test-cov test-watch coverage \
@@ -19,11 +19,21 @@ OVERLAY_DIR := frontend.overlay
 FRONTEND_DIR := frontend
 COMPOSED_MARKER := $(FRONTEND_DIR)/.composed
 PACKAGE_NAME := go-react-spa-frontend
+# golangci-lint version installed by `make setup`. Keep in sync with CI
+# (.github/workflows/go-react-spa.yml).
+GOLANGCI_VERSION := v2.11.2
 
 ## install: Compose frontend, then install Go modules and frontend deps
 install: compose
 	go mod download
 	cd $(FRONTEND_DIR) && npm ci
+
+## setup: Bootstrap dev env — deps (install) + dev tools (air, golangci-lint)
+setup: install
+	go install github.com/air-verse/air@latest
+	@command -v golangci-lint >/dev/null 2>&1 || \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh \
+		| sh -s -- -b "$$(go env GOPATH)/bin" $(GOLANGCI_VERSION)
 
 ## compose: Materialize frontend/ from base template + overlay
 compose: $(COMPOSED_MARKER)
