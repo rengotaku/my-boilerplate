@@ -2,6 +2,13 @@ node_modules/
 dist/
 coverage/
 *.log
+*.local
 .DS_Store
 .vite/
 *.zip
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.sw?

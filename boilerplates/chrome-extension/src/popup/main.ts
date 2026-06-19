@@ -5,7 +5,8 @@
  *   - popup -> content script in the active tab (reading the page).
  */
 
-import { pingTab, sendToBackground } from '../lib/messages'
+import type { Message } from '../lib/messages'
+import { isError, pingTab, sendToBackground } from '../lib/messages'
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id)
@@ -22,29 +23,39 @@ const render = (count: number): void => {
   countEl.textContent = String(count)
 }
 
-btnIncrement.addEventListener('click', async () => {
-  const { count } = await sendToBackground({ type: 'INCREMENT' })
-  render(count)
-})
+// Send a counter message and reflect the result, surfacing any failure (a
+// thrown handler or an invalidated extension context) instead of rendering
+// "undefined".
+const refreshCount = async (msg: Message): Promise<void> => {
+  try {
+    const res = await sendToBackground(msg)
+    if (isError(res)) {
+      pageInfoEl.textContent = res.error
+      return
+    }
+    render(res.count)
+  } catch (err) {
+    pageInfoEl.textContent = (err as Error).message
+  }
+}
+
+btnIncrement.addEventListener('click', () => void refreshCount({ type: 'INCREMENT' }))
 
 btnReadPage.addEventListener('click', async () => {
   pageInfoEl.textContent = ''
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  if (!tab?.id) {
-    pageInfoEl.textContent = 'No active tab.'
-    return
-  }
   try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab?.id) {
+      pageInfoEl.textContent = 'No active tab.'
+      return
+    }
     const info = await pingTab(tab.id)
     pageInfoEl.textContent = info.title
   } catch {
     // The content script is not present on this page (e.g. chrome:// or the
-    // Web Store), which is expected for restricted URLs.
+    // Web Store), or the popup lost its context — expected on restricted URLs.
     pageInfoEl.textContent = 'Cannot read this page.'
   }
 })
 
-void (async () => {
-  const { count } = await sendToBackground({ type: 'GET_COUNT' })
-  render(count)
-})()
+void refreshCount({ type: 'GET_COUNT' })

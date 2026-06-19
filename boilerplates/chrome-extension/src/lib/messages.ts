@@ -6,10 +6,21 @@
 /** Popup / content script -> background worker. */
 export type Message = { type: 'GET_COUNT' } | { type: 'INCREMENT' }
 
-/** Background worker -> caller. */
+/** Background worker -> caller, on success. */
 export interface CountResponse {
   count: number
 }
+
+/** Background worker -> caller, when handling threw. */
+export interface ErrorResponse {
+  error: string
+}
+
+/** Any reply the background worker may send. */
+export type BackgroundResponse = CountResponse | ErrorResponse
+
+/** Narrow a background reply to its error case. */
+export const isError = (res: BackgroundResponse): res is ErrorResponse => 'error' in res
 
 /** Popup -> content script (in a specific tab). */
 export interface PingMessage {
@@ -23,7 +34,7 @@ export interface PageInfo {
 }
 
 /** Send a message to the background worker and await its typed reply. */
-export const sendToBackground = (msg: Message): Promise<CountResponse> =>
+export const sendToBackground = (msg: Message): Promise<BackgroundResponse> =>
   chrome.runtime.sendMessage(msg)
 
 /** Ask the content script in `tabId` for the current page info. */
