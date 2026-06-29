@@ -161,7 +161,7 @@ if [[ -z "$no_github_templates" && ! -d "$TEMPLATES_ROOT/$template/.github" ]]; 
     info "Injecting GitHub workflow templates..."
     mkdir -p "$dest/.github/ISSUE_TEMPLATE"
     cp "$github_workflow_src/PR-template.md" "$dest/.github/PULL_REQUEST_TEMPLATE.md"
-    for f in parent-issue.md sub-issue.md discussion-issue.md; do
+    for f in business-kickoff.md parent-issue.md sub-issue.md discussion-issue.md; do
       cp "$github_workflow_src/$f" "$dest/.github/ISSUE_TEMPLATE/$f"
     done
   fi

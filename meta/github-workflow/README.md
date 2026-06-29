@@ -6,6 +6,7 @@ GitHub issue / PR の運用テンプレートと運用ガイド一式。
 
 | ファイル | 用途 |
 |---------|------|
+| `business-kickoff.md` | 事業起点 issue テンプレ（新事業の最初の1枚。需要・核データ・規約の3ゲートを供給実装前に通す） |
 | `parent-issue.md` | 親 issue テンプレ（ハイブリッド方式） |
 | `sub-issue.md` | sub-issue テンプレ（self-contained 必須） |
 | `discussion-issue.md` | 議論用 sub-issue テンプレ（決定後 close） |
