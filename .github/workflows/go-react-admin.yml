@@ -37,7 +37,7 @@ jobs:
           cache-dependency-path: boilerplates/go-react-admin/go.sum
 
       - name: Use Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: boilerplates/go-react-admin/frontend/.node-version
           cache: 'npm'
