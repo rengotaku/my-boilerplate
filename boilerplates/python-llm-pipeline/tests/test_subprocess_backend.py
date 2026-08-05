@@ -2,6 +2,14 @@
 
 No real subprocess is ever spawned: `runner` is injected in every test, and
 `sleep` is injected to record calls instead of actually blocking.
+
+Case 9 was revised (round-3 fix 2, management decision on issue #282): the
+original contract silently substituted the argv prompt with a spilled file's
+path, which a CLI that treats its last argument as literal prompt text would
+send straight through as a bogus prompt. The retired single test
+(`test_case9_large_prompt_spills_small_prompt_stays_in_argv`) is replaced by
+9a/9b/9c below, which pin the new `spill_argv`-based contract. All other
+frozen cases (1-8, 10-12) are unchanged.
 """
 
 from __future__ import annotations
@@ -109,24 +117,28 @@ def test_case8_rate_limit_fails_fast_without_retry() -> None:
     assert sleeps == []
 
 
-def test_case9_large_prompt_spills_small_prompt_stays_in_argv(tmp_path: Path) -> None:
-    """Case 9: a prompt over the threshold is spilled to a private temp file
-    (0600 file in a 0700 directory) instead of passed via argv; a prompt at
-    or under the threshold stays inline.
+def test_case9a_configured_spill_writes_private_file_and_uses_spill_argv(
+    tmp_path: Path,
+) -> None:
+    """Case 9a (revised): with `spill_argv` configured, an over-threshold
+    prompt is written to a private temp file (0600 file in a 0700
+    directory), the file's content matches the prompt verbatim, `argv` is
+    built via `spill_argv`, and the file is removed once the call returns.
     """
     observed: dict[str, Any] = {}
+
+    def spill_argv(path: Path) -> list[str]:
+        return ["--file", str(path)]
 
     def runner(
         argv: Sequence[str], timeout_s: float
     ) -> subprocess.CompletedProcess[str]:
         observed["argv"] = list(argv)
-        last = argv[-1]
-        path = Path(last)
-        if path.exists():
-            observed["spilled_content"] = path.read_text(encoding="utf-8")
-            observed["file_mode"] = stat.S_IMODE(path.stat().st_mode)
-            observed["dir_mode"] = stat.S_IMODE(path.parent.stat().st_mode)
-            observed["spilled_path"] = path
+        path = Path(argv[-1])
+        observed["spilled_content"] = path.read_text(encoding="utf-8")
+        observed["file_mode"] = stat.S_IMODE(path.stat().st_mode)
+        observed["dir_mode"] = stat.S_IMODE(path.parent.stat().st_mode)
+        observed["spilled_path"] = path
         return _completed(list(argv), returncode=0, stdout="ok")
 
     client = SubprocessLlmClient(
@@ -134,24 +146,67 @@ def test_case9_large_prompt_spills_small_prompt_stays_in_argv(tmp_path: Path) ->
         runner=runner,
         spill_threshold_bytes=100,
         spill_dir=tmp_path,
+        spill_argv=spill_argv,
     )
 
-    # At or under the threshold: passed inline via argv, no file created.
-    small = "x" * 10
-    result_small = client.complete(small)
-    assert result_small == "ok"
-    assert observed["argv"] == ["mycmd", small]
-    assert "spilled_path" not in observed
-
-    # Over the threshold: spilled to a private temp file.
     large = "y" * 500
-    result_large = client.complete(large)
-    assert result_large == "ok"
+    result = client.complete(large)
+
+    assert result == "ok"
+    assert observed["argv"] == ["mycmd", "--file", str(observed["spilled_path"])]
     assert observed["spilled_content"] == large
     assert observed["file_mode"] == 0o600
     assert observed["dir_mode"] == 0o700
     # The file is removed again once the call that referenced it returns.
     assert not observed["spilled_path"].exists()
+
+
+def test_case9b_no_spill_argv_raises_llm_error_without_invoking_runner() -> None:
+    """Case 9b (revised): without `spill_argv`, an over-threshold prompt is
+    a configuration error (`LlmError`), not a silent path-as-prompt send —
+    and the runner (subprocess) is never invoked.
+    """
+    calls = 0
+
+    def runner(
+        argv: Sequence[str], timeout_s: float
+    ) -> subprocess.CompletedProcess[str]:
+        nonlocal calls
+        calls += 1
+        return _completed(list(argv), returncode=0, stdout="ok")
+
+    client = SubprocessLlmClient(
+        argv=["mycmd"], runner=runner, spill_threshold_bytes=100
+    )
+
+    with pytest.raises(LlmError):
+        client.complete("y" * 500)
+
+    assert calls == 0
+
+
+def test_case9c_prompt_at_or_under_threshold_uses_argv_directly() -> None:
+    """Case 9c (revised, unchanged behavior): a prompt at or under the
+    threshold is passed inline via argv, with no file created — regardless
+    of whether `spill_argv` is configured.
+    """
+    captured: list[list[str]] = []
+
+    def runner(
+        argv: Sequence[str], timeout_s: float
+    ) -> subprocess.CompletedProcess[str]:
+        captured.append(list(argv))
+        return _completed(list(argv), returncode=0, stdout="ok")
+
+    client = SubprocessLlmClient(
+        argv=["mycmd"], runner=runner, spill_threshold_bytes=100
+    )
+
+    small = "x" * 10
+    result = client.complete(small)
+
+    assert result == "ok"
+    assert captured == [["mycmd", small]]
 
 
 def test_transient_error_from_a_subprocess_timeout_is_retried() -> None:

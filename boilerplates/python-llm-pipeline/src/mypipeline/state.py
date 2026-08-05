@@ -21,7 +21,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 
-from mypipeline.permissions import ensure_private_dir, harden_file
+from mypipeline.permissions import ensure_dir_exists_private, harden_file
 
 # Bumped whenever the schema shape changes; `_migrate` upgrades an older
 # database file in place on open. A fresh (or pre-versioning) database reads
@@ -69,12 +69,20 @@ class IngestState:
     def open(cls, db_path: Path) -> IngestState:
         """Open (creating parent dirs and schema) a file-backed state store.
 
-        The parent directory is hardened to `0700` and the DB file (plus its
-        WAL/SHM sidecars, if present) to `0600` — this database can carry
-        per-item identifiers and cursors that reveal what the pipeline has
-        processed, so other local accounts must not be able to read it.
+        The DB file (plus its WAL/SHM sidecars, if present) is hardened to
+        `0600` — this database can carry per-item identifiers and cursors
+        that reveal what the pipeline has processed, so other local accounts
+        must not be able to read it.
+
+        The parent directory is only touched if it does not exist yet
+        (created `0700`); an *already-existing* parent is left alone.
+        `db_path.parent` can be an arbitrary caller-supplied directory (e.g.
+        the current working directory, for a relative `db_path` like
+        `Path("state.db")`) that this class does not own — unconditionally
+        re-chmod-ing it on every open would be a surprising side effect on a
+        directory nothing here created.
         """
-        ensure_private_dir(db_path.parent)
+        ensure_dir_exists_private(db_path.parent)
         conn = sqlite3.connect(db_path)
         # WAL lets a read (e.g. a status command) proceed while a write
         # transaction is in flight.

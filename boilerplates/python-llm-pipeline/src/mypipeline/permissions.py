@@ -23,8 +23,28 @@ def ensure_private_dir(directory: Path) -> None:
 
     Also corrects an *existing* directory's looser mode — the umask problem
     above applies just as much to a directory created by other code before
-    this ever runs.
+    this ever runs. Use this for directories this codebase *owns* (a spill
+    directory it created, a dedicated data directory); for a directory that
+    may be arbitrary caller-supplied space (see `ensure_dir_exists_private`),
+    unconditionally re-chmod-ing it is the wrong default.
     """
+    directory.mkdir(parents=True, exist_ok=True)
+    directory.chmod(DIR_MODE)
+
+
+def ensure_dir_exists_private(directory: Path) -> None:
+    """Create `directory` (and parents) as `DIR_MODE` only if it is missing.
+
+    Unlike `ensure_private_dir`, an *already-existing* directory's mode is
+    left untouched. Use this when `directory` may be a directory this
+    codebase does not own — e.g. a database path's parent, which for a
+    relative path can resolve to the caller's current working directory —
+    where silently re-permissioning it on every open would be a surprising
+    (and potentially breaking) side effect on a directory nothing here
+    created.
+    """
+    if directory.exists():
+        return
     directory.mkdir(parents=True, exist_ok=True)
     directory.chmod(DIR_MODE)
 

@@ -1,9 +1,18 @@
 """Generic subprocess-driven `LlmClient` (external CLI wrapper).
 
-Runs a fixed command (`argv`) with the prompt appended, either inline or
-(for large prompts) written to a private temp file and referenced by path —
-sidestepping the kernel's per-argument length limit (``MAX_ARG_STRLEN``)
-without opaque shell failures.
+Runs a fixed command (`argv`) with the prompt appended as the final argv
+element. A prompt at or under `spill_threshold_bytes` is passed inline this
+way; a larger one would hit the kernel's per-argument length limit
+(``MAX_ARG_STRLEN``), so it is instead written to a private temp file.
+
+Writing the prompt to a file only helps if the wrapped CLI knows to read a
+file for that argument — a CLI that treats its last argument as literal
+prompt text would otherwise silently receive a path string *as the prompt*.
+So spilling requires `spill_argv` (a `Callable[[Path], list[str]]` that
+builds the CLI-specific "read this file" argv suffix, e.g.
+``lambda path: ["--file", str(path)]``) to be configured. Without it, a
+prompt over the threshold raises `LlmError` up front (the subprocess is
+never invoked) rather than guessing at a contract the CLI may not honor.
 
 Only *transient* failures (an empty body or a subprocess timeout) are
 retried, with linear backoff. Rate limiting — identified by
@@ -60,8 +69,11 @@ class SubprocessLlmClient:
     """An `LlmClient` backed by an external CLI, run via `runner`.
 
     `argv` is the fixed command prefix (e.g. `["some-cli", "-m", "model"]`);
-    the prompt (or, once spilled, the path to it) is appended as the final
-    argument on each call.
+    the prompt is appended as the final argument on each call, as long as it
+    fits under `spill_threshold_bytes`. `spill_argv`, if configured, builds
+    the argv suffix for a prompt that had to be spilled to a file instead
+    (see the module docstring); without it, an over-threshold prompt is a
+    configuration error (`LlmError`), not a silent path-as-prompt send.
     """
 
     argv: list[str]
@@ -71,6 +83,7 @@ class SubprocessLlmClient:
     backoff_s: float = DEFAULT_BACKOFF_S
     spill_threshold_bytes: int = DEFAULT_SPILL_THRESHOLD_BYTES
     spill_dir: Path | None = None
+    spill_argv: Callable[[Path], list[str]] | None = None
     default_timeout_s: float = DEFAULT_TIMEOUT_S
     rate_limited_returncode: int = DEFAULT_RATE_LIMITED_RETURNCODE
 
@@ -93,8 +106,16 @@ class SubprocessLlmClient:
     def _complete_once(self, prompt: str, *, timeout_s: float) -> str:
         if len(prompt.encode("utf-8")) <= self.spill_threshold_bytes:
             return self._invoke([*self.argv, prompt], timeout_s)
+        if self.spill_argv is None:
+            raise LlmError(
+                "prompt exceeds spill_threshold_bytes "
+                f"({self.spill_threshold_bytes} bytes) but no spill_argv "
+                "was configured; add spill_argv=<Callable[[Path], "
+                "list[str]]> to send it via a file, or raise "
+                "spill_threshold_bytes"
+            )
         with self._spilled_prompt(prompt) as path:
-            return self._invoke([*self.argv, str(path)], timeout_s)
+            return self._invoke([*self.argv, *self.spill_argv(path)], timeout_s)
 
     def _invoke(self, argv: Sequence[str], timeout_s: float) -> str:
         runner = self.runner if self.runner is not None else _default_runner

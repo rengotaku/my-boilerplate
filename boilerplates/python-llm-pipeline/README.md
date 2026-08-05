@@ -15,7 +15,9 @@ uv + Typer + ruff + mypy + pytest ベースの、LLM を叩くバッチ/パイ�
   Protocol にのみ依存し、テストは fake 実装を注入する（ネットワーク不要）
 - **Subprocess backend**: `mypipeline.llm.subprocess_backend.SubprocessLlmClient`
   — 外部 CLI ラッパー。runner/sleep を注入可能、transient のみ線形バックオフ
-  再試行・rate-limit は即 fail・大入力は 0600/0700 の一時ファイルへスピル
+  再試行・rate-limit は即 fail・大入力は `spill_argv` で組んだ argv を使い
+  0600/0700 の一時ファイルへスピル（`spill_argv` 未設定で閾値超のプロンプトが
+  来た場合は、パス文字列を暗黙にプロンプトへ差し替えず `LlmError` を送出する）
 - **HTTP API backend**: `mypipeline.llm.api_backend.HttpApiLlmClient`
   （`llm-api` extra、httpx ベース） — コードフェンス除去 + dict 型検証つき
   JSON 応答パース
@@ -140,7 +142,11 @@ LLM を叩くバッチ/パイプラインを組むときに崩れやすい前提
    プロンプトは「送れるだけ送る」のではなく、必要な情報だけに絞ってから
    送ります。`SubprocessLlmClient` の `spill_threshold_bytes` は
    ARG_MAX 対策の安全弁であって、縮約の代わりではありません — 大きすぎる
-   入力は縮約するか要約してから渡してください。送信直前には
+   入力は縮約するか要約してから渡してください。閾値超のプロンプトをファイル
+   経由で渡したい場合は、ラップする CLI が実際にファイル入力を解釈すること
+   を確認したうえで `spill_argv=lambda path: [...]` を明示設定してください
+   （未設定のまま閾値を超えると、パス文字列を暗黙にプロンプトとして送る
+   silent 誤動作を避けるため `LlmError` になります）。送信直前には
    `mypipeline.redaction.RedactionGate` を通し、API キー・トークン等が
    混入していないことを確認します。
 4. **limit・dry-run オプションでの試運転運用**

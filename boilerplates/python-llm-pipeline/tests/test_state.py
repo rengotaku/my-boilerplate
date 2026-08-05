@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import stat
 from pathlib import Path
 
 from mypipeline.state import IngestState
@@ -87,3 +88,49 @@ def test_is_seen_reflects_record_without_mutating() -> None:
         assert state.is_seen("src", "id-1") is False
         state.record("src", "id-1")
         assert state.is_seen("src", "id-1") is True
+
+
+def test_open_does_not_modify_an_existing_parent_directory_mode(
+    tmp_path: Path,
+) -> None:
+    """Round-3 fix 1: `open()` leaves an existing parent dir's mode alone.
+
+    Round-3 fix 1 rationale (must report in the progress comment):
+    the parent directory of `db_path` can be an arbitrary caller-supplied
+    directory (worst case the current working directory for a relative
+    `db_path`); unconditionally re-chmod-ing it to 0700 on every open was a
+    surprising side effect on a directory `IngestState` does not own.
+    """
+    parent = tmp_path / "existing_parent"
+    parent.mkdir()
+    parent.chmod(0o755)
+    db_path = parent / "state.db"
+
+    with IngestState.open(db_path):
+        pass
+
+    assert stat.S_IMODE(parent.stat().st_mode) == 0o755
+
+
+def test_open_creates_a_missing_parent_directory_as_private(
+    tmp_path: Path,
+) -> None:
+    """Round-3 fix 1: `open()` still creates a *missing* parent as 0700."""
+    parent = tmp_path / "missing_parent"
+    db_path = parent / "state.db"
+
+    with IngestState.open(db_path):
+        pass
+
+    assert parent.is_dir()
+    assert stat.S_IMODE(parent.stat().st_mode) == 0o700
+
+
+def test_open_hardens_the_db_file_to_0600(tmp_path: Path) -> None:
+    """Round-3 fix 1: `open()` still hardens the DB file itself to 0600."""
+    db_path = tmp_path / "state.db"
+
+    with IngestState.open(db_path):
+        pass
+
+    assert stat.S_IMODE(db_path.stat().st_mode) == 0o600
