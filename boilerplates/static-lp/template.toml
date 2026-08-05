@@ -1,0 +1,4 @@
+name = "static-lp"
+language = "React"
+description = "SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート"
+tags = ["spa", "vite", "react", "cloudflare", "lp", "seo", "ssg"]

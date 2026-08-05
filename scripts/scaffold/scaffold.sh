@@ -214,7 +214,7 @@ case "$family" in
     echo "  cd $dest"
     echo "  npm install"
     echo "  make ci"
-    if [[ "$template" == "react-spa-cloudflare" ]]; then
+    if [[ "$template" == "react-spa-cloudflare" || "$template" == "static-lp" ]]; then
       echo ""
       echo "Required secrets for deployment:"
       echo "  - CLOUDFLARE_API_TOKEN"

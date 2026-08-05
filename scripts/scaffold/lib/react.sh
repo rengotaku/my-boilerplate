@@ -17,7 +17,7 @@ apply_react_replacements() {
     sed_inplace "s|\"name\": \"${template}\"|\"name\": \"${name}\"|" "$dest/package-lock.json"
   fi
 
-  # Replace wrangler.toml name (react-spa-cloudflare)
+  # Replace wrangler.toml name (react-spa-cloudflare, static-lp)
   if [[ -f "$dest/wrangler.toml" ]]; then
     sed_inplace "s|^name = \"${template}\"|name = \"${name}\"|" "$dest/wrangler.toml"
     info "Updated wrangler.toml name"
