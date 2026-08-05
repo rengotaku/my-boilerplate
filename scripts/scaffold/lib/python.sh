@@ -20,6 +20,10 @@ apply_python_replacements() {
     *) orig_pkg="mycli" ;;
   esac
 
+  # PEP 503 normalization for uv.lock distribution name
+  local norm_name
+  norm_name="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]' | sed -E 's/[-_.]+/-/g')"
+
   # Replace pyproject.toml fields
   if [[ -f "$dest/pyproject.toml" ]]; then
     # Replace project name
@@ -35,6 +39,12 @@ apply_python_replacements() {
     sed_inplace "s|source = \[\"src/${orig_pkg}\"\]|source = [\"src/${pkg_name}\"]|g" "$dest/pyproject.toml"
 
     info "Updated pyproject.toml"
+  fi
+
+  # Replace uv.lock root package name
+  if [[ -f "$dest/uv.lock" ]]; then
+    sed_inplace "s|^name = \"${orig_pkg}\"$|name = \"${norm_name}\"|" "$dest/uv.lock"
+    info "Updated uv.lock root package name"
   fi
 
   # Rename src/<orig_pkg>/ directory

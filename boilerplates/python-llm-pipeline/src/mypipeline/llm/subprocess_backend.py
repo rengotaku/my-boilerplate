@@ -91,6 +91,12 @@ class SubprocessLlmClient:
     default_timeout_s: float = DEFAULT_TIMEOUT_S
     rate_limited_returncode: int = DEFAULT_RATE_LIMITED_RETURNCODE
 
+    def __post_init__(self) -> None:
+        if self.max_attempts < 1:
+            raise ValueError(
+                f"max_attempts must be at least 1, got {self.max_attempts}"
+            )
+
     def complete(self, prompt: str, *, timeout_s: float | None = None) -> str:
         """Return the CLI's response text, retrying only transient failures."""
         effective_timeout = (
