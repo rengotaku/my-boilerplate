@@ -130,3 +130,17 @@ echo "MYVAR=$MYVAR"
 	assert.Contains(t, res.Stdout, "PWD="+tmpDir)
 	assert.Contains(t, res.Stdout, "MYVAR=custom_val")
 }
+
+// Additional test: a launch failure (command not found) is not a *exec.ExitError,
+// so it must not be reported as ExitCode 0 (which would look like success).
+func TestRun_CommandNotFound_ExitCodeIsNegativeOne(t *testing.T) {
+	opts := execx.Options{
+		Command: "mycli-execx-definitely-does-not-exist",
+		Timeout: 5 * time.Second,
+	}
+
+	res, err := execx.Run(context.Background(), &opts)
+
+	require.Error(t, err)
+	assert.Equal(t, -1, res.ExitCode)
+}

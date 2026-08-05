@@ -71,14 +71,18 @@ func Run(ctx context.Context, opts *Options) (Result, error) {
 
 	err := cmd.Run()
 
+	// ExitCode defaults to -1 so a launch failure (command not found,
+	// permission denied, chdir failure, ...) is never mistaken for the
+	// successful ExitCode 0. It is only overwritten below when the process
+	// actually ran and either exited cleanly or reported its own exit code.
 	res := Result{
-		Stdout: stdoutBuf.String(),
-		Stderr: stderrBuf.String(),
+		Stdout:   stdoutBuf.String(),
+		Stderr:   stderrBuf.String(),
+		ExitCode: -1,
 	}
 
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		res.TimedOut = true
-		res.ExitCode = -1
 		return res, fmt.Errorf("%w: %v", ErrTimeout, ctx.Err())
 	}
 
