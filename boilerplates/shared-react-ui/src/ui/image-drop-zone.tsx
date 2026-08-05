@@ -40,7 +40,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       onDrop,
       ...props
     },
-    ref,
+    ref
   ) => {
     const [isDragOver, setIsDragOver] = React.useState(false);
     const [rejectedFiles, setRejectedFiles] = React.useState<File[]>([]);
@@ -66,7 +66,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
           onFiles?.(accepted);
         }
       },
-      [accept, onFiles],
+      [accept, onFiles]
     );
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -87,11 +87,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       e.stopPropagation();
       setIsDragOver(false);
       if (disabled) return;
-      if (
-        e.dataTransfer &&
-        e.dataTransfer.files &&
-        e.dataTransfer.files.length > 0
-      ) {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         processFiles(e.dataTransfer.files);
       }
     };
@@ -132,7 +128,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
     const composeHandlers =
       <E extends React.SyntheticEvent>(
         internal: (e: E) => void,
-        external?: (e: E) => void,
+        external?: (e: E) => void
       ) =>
       (e: E) => {
         internal(e);
@@ -159,9 +155,8 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
           isDragOver
             ? "border-primary bg-primary/10"
             : "border-muted-foreground/25 hover:border-primary/50",
-          disabled &&
-            "cursor-not-allowed opacity-50 hover:border-muted-foreground/25",
-          className,
+          disabled && "cursor-not-allowed opacity-50 hover:border-muted-foreground/25",
+          className
         )}
         {...props}
       >
@@ -208,7 +203,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
         )}
       </div>
     );
-  },
+  }
 );
 ImageDropZone.displayName = "ImageDropZone";
 
