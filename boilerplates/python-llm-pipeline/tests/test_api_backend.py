@@ -8,8 +8,15 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from mypipeline.llm.api_backend import HttpApiLlmClient, parse_json_response
-from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
+from mypipeline.llm.api_backend import (
+    HttpApiLlmClient,
+    parse_json_response,
+)
+from mypipeline.llm.base import (
+    LlmError,
+    RateLimitedError,
+    TransientLlmError,
+)
 
 
 def _client_with_response_text(text: str) -> HttpApiLlmClient:

@@ -18,7 +18,9 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
 
 
 def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-    """Environment variables override defaults via the MYPIPELINE_ prefix."""
+    """Environment variables override defaults via the `MYPIPELINE_`
+    prefix.
+    """
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("MYPIPELINE_LOG_LEVEL", "DEBUG")
     monkeypatch.setenv("MYPIPELINE_LOG_FORMAT", "json")

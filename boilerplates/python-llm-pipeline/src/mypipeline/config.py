@@ -13,8 +13,9 @@ LogFormat = Literal["console", "json"]
 class Settings(BaseSettings):
     """CLI runtime settings.
 
-    Environment variables are prefixed with `MYPIPELINE_`. A `.env` file in the
-    current working directory is also loaded when present.
+    Environment variables are prefixed with `MYPIPELINE_`.
+    A `.env` file in the current working directory is also loaded when
+    present.
     """
 
     model_config = SettingsConfigDict(

@@ -21,7 +21,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 
-from mypipeline.permissions import ensure_dir_exists_private, harden_file
+from mypipeline.permissions import (
+    ensure_dir_exists_private,
+    harden_file,
+)
 
 # Bumped whenever the schema shape changes; `_migrate` upgrades an older
 # database file in place on open. A fresh (or pre-versioning) database reads

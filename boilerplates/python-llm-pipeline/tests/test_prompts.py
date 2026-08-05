@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import json
 
-from mypipeline.prompts import PromptTemplate, build_json_skeleton, build_prompt
+from mypipeline.prompts import (
+    PromptTemplate,
+    build_json_skeleton,
+    build_prompt,
+)
 
 
 def test_build_prompt_without_skeleton_keeps_task_verbatim() -> None:

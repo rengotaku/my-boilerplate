@@ -34,7 +34,11 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
+from mypipeline.llm.base import (
+    LlmError,
+    RateLimitedError,
+    TransientLlmError,
+)
 
 # Injected subprocess seam: (argv, timeout_s) -> CompletedProcess. Defaults to
 # `subprocess.run`; tests pass a stub so `SubprocessLlmClient` is testable
