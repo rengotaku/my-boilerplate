@@ -33,4 +33,5 @@ src/components/ui/button.tsx
 src/components/ui/button-variants.ts
 src/components/ui/input.tsx
 src/components/ui/time-picker.tsx
+src/components/ui/image-drop-zone.tsx
 # shared-react-ui-managed:end
