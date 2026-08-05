@@ -22,7 +22,11 @@ from typing import Any
 
 import pytest
 
-from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
+from mypipeline.llm.base import (
+    LlmError,
+    RateLimitedError,
+    TransientLlmError,
+)
 from mypipeline.llm.subprocess_backend import SubprocessLlmClient
 
 

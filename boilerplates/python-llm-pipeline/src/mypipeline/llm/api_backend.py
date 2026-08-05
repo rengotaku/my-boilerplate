@@ -36,7 +36,11 @@ from typing import Any
 
 import httpx
 
-from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
+from mypipeline.llm.base import (
+    LlmError,
+    RateLimitedError,
+    TransientLlmError,
+)
 
 # The status code an API uses to signal rate limiting (HTTP convention).
 RATE_LIMITED_STATUS_CODE = 429
