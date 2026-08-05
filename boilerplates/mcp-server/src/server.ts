@@ -85,6 +85,7 @@ export async function callTool(
       }
     } else {
       const message = err instanceof Error ? err.message : String(err)
+      console.error(`Internal error executing tool "${name}": ${message}`)
       result = {
         isError: true,
         content: [
@@ -92,7 +93,7 @@ export async function callTool(
             type: 'text',
             text: JSON.stringify({
               code: ERROR_CODES.INTERNAL,
-              message,
+              message: 'Internal server error',
             }),
           },
         ],

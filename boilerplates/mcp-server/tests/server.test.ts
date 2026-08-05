@@ -82,7 +82,7 @@ describe('MCP Server STEP B Tests', () => {
     expect(resRaw.isError).toBe(true)
     const payloadRaw = JSON.parse(resRaw.content[0].text)
     expect(payloadRaw.code).toBe(ERROR_CODES.INTERNAL)
-    expect(payloadRaw.message).toBe('Something went wrong internally')
+    expect(payloadRaw.message).toBe('Internal server error')
   })
 
   // T5 入力バリデーション
