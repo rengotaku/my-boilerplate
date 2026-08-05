@@ -1,0 +1,24 @@
+name: Scaffold Verify static-lp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/static-lp/**'
+      - 'boilerplates/shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-static-lp.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/static-lp/**'
+      - 'boilerplates/shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-static-lp.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: static-lp
