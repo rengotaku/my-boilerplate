@@ -160,4 +160,17 @@ describe("ImageDropZone", () => {
     });
     expect(handleFiles).toHaveBeenCalledTimes(2);
   });
+
+  // 回帰: disabled 時は内部処理が early return するだけでなく、外部ハンドラも呼ばれない
+  // (一般的な disabled コントロールの挙動: disabled 中はイベントの副作用が一切発火しない)
+  it("回帰: does not call external onClick when disabled", () => {
+    const externalOnClick = vi.fn();
+    render(<ImageDropZone accept="image/*" disabled onClick={externalOnClick} />);
+
+    const dropZone = screen.getByRole("button");
+
+    fireEvent.click(dropZone);
+
+    expect(externalOnClick).not.toHaveBeenCalled();
+  });
 });

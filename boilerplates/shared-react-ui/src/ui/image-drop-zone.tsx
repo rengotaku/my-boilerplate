@@ -136,6 +136,9 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       ) =>
       (e: E) => {
         internal(e);
+        // Disabled controls must not surface caller-provided side effects
+        // (matches native disabled input/button semantics).
+        if (disabled) return;
         external?.(e);
       };
 
