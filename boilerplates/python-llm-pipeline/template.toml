@@ -1,0 +1,4 @@
+name = "python-llm-pipeline"
+language = "Python"
+description = "uv + Typer + ruff + mypy + pytest の LLM パイプライン基盤 (backend Protocol / retry / SQLite state store)"
+tags = ["cli", "llm", "pipeline", "uv"]
