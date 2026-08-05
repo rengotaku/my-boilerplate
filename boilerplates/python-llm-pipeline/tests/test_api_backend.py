@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from mypipeline.llm.api_backend import HttpApiLlmClient, parse_json_response
-from mypipeline.llm.base import LlmError
+from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
 
 
 def _client_with_response_text(text: str) -> HttpApiLlmClient:
@@ -116,6 +116,164 @@ def test_2xx_non_json_body_raises_llm_error() -> None:
     )
 
     with pytest.raises(LlmError):
+        client.complete("question")
+
+
+def test_status_429_raises_rate_limited_error() -> None:
+    """Round-2 fix 1(a): a 429 response maps to `RateLimitedError`.
+
+    Extra test rationale (must report in the progress comment):
+    mirrors `subprocess_backend`'s rate-limit-fails-fast case (8) for the
+    HTTP backend -- a 429 is the HTTP-standard way an API signals throttling,
+    and the caller needs a distinct exception type to fail fast instead of
+    retrying into the same quota window.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, text="rate limited")
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(RateLimitedError):
+        client.complete("question")
+
+
+def test_connect_timeout_raises_transient_llm_error() -> None:
+    """Round-2 fix 1(b): a connect timeout maps to `TransientLlmError`.
+
+    Extra test rationale (must report in the progress comment):
+    mirrors `subprocess_backend`'s `subprocess.TimeoutExpired`-is-transient
+    case (the additional test added for STEP B) -- a timeout is a one-off
+    worth retrying, not a permanent failure.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectTimeout("connect timed out", request=request)
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(TransientLlmError):
+        client.complete("question")
+
+
+def test_connect_error_raises_transient_llm_error() -> None:
+    """Round-2 fix 1(b): a connection-level failure maps to `TransientLlmError`.
+
+    Extra test rationale (must report in the progress comment):
+    `httpx.ConnectError` (refused/reset connection, DNS failure, ...) is a
+    distinct exception class from `httpx.TimeoutException`; both are
+    `httpx.TransportError` subclasses and both must be caught, so this
+    confirms the non-timeout half of the fix independently.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("connection refused", request=request)
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(TransientLlmError):
+        client.complete("question")
+
+
+def test_status_500_raises_plain_llm_error_not_rate_limited_or_transient() -> None:
+    """Round-2 fix 1(c): a 500 stays a plain `LlmError` (not a subclass).
+
+    Extra test rationale (must report in the progress comment):
+    the existing `test_http_error_status_raises_llm_error` only checks
+    `pytest.raises(LlmError)`, which would also pass if 500 were
+    mis-mapped to `RateLimitedError`/`TransientLlmError` (both are
+    `LlmError` subclasses) -- this test pins the "everything else" branch of
+    the three-way split precisely, without touching that existing test.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, text="internal error")
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(LlmError) as exc_info:
+        client.complete("question")
+
+    assert not isinstance(exc_info.value, RateLimitedError)
+    assert not isinstance(exc_info.value, TransientLlmError)
+
+
+def test_base_url_path_is_preserved_in_the_request() -> None:
+    """Round-2 fix 2: a `base_url` with a path is requested as-is.
+
+    Extra test rationale (must report in the progress comment):
+    the docstring promises "POSTs to `base_url`"; before this fix the
+    client posted to a client-level `base_url` + `"/"`, which httpx resolves
+    by replacing the whole path -- so `https://host/v1/completions` silently
+    became a request to `https://host/`. This pins the real request URL.
+    """
+    observed_paths: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        observed_paths.append(request.url.path)
+        return httpx.Response(200, json={"text": "ok"})
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid/v1/completions",
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = client.complete("question")
+
+    assert result == "ok"
+    assert observed_paths == ["/v1/completions"]
+
+
+def test_empty_text_field_raises_transient_llm_error() -> None:
+    """Round-2 fix 3: an empty `text` field is a transient failure.
+
+    Extra test rationale (must report in the progress comment):
+    mirrors `subprocess_backend`'s empty-stdout-is-transient handling (case
+    6/7) for the HTTP backend -- an empty response body usually means a
+    retry-worthy hiccup, not a genuine (empty) answer.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"text": ""})
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(TransientLlmError):
+        client.complete("question")
+
+
+def test_whitespace_only_text_field_raises_transient_llm_error() -> None:
+    """Round-2 fix 3: a whitespace-only `text` field is also transient.
+
+    Extra test rationale (must report in the progress comment):
+    guards against a masked-but-still-empty answer (e.g. a backend that pads
+    an empty response with a newline) sneaking past a naive `== ""` check.
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"text": "   \n  "})
+
+    client = HttpApiLlmClient(
+        base_url="https://example.invalid",
+        transport=httpx.MockTransport(handler),
+    )
+
+    with pytest.raises(TransientLlmError):
         client.complete("question")
 
 

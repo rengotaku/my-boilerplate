@@ -4,10 +4,11 @@ Requires the `llm-api` extra (`uv sync --extra llm-api` /
 `pip install .[llm-api]`) — `httpx` is deliberately kept out of the core
 dependencies so consumers of the subprocess backend don't have to pull it in.
 
-POSTs `{"prompt": <prompt>}` to `base_url` and expects a JSON response body
-shaped like `{"text": "..."}`; the `text` field is the model's raw response.
-Override `request_payload` / `response_text_field` for a different provider
-contract.
+POSTs `{"prompt": <prompt>}` to `base_url` (the full URL, path included — a
+`base_url` like `https://host/v1/completions` is requested as-is, not
+flattened to the host root) and expects a JSON response body shaped like
+`{"text": "..."}`; the `text` field is the model's raw response. Override
+`request_payload` / `response_text_field` for a different provider contract.
 
 `complete()` (the `LlmClient` Protocol method) returns that raw text, unparsed.
 `complete_json()` additionally parses the text as JSON, tolerating a Markdown
@@ -16,6 +17,14 @@ code fence — a common way models wrap structured output — and raising
 output is not a trustworthy input format: a model can drift into prose, an
 empty string or a JSON array instead of the requested object, and silently
 treating that as success would corrupt whatever consumes the result.
+
+Failures map onto the same three-way split `subprocess_backend` uses: a 429
+response or a network-level timeout/connection failure is treated as
+recoverable (`RateLimitedError` / `TransientLlmError`); any other HTTP or
+decoding failure, or an empty response body, is a plain `LlmError` — except
+an *empty* `text` field, which is treated as transient (mirroring the
+subprocess backend's empty-stdout case) since it usually means the same
+retry-worthy hiccup on the HTTP side of a backend, not a permanent one.
 """
 
 from __future__ import annotations
@@ -27,7 +36,10 @@ from typing import Any
 
 import httpx
 
-from mypipeline.llm.base import LlmError
+from mypipeline.llm.base import LlmError, RateLimitedError, TransientLlmError
+
+# The status code an API uses to signal rate limiting (HTTP convention).
+RATE_LIMITED_STATUS_CODE = 429
 
 DEFAULT_TIMEOUT_S = 60.0
 
@@ -91,17 +103,31 @@ class HttpApiLlmClient:
         )
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         client_kwargs: dict[str, Any] = {
-            "base_url": self.base_url,
             "timeout": effective_timeout,
             "headers": headers,
         }
         if self.transport is not None:
             client_kwargs["transport"] = self.transport
         try:
+            # Post to `base_url` itself (not a client-level `base_url` +
+            # `"/"`, which would silently drop any path `base_url` carries —
+            # httpx treats a request to the absolute path "/" as replacing
+            # the whole path component of the client's `base_url`).
             with httpx.Client(**client_kwargs) as client:
-                response = client.post("/", json={"prompt": prompt})
+                response = client.post(self.base_url, json={"prompt": prompt})
                 response.raise_for_status()
                 body = response.json()
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == RATE_LIMITED_STATUS_CODE:
+                raise RateLimitedError(
+                    f"API rate limited (status {exc.response.status_code})"
+                ) from exc
+            raise LlmError(f"HTTP request failed: {exc}") from exc
+        except (httpx.TimeoutException, httpx.TransportError) as exc:
+            # A timeout or connection-level failure (DNS, refused connection,
+            # reset, ...) is a one-off worth retrying, same as
+            # `subprocess_backend`'s `subprocess.TimeoutExpired` case.
+            raise TransientLlmError(f"HTTP request failed transiently: {exc}") from exc
         except httpx.HTTPError as exc:
             raise LlmError(f"HTTP request failed: {exc}") from exc
         except ValueError as exc:
@@ -111,7 +137,14 @@ class HttpApiLlmClient:
             # exception escape here would bypass the `LlmError` contract
             # every other failure in this class goes through.
             raise LlmError(f"API response is not valid JSON: {exc}") from exc
-        return self._extract_text(body)
+        text = self._extract_text(body)
+        if not text.strip():
+            # Mirrors `subprocess_backend`'s empty-stdout handling: an empty
+            # body is usually a transient hiccup on the backend's HTTP side,
+            # not a permanent failure, so it is worth retrying rather than
+            # returned as if it were a real (empty) answer.
+            raise TransientLlmError("API response text field is empty")
+        return text
 
     def _extract_text(self, body: object) -> str:
         if not isinstance(body, dict) or self.response_text_field not in body:
