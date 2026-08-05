@@ -16,6 +16,7 @@ apply_python_replacements() {
   case "$template" in
     python-cli) orig_pkg="mycli" ;;
     python-web) orig_pkg="myweb" ;;
+    python-llm-pipeline) orig_pkg="mypipeline" ;;
     *) orig_pkg="mycli" ;;
   esac
 
@@ -72,5 +73,21 @@ apply_python_replacements() {
   if [[ "$template" == "python-web" && -f "$dest/package.json" ]]; then
     sed_inplace "s|\"name\": \"${orig_pkg}\"|\"name\": \"${name}\"|" "$dest/package.json"
     info "Updated package.json name"
+  fi
+
+  # python-llm-pipeline specific: rename the pydantic-settings env_prefix
+  # (MYPIPELINE_). It is a fixed uppercase literal, so it is never touched by
+  # the lowercase package-name substitutions above -- left as-is, a
+  # scaffolded project would keep reading env vars under the template's
+  # original prefix instead of one derived from its own name (a silently
+  # ignored MYPIPELINE_LOG_LEVEL, for example). Deriving the new prefix from
+  # pkg_name keeps it a valid env-var-name prefix (pkg_name is already
+  # restricted to [a-zA-Z0-9_] by validate_name's hyphen->underscore pass).
+  if [[ "$template" == "python-llm-pipeline" ]]; then
+    local env_prefix
+    env_prefix="$(printf '%s' "$pkg_name" | tr '[:lower:]' '[:upper:]')_"
+    find "$dest" -type f \( -name '*.py' -o -name '*.md' \) -exec sed "${SED_INPLACE_ARGS[@]}" \
+      "s|MYPIPELINE_|${env_prefix}|g" {} +
+    info "Updated env prefix: MYPIPELINE_ -> ${env_prefix}"
   fi
 }

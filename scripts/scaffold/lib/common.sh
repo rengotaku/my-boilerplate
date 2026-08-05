@@ -19,6 +19,7 @@ VALID_TEMPLATES=(
   react-spa-cloudflare
   python-cli
   python-web
+  python-llm-pipeline
   rust-cli
   chrome-extension
 )

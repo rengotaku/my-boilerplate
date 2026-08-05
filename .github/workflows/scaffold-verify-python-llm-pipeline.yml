@@ -1,0 +1,39 @@
+name: Scaffold Verify python-llm-pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/python-llm-pipeline/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-llm-pipeline.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/python-llm-pipeline/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-python-llm-pipeline.yml'
+
+jobs:
+  scaffold-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Scaffold project
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=python-llm-pipeline \
+            dest=/tmp/test-python-llm-pipeline \
+            name=test-python-llm-pipeline
+
+      - name: Verify scaffolded project
+        working-directory: /tmp/test-python-llm-pipeline
+        run: |
+          uv sync --all-extras
+          make ci
