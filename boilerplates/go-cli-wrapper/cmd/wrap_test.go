@@ -50,3 +50,33 @@ func TestWrapCommand_RequiresCandidatesFlag(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "candidates")
 }
+
+// The wrapped external CLI may emit warnings/diagnostics on stderr even when
+// it exits 0; those must not be silently discarded.
+func TestWrapCommand_ForwardsStderrOnSuccess(t *testing.T) {
+	t.Setenv("APP_ENV", "development")
+	t.Setenv("LOG_LEVEL", "info")
+	fakebin.CreateInPATH(t, "primary-cli", "#!/bin/sh\necho \"ok: $*\"\necho 'warning: deprecated flag' >&2\n")
+
+	out, errOut, err := runRoot(t, "wrap", "--candidates", "primary-cli", "--", "--version")
+
+	require.NoError(t, err)
+	assert.Equal(t, "ok: --version\n", out)
+	assert.Contains(t, errOut, "warning: deprecated flag")
+}
+
+// On a permanent (non-retryable) failure, the final candidate's stderr must
+// be visible to the caller instead of being swallowed behind a bare exit
+// code error.
+func TestWrapCommand_ForwardsStderrOnFailure(t *testing.T) {
+	t.Setenv("APP_ENV", "development")
+	t.Setenv("LOG_LEVEL", "info")
+	fakebin.CreateInPATH(t, "primary-cli", "#!/bin/sh\necho 'boom: invalid argument' >&2\nexit 2\n")
+	fakebin.CreateInPATH(t, "backup-cli", "#!/bin/sh\necho \"backup: $*\"\n")
+
+	_, errOut, err := runRoot(t, "wrap", "--candidates", "primary-cli,backup-cli", "--", "ping")
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exit code 2")
+	assert.Contains(t, errOut, "boom: invalid argument")
+}

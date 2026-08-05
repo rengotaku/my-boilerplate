@@ -63,6 +63,16 @@ var wrapCmd = &cobra.Command{
 				"error", attempt.Error,
 			)
 		}
+
+		// Forward the final attempt's stderr so the wrapped CLI's warnings and
+		// diagnostics are never silently discarded, whether it succeeded or
+		// failed permanently.
+		if res.FinalResult.Stderr != "" {
+			if _, werr := fmt.Fprint(cmd.ErrOrStderr(), res.FinalResult.Stderr); werr != nil {
+				return werr
+			}
+		}
+
 		if err != nil {
 			return err
 		}
