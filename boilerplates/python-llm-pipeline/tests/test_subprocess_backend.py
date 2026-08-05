@@ -268,3 +268,51 @@ def test_non_rate_limit_non_zero_exit_fails_fast_as_llm_error() -> None:
 
     assert not isinstance(exc_info.value, TransientLlmError)
     assert calls == 1
+
+
+def test_v1_max_attempts_zero_raises_value_error() -> None:
+    """V1: max_attempts=0 でのコンストラクタ呼び出しは ValueError を送出する。"""
+    runner_called = False
+
+    def runner(
+        argv: Sequence[str], timeout_s: float
+    ) -> subprocess.CompletedProcess[str]:
+        nonlocal runner_called
+        runner_called = True
+        return _completed(list(argv), returncode=0, stdout="ok")
+
+    with pytest.raises(ValueError, match="max_attempts"):
+        SubprocessLlmClient(argv=["mycmd"], runner=runner, max_attempts=0)
+
+    assert not runner_called
+
+
+def test_v2_max_attempts_negative_raises_value_error() -> None:
+    """V2: max_attempts=-1 でのコンストラクタ呼び出しは ValueError を送出する。"""
+    runner_called = False
+
+    def runner(
+        argv: Sequence[str], timeout_s: float
+    ) -> subprocess.CompletedProcess[str]:
+        nonlocal runner_called
+        runner_called = True
+        return _completed(list(argv), returncode=0, stdout="ok")
+
+    with pytest.raises(ValueError, match="max_attempts"):
+        SubprocessLlmClient(argv=["mycmd"], runner=runner, max_attempts=-1)
+
+    assert not runner_called
+
+
+def test_v3_max_attempts_one_succeeds() -> None:
+    """V3: max_attempts=1 + 成功 runner で complete() が正常成功する。"""
+
+    def runner(
+        argv: Sequence[str], timeout_s: float
+    ) -> subprocess.CompletedProcess[str]:
+        return _completed(list(argv), returncode=0, stdout="ok")
+
+    client = SubprocessLlmClient(argv=["mycmd"], runner=runner, max_attempts=1)
+    result = client.complete("hi")
+    assert result == "ok"
+

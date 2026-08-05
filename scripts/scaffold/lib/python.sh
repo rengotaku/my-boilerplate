@@ -37,6 +37,12 @@ apply_python_replacements() {
     info "Updated pyproject.toml"
   fi
 
+  # Replace uv.lock root package name
+  if [[ -f "$dest/uv.lock" ]]; then
+    sed_inplace "s|^name = \"${orig_pkg}\"$|name = \"${name}\"|" "$dest/uv.lock"
+    info "Updated uv.lock root package name"
+  fi
+
   # Rename src/<orig_pkg>/ directory
   if [[ -d "$dest/src/${orig_pkg}" ]]; then
     mv "$dest/src/${orig_pkg}" "$dest/src/${pkg_name}"
