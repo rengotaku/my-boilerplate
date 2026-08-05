@@ -54,6 +54,7 @@ Collection of project boilerplates.
 | [python-cli](./boilerplates/python-cli) | Python CLI with uv, Typer, ruff, mypy, pytest |
 | [python-llm-pipeline](./boilerplates/python-llm-pipeline) | Python LLM pipeline (python-cli base + backend Protocol, retry/spill, SQLite state store, redaction) with uv, Typer, ruff, mypy, pytest |
 | [go-cli](./boilerplates/go-cli) | Go CLI with Cobra, golangci-lint, go test |
+| [go-cli-wrapper](./boilerplates/go-cli-wrapper) | go-cli base + 外部 CLI ラッパー共通パターン（execx: timeout/プロセスグループ kill、fallback: 候補順次リトライ、logscan: rate-limit シグネチャ検出、envx、testutil/fakebin） |
 | [rust-cli](./boilerplates/rust-cli) | Rust CLI with clap, clippy, rustfmt, cargo test |
 | [go-rest-api](./boilerplates/go-rest-api) | Go REST API with Chi, ozzo-validation, OpenAPI |
 | [go-graphql-api](./boilerplates/go-graphql-api) | Go GraphQL API with gqlgen, GraphQL Playground |

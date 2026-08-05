@@ -1,0 +1,21 @@
+name: go-cli-wrapper CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/go-cli-wrapper/**'
+      - '.github/workflows/go-cli-wrapper.yml'
+      - '.github/workflows/go-ci.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/go-cli-wrapper/**'
+      - '.github/workflows/go-cli-wrapper.yml'
+      - '.github/workflows/go-ci.yml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/go-ci.yml
+    with:
+      working-directory: boilerplates/go-cli-wrapper
+      test-paths: "./internal/..."

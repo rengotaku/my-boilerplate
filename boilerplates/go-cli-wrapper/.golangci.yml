@@ -1,0 +1,28 @@
+version: "2"
+
+linters:
+  enable:
+    - gocritic
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - mycli
+
+run:
+  timeout: 5m
