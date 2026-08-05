@@ -25,6 +25,11 @@ export default defineConfig({
         // even when not referenced by app code. Coverage is enforced via
         // shared-react-ui's gallery, not via per-template integration.
         "src/components/ui/time-picker.tsx",
+        // shared-react-ui primitive: vendored via compose but has no
+        // dedicated test suite in this template (unlike react-spa, which
+        // tests it directly). Excluded from this template's 80% coverage
+        // gate for the same reason as time-picker.tsx above.
+        "src/components/ui/image-drop-zone.tsx",
       ],
     },
   },

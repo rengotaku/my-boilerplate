@@ -14,6 +14,7 @@ shared-react-ui/
     ui/                  # Components shipped to consumer templates
       button.tsx
       button-variants.ts
+      image-drop-zone.tsx  # D&D file upload (MIME validation / a11y / rejected list)
       input.tsx
       time-picker.tsx
       *.stories.tsx      # Excluded during compose (Ladle gallery only)
