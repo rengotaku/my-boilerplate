@@ -1,0 +1,4 @@
+name = "go-cli-wrapper"
+language = "Go"
+description = "外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin）"
+tags = ["cli", "cobra", "wrapper", "exec"]
