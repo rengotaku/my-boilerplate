@@ -10,9 +10,12 @@ export interface ImageDropZoneProps
 
 function matchesAccept(file: File, acceptStr: string): boolean {
   if (!acceptStr) return true;
-  const patterns = acceptStr.split(",").map((p) => p.trim());
+  const patterns = acceptStr
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+  if (patterns.length === 0) return true;
   return patterns.some((pattern) => {
-    if (!pattern) return true;
     if (pattern.endsWith("/*")) {
       const baseType = pattern.slice(0, -2);
       return file.type.startsWith(baseType + "/");
@@ -26,7 +29,18 @@ function matchesAccept(file: File, acceptStr: string): boolean {
 
 const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
   (
-    { className, accept = "image/*", onFiles, disabled = false, ...props },
+    {
+      className,
+      accept = "image/*",
+      onFiles,
+      disabled = false,
+      onClick,
+      onKeyDown,
+      onDragOver,
+      onDragLeave,
+      onDrop,
+      ...props
+    },
     ref
   ) => {
     const [isDragOver, setIsDragOver] = React.useState(false);
@@ -83,6 +97,8 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       if (e.target.files && e.target.files.length > 0) {
         processFiles(e.target.files);
       }
+      // Reset so selecting the same file again still fires a change event.
+      e.target.value = "";
     };
 
     const handleClick = (e?: React.MouseEvent<HTMLDivElement>) => {
@@ -100,6 +116,16 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       }
     };
 
+    const composeHandlers =
+      <E extends React.SyntheticEvent>(
+        internal: (e: E) => void,
+        external?: (e: E) => void
+      ) =>
+      (e: E) => {
+        internal(e);
+        external?.(e);
+      };
+
     return (
       <div
         ref={ref}
@@ -107,11 +133,11 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
         tabIndex={disabled ? -1 : 0}
         aria-disabled={disabled}
         aria-labelledby={`${inputId}-label`}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onClick={composeHandlers(handleClick, onClick)}
+        onKeyDown={composeHandlers(handleKeyDown, onKeyDown)}
+        onDragOver={composeHandlers(handleDragOver, onDragOver)}
+        onDragLeave={composeHandlers(handleDragLeave, onDragLeave)}
+        onDrop={composeHandlers(handleDrop, onDrop)}
         className={cn(
           "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           isDragOver
