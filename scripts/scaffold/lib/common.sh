@@ -23,6 +23,7 @@ VALID_TEMPLATES=(
   python-llm-pipeline
   rust-cli
   chrome-extension
+  mcp-server
 )
 
 # Artifacts to remove after copy.
@@ -97,6 +98,7 @@ detect_family() {
   local template="$1"
   case "$template" in
     chrome-extension) echo "react" ;;
+    mcp-server) echo "react" ;;
     static-lp) echo "react" ;;
     go-*) echo "go" ;;
     react-*) echo "react" ;;

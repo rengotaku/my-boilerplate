@@ -63,6 +63,7 @@ Collection of project boilerplates.
 | [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール特化の Go + React フルスタック（worker+web 単一バイナリ / gin + embed / SQLite + jsonl + Prometheus / shadcn + recharts） |
 | [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest (popup + background + content script) |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する静的 LP。Vite + React + Tailwind、Cloudflare Pages デプロイ |
+| [mcp-server](./boilerplates/mcp-server) | MCP Server (stdio) with TypeScript, Vitest, @modelcontextprotocol/sdk |
 
 ## Roadmap
 
