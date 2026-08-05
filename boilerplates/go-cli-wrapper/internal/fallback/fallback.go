@@ -60,15 +60,17 @@ func Execute(ctx context.Context, candidates []string, run RunnerFunc) (Result, 
 			Retryable: retryable,
 		}
 		res.Attempts = append(res.Attempts, attempt)
+		// Track the most recent attempt's output so FinalResult always
+		// reflects the last candidate tried, including the all-failed case
+		// below where diagnostics (e.g. stderr) matter most.
+		res.FinalResult = execRes
 
 		if err == nil {
 			res.SuccessfulCandidate = cand
-			res.FinalResult = execRes
 			return res, nil
 		}
 
 		if !retryable {
-			res.FinalResult = execRes
 			return res, err
 		}
 	}

@@ -102,6 +102,35 @@ exit 1
 	assert.True(t, res.Attempts[1].Retryable)
 }
 
+// Additional test (builds on F3): when every candidate fails retryably,
+// FinalResult must still carry the last attempt's output so callers (e.g.
+// wrap's stderr forwarding) can surface diagnostics for the all-failed case,
+// which is exactly when they matter most.
+func TestExecute_AllCandidatesFailed_FinalResultHoldsLastAttempt(t *testing.T) {
+	scriptA := `#!/bin/sh
+echo "Error: 429 Too Many Requests" >&2
+exit 1
+`
+	scriptB := `#!/bin/sh
+echo "Error: Selected model is at capacity" >&2
+exit 1
+`
+	binA := fakebin.Create(t, "fakeA_fail_final", scriptA)
+	binB := fakebin.Create(t, "fakeB_fail_final", scriptB)
+
+	candidates := []string{binA, binB}
+	ctx := context.Background()
+
+	res, err := fallback.Execute(ctx, candidates, func(cCtx context.Context, cand string) (execx.Result, error) {
+		return execx.Run(cCtx, &execx.Options{Command: cand, Timeout: 5 * time.Second})
+	})
+
+	require.Error(t, err)
+	require.Len(t, res.Attempts, 2)
+	assert.Equal(t, res.Attempts[len(res.Attempts)-1].Result, res.FinalResult)
+	assert.Contains(t, res.FinalResult.Stderr, "Selected model is at capacity")
+}
+
 // Additional test: Empty candidates error
 func TestExecute_EmptyCandidates(t *testing.T) {
 	_, err := fallback.Execute(context.Background(), nil, func(ctx context.Context, cand string) (execx.Result, error) {
