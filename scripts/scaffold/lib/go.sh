@@ -30,12 +30,14 @@ apply_go_replacements() {
   fi
 
   # For CLI templates: replace binary name references (Cobra Use field, version strings, Makefile BINARY_NAME)
-  if [[ "$template" == "go-cli" ]]; then
-    local bin_name
-    bin_name="$(basename "$module")"
-    # Replace mycli as CLI name in .go files (Cobra Use, version strings, descriptions)
-    find "$dest" -name '*.go' -exec sed "${SED_INPLACE_ARGS[@]}" "s|mycli|${bin_name}|g" {} +
-    # Replace BINARY_NAME in Makefile
-    sed_inplace "s|^BINARY_NAME := mycli|BINARY_NAME := ${bin_name}|" "$dest/Makefile"
-  fi
+  case "$template" in
+    go-cli|go-cli-wrapper)
+      local bin_name
+      bin_name="$(basename "$module")"
+      # Replace mycli as CLI name in .go files (Cobra Use, version strings, descriptions)
+      find "$dest" -name '*.go' -exec sed "${SED_INPLACE_ARGS[@]}" "s|mycli|${bin_name}|g" {} +
+      # Replace BINARY_NAME in Makefile
+      sed_inplace "s|^BINARY_NAME := mycli|BINARY_NAME := ${bin_name}|" "$dest/Makefile"
+      ;;
+  esac
 }

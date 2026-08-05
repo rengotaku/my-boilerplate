@@ -34,9 +34,14 @@ type Result struct {
 }
 
 // Run executes a command with context timeout, process group termination, and separate stdout/stderr capture.
-func Run(ctx context.Context, opts Options) (Result, error) {
+// opts is passed by pointer because Options is large (88 bytes); Run does not
+// retain or mutate it.
+func Run(ctx context.Context, opts *Options) (Result, error) {
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if opts == nil {
+		opts = &Options{}
 	}
 
 	var cancel context.CancelFunc = func() {}

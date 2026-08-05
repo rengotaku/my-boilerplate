@@ -33,7 +33,7 @@ exit 0
 	ctx := context.Background()
 
 	res, err := fallback.Execute(ctx, candidates, func(cCtx context.Context, cand string) (execx.Result, error) {
-		return execx.Run(cCtx, execx.Options{Command: cand, Timeout: 5 * time.Second})
+		return execx.Run(cCtx, &execx.Options{Command: cand, Timeout: 5 * time.Second})
 	})
 
 	require.NoError(t, err)
@@ -64,7 +64,7 @@ exit 0
 	ctx := context.Background()
 
 	res, err := fallback.Execute(ctx, candidates, func(cCtx context.Context, cand string) (execx.Result, error) {
-		return execx.Run(cCtx, execx.Options{Command: cand, Timeout: 5 * time.Second})
+		return execx.Run(cCtx, &execx.Options{Command: cand, Timeout: 5 * time.Second})
 	})
 
 	require.Error(t, err)
@@ -92,7 +92,7 @@ exit 1
 	ctx := context.Background()
 
 	res, err := fallback.Execute(ctx, candidates, func(cCtx context.Context, cand string) (execx.Result, error) {
-		return execx.Run(cCtx, execx.Options{Command: cand, Timeout: 5 * time.Second})
+		return execx.Run(cCtx, &execx.Options{Command: cand, Timeout: 5 * time.Second})
 	})
 
 	require.Error(t, err)
@@ -125,7 +125,7 @@ exit 0
 
 	candidates := []string{binA, binB}
 	res, err := fallback.Execute(context.Background(), candidates, func(cCtx context.Context, cand string) (execx.Result, error) {
-		return execx.Run(cCtx, execx.Options{Command: cand, Timeout: 200 * time.Millisecond})
+		return execx.Run(cCtx, &execx.Options{Command: cand, Timeout: 200 * time.Millisecond})
 	})
 
 	require.NoError(t, err)

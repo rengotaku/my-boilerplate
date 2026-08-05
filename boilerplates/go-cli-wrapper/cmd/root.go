@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"mycli/internal/config"
-	"mycli/internal/greet"
 	"mycli/internal/logger"
 )
 
@@ -41,22 +40,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-var helloCmd = &cobra.Command{
-	Use:   "hello [name]",
-	Short: "Print a greeting",
-	Long:  "Print a greeting message. Optionally specify a name.",
-	Args:  cobra.MaximumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		name := "World"
-		if len(args) > 0 {
-			name = args[0]
-		}
-		slog.DebugContext(cmd.Context(), "greeting", "name", name)
-		_, err := fmt.Fprintln(cmd.OutOrStdout(), greet.Hello(name))
-		return err
-	},
-}
-
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version",
@@ -81,7 +64,6 @@ var configCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(helloCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 }

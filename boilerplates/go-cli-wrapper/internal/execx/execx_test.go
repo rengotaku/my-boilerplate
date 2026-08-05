@@ -29,7 +29,7 @@ sleep 10
 		Timeout: 200 * time.Millisecond,
 	}
 
-	res, err := execx.Run(ctx, opts)
+	res, err := execx.Run(ctx, &opts)
 	elapsed := time.Since(start)
 
 	assert.Less(t, elapsed, 1*time.Second, "should finish within 1 second")
@@ -54,7 +54,7 @@ exit 0
 		Timeout: 5 * time.Second,
 	}
 
-	res, err := execx.Run(ctx, opts)
+	res, err := execx.Run(ctx, &opts)
 	require.NoError(t, err)
 	assert.Equal(t, 0, res.ExitCode)
 	assert.Contains(t, res.Stdout, "out content")
@@ -79,7 +79,7 @@ exit 3
 		Timeout: 5 * time.Second,
 	}
 
-	res, err := execx.Run(ctx, opts)
+	res, err := execx.Run(ctx, &opts)
 	require.Error(t, err)
 	assert.Equal(t, 3, res.ExitCode)
 }
@@ -102,7 +102,7 @@ sleep 10
 	}
 
 	start := time.Now()
-	_, err := execx.Run(ctx, opts)
+	_, err := execx.Run(ctx, &opts)
 	elapsed := time.Since(start)
 
 	assert.Less(t, elapsed, 1*time.Second)
@@ -125,7 +125,7 @@ echo "MYVAR=$MYVAR"
 		Timeout: 5 * time.Second,
 	}
 
-	res, err := execx.Run(context.Background(), opts)
+	res, err := execx.Run(context.Background(), &opts)
 	require.NoError(t, err)
 	assert.Contains(t, res.Stdout, "PWD="+tmpDir)
 	assert.Contains(t, res.Stdout, "MYVAR=custom_val")

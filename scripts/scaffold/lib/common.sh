@@ -14,6 +14,7 @@ VALID_TEMPLATES=(
   go-react-spa-noauth
   go-react-admin
   go-cli
+  go-cli-wrapper
   react-spa
   react-spa-graphql
   react-spa-cloudflare

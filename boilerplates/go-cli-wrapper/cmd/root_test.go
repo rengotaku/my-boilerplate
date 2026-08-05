@@ -7,15 +7,20 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func resetHelpFlag(c *cobra.Command) {
-	if f := c.Flags().Lookup("help"); f != nil {
-		_ = f.Value.Set("false")
+// resetFlags restores every local flag on c to its default value and clears
+// Changed. cobra commands are package-level singletons, so any flag a test
+// sets (including required flags like wrapCmd's --candidates) otherwise
+// leaks its value and Changed=true into the next test's Execute call.
+func resetFlags(c *cobra.Command) {
+	c.Flags().VisitAll(func(f *pflag.Flag) {
+		_ = f.Value.Set(f.DefValue)
 		f.Changed = false
-	}
+	})
 }
 
 func runRoot(t *testing.T, args ...string) (stdout, stderr string, err error) {
@@ -28,39 +33,13 @@ func runRoot(t *testing.T, args ...string) (stdout, stderr string, err error) {
 	t.Cleanup(func() {
 		rootCmd.SetArgs(nil)
 		logOut = nil
-		// cobra commands are package-level singletons, so the auto-added
-		// `help` flag retains its value across Execute calls. Reset it (on the
-		// root and every subcommand) so a `--help` run can't leak into the
-		// next test and make it print usage instead of running.
-		resetHelpFlag(rootCmd)
+		resetFlags(rootCmd)
 		for _, c := range rootCmd.Commands() {
-			resetHelpFlag(c)
+			resetFlags(c)
 		}
 	})
 	err = rootCmd.ExecuteContext(context.Background())
 	return outBuf.String(), errBuf.String(), err
-}
-
-func TestHelloCommand_Default(t *testing.T) {
-	t.Setenv("APP_ENV", "development")
-	t.Setenv("LOG_LEVEL", "info")
-
-	out, _, err := runRoot(t, "hello")
-
-	require.NoError(t, err)
-	assert.Equal(t, "Hello, World!\n", out)
-}
-
-func TestHelloCommand_WithName(t *testing.T) {
-	t.Setenv("APP_ENV", "development")
-	t.Setenv("LOG_LEVEL", "debug")
-
-	out, errOut, err := runRoot(t, "hello", "Alice")
-
-	require.NoError(t, err)
-	assert.Equal(t, "Hello, Alice!\n", out)
-	assert.Contains(t, errOut, "msg=greeting")
-	assert.Contains(t, errOut, "name=Alice")
 }
 
 func TestVersionCommand(t *testing.T) {

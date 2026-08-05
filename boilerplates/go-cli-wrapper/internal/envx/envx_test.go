@@ -8,7 +8,7 @@ import (
 
 func TestOr(t *testing.T) {
 	mockEnv := map[string]string{
-		"FOO": "bar",
+		"FOO":   "bar",
 		"EMPTY": "",
 	}
 	env := func(key string) string {
@@ -33,7 +33,7 @@ func TestOr(t *testing.T) {
 
 func TestIntOr(t *testing.T) {
 	mockEnv := map[string]string{
-		"VALID":   "42",
+		"VALID":    "42",
 		"NEGATIVE": "-10",
 		"ZERO":     "0",
 		"INVALID":  "abc",
@@ -64,16 +64,16 @@ func TestIntOr(t *testing.T) {
 
 func TestBoolOr(t *testing.T) {
 	mockEnv := map[string]string{
-		"TRUE_1":    "1",
-		"TRUE_BOOL": "true",
-		"TRUE_YES":  "YES",
-		"TRUE_ON":   "On",
-		"FALSE_0":   "0",
-		"FALSE_BOOL":"false",
-		"FALSE_NO":  "no",
-		"FALSE_OFF": "OFF",
-		"INVALID":   "maybe",
-		"EMPTY":     "",
+		"TRUE_1":     "1",
+		"TRUE_BOOL":  "true",
+		"TRUE_YES":   "YES",
+		"TRUE_ON":    "On",
+		"FALSE_0":    "0",
+		"FALSE_BOOL": "false",
+		"FALSE_NO":   "no",
+		"FALSE_OFF":  "OFF",
+		"INVALID":    "maybe",
+		"EMPTY":      "",
 	}
 	env := func(key string) string {
 		return mockEnv[key]
