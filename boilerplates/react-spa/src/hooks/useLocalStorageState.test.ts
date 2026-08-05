@@ -106,4 +106,26 @@ describe("useLocalStorageState", () => {
 
     expect(result.current[0]).toBe("default_value");
   });
+
+  // 回帰: 別タブの localStorage.clear() は storage イベントの key が null で届く。
+  // key 一致条件のみだと同期されず削除済みの値を保持し続けるため、key===null もデフォルト値へ戻す
+  it("回帰: falls back to default value when storage event key is null (localStorage.clear())", () => {
+    const { result } = renderHook(() => useLocalStorageState(TEST_KEY, "default_value"));
+
+    act(() => {
+      result.current[1]("some_value");
+    });
+    expect(result.current[0]).toBe("some_value");
+
+    act(() => {
+      const storageEvent = new StorageEvent("storage", {
+        key: null,
+        newValue: null,
+        storageArea: window.localStorage,
+      });
+      window.dispatchEvent(storageEvent);
+    });
+
+    expect(result.current[0]).toBe("default_value");
+  });
 });

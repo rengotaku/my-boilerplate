@@ -63,25 +63,27 @@ export function useLocalStorageState<T>(
     if (typeof window === "undefined") return;
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === key && event.storageArea === window.localStorage) {
-        if (event.newValue === null) {
-          const fallback =
-            typeof defaultValue === "function"
-              ? (defaultValue as () => T)()
-              : defaultValue;
-          setState(fallback);
-        } else {
-          try {
-            const parsed = JSON.parse(event.newValue) as T;
-            setState(parsed);
-          } catch {
-            const fallback =
-              typeof defaultValue === "function"
-                ? (defaultValue as () => T)()
-                : defaultValue;
-            setState(fallback);
-          }
-        }
+      if (event.storageArea !== window.localStorage) return;
+      // event.key is null when the change came from localStorage.clear();
+      // in that case every key (including this one) was wiped, so treat it
+      // the same as this key being removed.
+      const isClearEvent = event.key === null;
+      if (!isClearEvent && event.key !== key) return;
+
+      if (isClearEvent || event.newValue === null) {
+        const fallback =
+          typeof defaultValue === "function" ? (defaultValue as () => T)() : defaultValue;
+        setState(fallback);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(event.newValue) as T;
+        setState(parsed);
+      } catch {
+        const fallback =
+          typeof defaultValue === "function" ? (defaultValue as () => T)() : defaultValue;
+        setState(fallback);
       }
     };
 

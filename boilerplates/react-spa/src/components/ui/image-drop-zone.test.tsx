@@ -119,16 +119,16 @@ describe("ImageDropZone", () => {
   });
 
   // 回帰: 外部 onClick を渡しても内部のファイル選択トリガーが上書きされず、外部 onClick も呼ばれる
-  it("回帰: preserves internal click-to-select behavior while still calling external onClick", () => {
+  // input.click() をモックせず、実際の DOM バブリング経路（div クリック → input.click() →
+  // input 発の click イベントが div へバブリング）を通したまま「ちょうど1回」を検証する。
+  // モックすると input 由来イベントが二重発火する欠陥を検出できないため、実バブリングのまま確認する。
+  it("回帰: preserves internal click-to-select behavior while still calling external onClick exactly once", () => {
     const externalOnClick = vi.fn();
     render(<ImageDropZone accept="image/*" onClick={externalOnClick} />);
 
     const dropZone = screen.getByRole("button");
     const input = screen.getByTestId("image-drop-zone-input") as HTMLInputElement;
-    // Prevent the real click from firing a native event that bubbles back
-    // up to the drop zone (which would call externalOnClick a second time
-    // via event bubbling, independent of the fix under test).
-    const clickSpy = vi.spyOn(input, "click").mockImplementation(() => {});
+    const clickSpy = vi.spyOn(input, "click");
 
     fireEvent.click(dropZone);
 

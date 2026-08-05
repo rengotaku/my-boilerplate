@@ -1,8 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface ImageDropZoneProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface ImageDropZoneProps extends React.HTMLAttributes<HTMLDivElement> {
   accept?: string;
   onFiles?: (files: File[]) => void;
   disabled?: boolean;
@@ -41,7 +40,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       onDrop,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isDragOver, setIsDragOver] = React.useState(false);
     const [rejectedFiles, setRejectedFiles] = React.useState<File[]>([]);
@@ -67,7 +66,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
           onFiles?.(accepted);
         }
       },
-      [accept, onFiles]
+      [accept, onFiles],
     );
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -88,7 +87,11 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       e.stopPropagation();
       setIsDragOver(false);
       if (disabled) return;
-      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      if (
+        e.dataTransfer &&
+        e.dataTransfer.files &&
+        e.dataTransfer.files.length > 0
+      ) {
         processFiles(e.dataTransfer.files);
       }
     };
@@ -99,6 +102,16 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
       }
       // Reset so selecting the same file again still fires a change event.
       e.target.value = "";
+    };
+
+    // The programmatic inputRef.current.click() in handleClick dispatches a
+    // native click event that bubbles up to this div, which would otherwise
+    // invoke the external onClick a second time. Stop it at the source so a
+    // single user click on the drop zone results in exactly one external
+    // onClick call (matches the semantics of a native <label>/<input> pair,
+    // where the hidden input's click is an implementation detail).
+    const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+      e.stopPropagation();
     };
 
     const handleClick = (e?: React.MouseEvent<HTMLDivElement>) => {
@@ -119,7 +132,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
     const composeHandlers =
       <E extends React.SyntheticEvent>(
         internal: (e: E) => void,
-        external?: (e: E) => void
+        external?: (e: E) => void,
       ) =>
       (e: E) => {
         internal(e);
@@ -145,7 +158,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
             : "border-muted-foreground/25 hover:border-primary/50",
           disabled &&
             "cursor-not-allowed opacity-50 hover:border-muted-foreground/25",
-          className
+          className,
         )}
         {...props}
       >
@@ -161,6 +174,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
           tabIndex={-1}
           className="sr-only hidden"
           onChange={handleChange}
+          onClick={handleInputClick}
           disabled={disabled}
           data-testid="image-drop-zone-input"
         />
@@ -191,7 +205,7 @@ const ImageDropZone = React.forwardRef<HTMLDivElement, ImageDropZoneProps>(
         )}
       </div>
     );
-  }
+  },
 );
 ImageDropZone.displayName = "ImageDropZone";
 
