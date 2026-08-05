@@ -1,0 +1,22 @@
+name: Scaffold Verify mcp-server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/mcp-server/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-mcp-server.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/mcp-server/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-mcp-server.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: mcp-server

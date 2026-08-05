@@ -1,0 +1,4 @@
+name = "mcp-server"
+language = "TypeScript"
+description = "MCP Server (stdio) template with TypeScript, Vitest, and @modelcontextprotocol/sdk"
+tags = ["mcp", "mcp-server", "typescript", "vitest", "stdio"]
