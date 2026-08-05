@@ -7,13 +7,14 @@
  *
  *   1. `dist/index.html` が存在し、ホームページの見出しテキストを含む
  *   2. `dist/privacy/index.html` が存在し、プライバシーポリシーページの見出しテキストを含む
- *   3. 両ファイルにエラー痕跡（"Uncaught" 等）が無い
+ *   3. `dist/404.html` が存在し、NotFoundPage の見出しテキストを含む
+ *   4. いずれのファイルにもエラー痕跡（"Uncaught" 等）が無い
  *
  * このテンプレートは原稿を集約する `src/content/` を持たないため、期待テキストは
  * このスクリプトにハードコードしている。`src/pages/HomePage.tsx` /
- * `src/pages/PrivacyPage.tsx` の見出し文言を変更した場合、`src/routes.ts` に
- * パスを追加した場合は、あわせて HOME_HEADING / PRIVACY_HEADING / assertPage の
- * 呼び出しも更新すること。
+ * `src/pages/PrivacyPage.tsx` / `src/pages/NotFoundPage.tsx` の見出し文言を変更した
+ * 場合、`src/routes.ts` にパスを追加した場合は、あわせて HOME_HEADING /
+ * PRIVACY_HEADING / NOT_FOUND_HEADING / assertPage の呼び出しも更新すること。
  */
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -26,6 +27,8 @@ const distDir = path.join(rootDir, "dist");
 const HOME_HEADING = "Static LP Boilerplate";
 // src/pages/PrivacyPage.tsx の見出しテキスト。
 const PRIVACY_HEADING = "プライバシーポリシー";
+// src/pages/NotFoundPage.tsx の見出しテキスト。
+const NOT_FOUND_HEADING = "404";
 
 const ERROR_MARKERS = ["Uncaught", "ReferenceError", "TypeError:", "ChunkLoadError"];
 
@@ -61,6 +64,7 @@ async function main() {
     path.join(distDir, "privacy", "index.html"),
     PRIVACY_HEADING
   );
+  await assertPage("404", path.join(distDir, "404.html"), NOT_FOUND_HEADING);
 }
 
 main().catch((err) => {

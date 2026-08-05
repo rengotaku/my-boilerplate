@@ -18,6 +18,12 @@
  * 出力先マッピング（KNOWN_PATHS のデフォルト値の例）:
  *   "/"        -> dist/index.html（クライアントビルドの出力を上書き）
  *   "/privacy" -> dist/privacy/index.html（新規ディレクトリ）
+ *
+ * さらに KNOWN_PATHS に含まれない未知パス向けに `dist/404.html` も生成する。
+ * `src/router.tsx` の `path="*"`（NotFoundPage）に一致させるため、KNOWN_PATHS に
+ * 存在しないダミーパスで `render()` を呼ぶ（NotFoundPage 専用の描画関数は用意しない。
+ * ワイルドカードルートが既にその役割を持つため）。`dist/404.html` は Cloudflare
+ * Pages が未知パスへのアクセス時に自動的に参照する規約に沿ったファイル名。
  */
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
@@ -30,12 +36,21 @@ const ssrEntryPath = path.join(rootDir, "dist-ssr", "entry-server.js");
 const templatePath = path.join(distDir, "index.html");
 
 const ROOT_PLACEHOLDER = '<div id="root"></div>';
+// KNOWN_PATHS のいずれとも衝突しない前提のダミーパス。src/router.tsx の
+// path="*"（NotFoundPage）にのみマッチさせるために使う。
+const NOT_FOUND_SENTINEL_PATH = "/__prerender-404__";
 
 function outputPathFor(routePath) {
   if (routePath === "/") {
     return path.join(distDir, "index.html");
   }
   return path.join(distDir, routePath.replace(/^\/+/, ""), "index.html");
+}
+
+// 置換値を関数で渡す: 文字列で渡すと原稿に $&, $`, $', $$ 等が含まれた場合に
+// String.replace の特殊置換パターンとして解釈され、出力が静かに壊れる。
+function embedIntoTemplate(template, appHtml) {
+  return template.replace(ROOT_PLACEHOLDER, () => `<div id="root">${appHtml}</div>`);
 }
 
 async function loadKnownPaths() {
@@ -72,14 +87,18 @@ async function main() {
 
   for (const routePath of KNOWN_PATHS) {
     const appHtml = render(routePath);
-    // 置換値を関数で渡す: 文字列で渡すと原稿に $&, $`, $', $$ 等が含まれた場合に
-    // String.replace の特殊置換パターンとして解釈され、出力が静かに壊れる。
-    const html = template.replace(ROOT_PLACEHOLDER, () => `<div id="root">${appHtml}</div>`);
+    const html = embedIntoTemplate(template, appHtml);
     const outputPath = outputPathFor(routePath);
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, html, "utf-8");
     console.log(`[prerender] ${routePath} -> ${path.relative(rootDir, outputPath)}`);
   }
+
+  const notFoundHtml = render(NOT_FOUND_SENTINEL_PATH);
+  const html404 = embedIntoTemplate(template, notFoundHtml);
+  const outputPath404 = path.join(distDir, "404.html");
+  await writeFile(outputPath404, html404, "utf-8");
+  console.log(`[prerender] 404 -> ${path.relative(rootDir, outputPath404)}`);
 }
 
 main().catch((err) => {
