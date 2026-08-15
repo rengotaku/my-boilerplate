@@ -17,3 +17,10 @@ vendor/**
 meta/**
 .github/**
 **/.github/**
+
+# git 管理外のローカル生成物。リポジトリの内容ではないので校正対象にしない。
+# （これを除外しないと、CI は緑なのに手元の make lint-docs だけが落ちる）
+specs/**
+.specify/**
+.claude/**
+**/.claude/**
