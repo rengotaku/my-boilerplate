@@ -194,13 +194,15 @@ func newServeCmd() *cobra.Command {
 ```
 
 `Run()` は内部で `envconfig` から `PORT` / `DATABASE_DSN` / `SHUTDOWN_TIMEOUT`
-等を読み込み、`ctx` が cancel されたら `SHUTDOWN_TIMEOUT` 内で graceful
+等を読み込む。`ctx` が cancel されたら `SHUTDOWN_TIMEOUT` 内で graceful
 shutdown して `nil` を返す。サーバ起動が失敗した場合は wrapped error を返すので、
 cobra 側の `SilenceErrors` / `SilenceUsage` と組み合わせて適切に表示できる。
 
 `scripts/download.sh go-react-spa <existing-cobra-repo> --pick=internal/server/,internal/handler/,internal/service/,internal/repository/,internal/model/,internal/static/`
-で必要な内部パッケージだけ既存リポジトリへ取り込んで使うパターンも想定している
-（pick 後に import path を自分の module 名に rewrite する手間は別途必要）。
+
+上記のように、必要な内部パッケージだけ既存リポジトリへ取り込んで使う
+パターンも想定している（pick 後に import path を自分の module 名へ
+rewrite する手間は別途必要）。
 
 ## Removing authentication
 

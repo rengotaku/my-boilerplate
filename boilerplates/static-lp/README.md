@@ -70,7 +70,7 @@ docs/
    走査し、各パスの HTML を `dist/**/index.html` として書き出す
 5. `dist-ssr/` の削除（`clean:ssr`） — SSR バンドルは配信に不要なため
 6. `node scripts/verify-prerender.mjs`（`verify:prerender`） — 生成された HTML に
-   期待テキストが含まれること・エラー痕跡が無いことを検証する（失敗時はビルド全体を
+   期待テキストを含み、エラー痕跡が無いことを検証する（失敗時はビルド全体を
    失敗させる）
 
 新しいページを追加する場合は `src/router.tsx` の Route 定義と `src/routes.ts` の
@@ -108,8 +108,8 @@ make deploy-preview  # プレビューデプロイ
 
 ## SSR/sitemap が不要な場合の削除手順
 
-本テンプレートは SEO のためのビルド時プリレンダリング（SSG）を前提にしているが、
-社内ツール・単一ページのユーティリティなど SEO を必要としない用途で使う場合は、
+本テンプレートは SEO のためのビルド時プリレンダリング（SSG）を前提にしている。
+社内ツールや単一ページのユーティリティなど SEO を必要としない用途では、
 以下を削除して通常の CSR（Client-Side Rendering）の SPA として運用できる。
 
 1. `src/entry-server.tsx` / `scripts/prerender.mjs` / `scripts/verify-prerender.mjs` /

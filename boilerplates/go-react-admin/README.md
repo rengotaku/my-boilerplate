@@ -1,10 +1,10 @@
 # Go React Admin Boilerplate
 
 運用ダッシュボード（管理コンソール）を全面に据えた Go + React フルスタック
-テンプレート。1 つのバイナリに **worker デーモン** と **web サーバ** を同居させ、
-ジョブの実行履歴（runs）・フェーズ・メトリクスを SQLite に蓄積し、jsonl ログと
-Prometheus メトリクスを出力しながら、React 製の管理画面（shadcn/ui + recharts）で
-可視化する。
+テンプレート。1 つのバイナリに **worker デーモン** と **web サーバ** を
+同居させる。ジョブの実行履歴（runs）・フェーズ・メトリクスを SQLite に
+蓄積し、jsonl ログと Prometheus メトリクスを出力する。React 製の管理画面
+（shadcn/ui + recharts）で可視化する。
 
 サンプルドメインとして「ジョブ（jobs）とその実行（runs / phases / metrics）」を
 同梱しているので、自分の運用対象（バッチ・クローラ・ETL など）に差し替えて使う
@@ -47,7 +47,7 @@ go-react-admin/
 ### Single binary（worker + web）
 
 `internal/server.Run(ctx)` が config を読み込み、worker デーモンと HTTP サーバを
-起動して、`ctx` が cancel されたら `SHUTDOWN_TIMEOUT` 内で graceful shutdown する。
+起動する。`ctx` が cancel されたら `SHUTDOWN_TIMEOUT` 内で graceful shutdown する。
 `cmd/server/main.go` は `signal.NotifyContext` でシグナルを受けて `server.Run()` を
 呼ぶだけの薄いラッパ。
 
@@ -87,11 +87,11 @@ go-react-admin/
 
 ### shared-react-ui の admin compose
 
-`frontend/.shared-ui.toml` の `[ui]` / `[admin]` セクションが、scaffold 時に
+`frontend/.shared-ui.toml` の `[ui]` / `[admin]` セクションが scaffold 時に働く。
 `shared-react-ui/src/{ui,admin}` を `frontend/src/components/{ui,admin}` へ
-materialize する。これにより scaffold 後のプロジェクトは shared-react-ui に依存せず
-自己完結する（shadcn の「コピペで追加」ワークフローを維持）。monorepo 内のローカル
-開発では `make compose-ui` が同じ merge を行う。
+materialize する。これにより scaffold 後のプロジェクトは shared-react-ui に
+依存せず自己完結する（shadcn の「コピペで追加」ワークフローを維持）。
+monorepo 内のローカル開発では `make compose-ui` が同じ merge を行う。
 
 ## Prerequisites
 
@@ -187,9 +187,10 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
   | sh -s -- go-react-admin ~/projects/my-admin
 ```
 
-scaffold は `frontend/src/components/{ui,admin}` を shared-react-ui から materialize
-し（`.shared-ui.toml` は削除される）、Go の module path と `package.json` の `name` を
-書き換え、`make install && make build && ./bin/server` がそのまま動く自己完結ディレクトリ
+scaffold は `frontend/src/components/{ui,admin}` を shared-react-ui から
+materialize する（`.shared-ui.toml` は削除される）。あわせて Go の module path と
+`package.json` の `name` を書き換える。
+`make install && make build && ./bin/server` がそのまま動く自己完結ディレクトリ
 を生成する。
 
 公開予定の場合は scaffold 後に canonical path へ書き換える:

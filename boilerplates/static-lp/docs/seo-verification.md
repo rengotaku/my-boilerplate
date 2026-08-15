@@ -32,16 +32,16 @@
 - **Search Console のカバレッジレポート**: 「インデックス作成」→「ページ」で、登録した
   ページが「インデックス登録済み」になっているか確認する
 - **SNS シェアのプレビュー確認**: X（Twitter）や Slack 等に URL を貼り、OGP 画像・
-  タイトル・説明文が正しく表示されるか確認する（`index.html` の OGP/Twitter Card
-  タグの動作確認を兼ねる）
+  タイトル・説明文が正しく表示されるか確認する（`index.html` のタグの動作確認を
+  兼ねる）
 
 ## 既知の制約
 
 - `src/routes.ts` の `KNOWN_PATHS` に含まれないパスはプリレンダされていない。将来
-  ページを追加する場合は `KNOWN_PATHS` への追記が必要（`scripts/verify-prerender.mjs`
-  は `KNOWN_PATHS` からの取得漏れ自体は検知できないため、新規ページ追加時は
+  ページを追加する場合は `KNOWN_PATHS` への追記が必要。`scripts/verify-prerender.mjs`
+  は `KNOWN_PATHS` からの取得漏れ自体を検知できないため、新規ページ追加時は
   `src/router.tsx` の Route 定義と `KNOWN_PATHS` の両方を更新し、手動でプリレンダ
-  結果を確認すること）
+  結果を確認すること
 - アクセス解析（Cloudflare Web Analytics 等）を導入する場合はページビュー計測が
   主目的になる。検索流入元・検索クエリの詳細分析が必要な場合は Search Console の
   「検索パフォーマンス」レポートを使う

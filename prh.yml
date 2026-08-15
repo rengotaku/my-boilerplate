@@ -1,0 +1,48 @@
+version: 1
+
+# 表記ゆれ辞書（textlint-rule-prh から参照）。
+#
+# ここには「どのプロジェクトでも同じ」固有名詞の大文字小文字だけを入れてある。
+# プロジェクト固有の用語（製品名・ドメイン語）は scaffold 後に追記すること。
+#
+# 方針:
+#   - 文体の好みは入れない（表記の統一だけを扱う）
+#   - 識別子の一部に食い込まないよう、前後の語境界を明示する
+#   - インラインコードとコードブロックは textlint 側で対象外になる
+
+rules:
+  - expected: GitHub
+    patterns:
+      - /(?<![\w-])(?:Github|github|GITHUB)(?![\w-])/
+
+  - expected: JavaScript
+    patterns:
+      - /(?<![\w-])(?:Javascript|javascript|JAVASCRIPT)(?![\w-])/
+
+  - expected: TypeScript
+    patterns:
+      - /(?<![\w-])(?:Typescript|typescript|TYPESCRIPT)(?![\w-])/
+
+  - expected: Node.js
+    patterns:
+      - /(?<![\w-])(?:NodeJS|Nodejs|nodejs|node\.js)(?![\w-])/
+
+  - expected: npm
+    patterns:
+      - /(?<![\w-])(?:NPM|Npm)(?![\w-])/
+
+  - expected: GraphQL
+    patterns:
+      - /(?<![\w-])(?:Graphql|graphQL|GRAPHQL)(?![\w-])/
+
+  - expected: PostgreSQL
+    patterns:
+      - /(?<![\w-])(?:Postgresql|postgreSQL|PostgresSQL)(?![\w-])/
+
+  - expected: macOS
+    patterns:
+      - /(?<![\w-])(?:MacOS|Mac OS X|MacOSX)(?![\w-])/
+
+  - expected: Markdown
+    patterns:
+      - /(?<![\w-])(?:markdown|MarkDown)(?![\w-])/

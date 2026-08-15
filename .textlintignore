@@ -1,0 +1,19 @@
+node_modules/**
+**/node_modules/**
+dist/**
+**/dist/**
+**/dist-ssr/**
+coverage/**
+**/coverage/**
+
+# Python 仮想環境とベンダーディレクトリ（依存物の LICENSE 等を拾わないため）
+.venv/**
+**/.venv/**
+**/site-packages/**
+vendor/**
+**/vendor/**
+
+# issue / PR テンプレートは穴埋め用の断片で、散文としての校正になじまない
+meta/**
+.github/**
+**/.github/**

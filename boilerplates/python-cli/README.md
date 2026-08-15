@@ -7,7 +7,7 @@ uv + Typer + ruff + mypy + pytest のPython CLIボイラープレート。
 - **Package Manager**: [uv](https://docs.astral.sh/uv/) (10-100x faster than pip)
 - **CLI**: [Typer](https://typer.tiangolo.com/)
 - **Config**: [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) (env / `.env` 自動ロード)
-- **Logging**: [structlog](https://www.structlog.org/) (console / JSON 切替）
+- **Logging**: [structlog](https://www.structlog.org/)（console / JSON 切替）
 - **Linter**: [ruff](https://docs.astral.sh/ruff/)
 - **Type Checker**: [mypy](https://mypy-lang.org/) (strict mode)
 - **Testing**: [pytest](https://pytest.org/) + coverage

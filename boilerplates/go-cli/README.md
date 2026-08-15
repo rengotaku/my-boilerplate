@@ -76,7 +76,7 @@ APP_ENV=production ./bin/mycli hello # JSON handler (structured logs)
 
 cobra コマンドを追加するときの規約。`cmd/note.go` がこの規約に沿った推奨スケルトン（自由文の位置引数 + 本物のフラグ + `--help`/`--` がそのまま効く）。
 
-- **`DisableFlagParsing: true` は具体的な理由がない限り使わない。** これを付けると cobra/pflag 標準の `--help`/`-h` 処理と `--`（引数終端）サポートを**同時に捨てる**ため、各コマンドが pflag の劣化版を手書きする羽目になる。典型的な事故: `mycli add --help` が usage を出さず `--help` をタイトルとして書き込む。やむを得ず使う場合は理由を `// DisableFlagParsing:` コメントで明記する。
+- **`DisableFlagParsing: true` は具体的な理由がない限り使わない。** これを付けると cobra/pflag 標準の `--help`/`-h` 処理と `--`（引数終端）サポートを**同時に捨てる**。その結果、各コマンドが pflag の劣化版を手書きする羽目になる。典型的な事故: `mycli add --help` が usage を出さず `--help` をタイトルとして書き込む。やむを得ず使う場合は理由を `// DisableFlagParsing:` コメントで明記する。
 - **オプションは pflag の本物のフラグとして定義する**（`cmd.Flags().StringVar(...)` 等）。手書きパーサで再実装しない。typo は `unknown flag` で弾かれる。
 - **`-` 始まりになりうる自由文は `--`（引数終端）の後ろに渡す。** pflag が flag 扱いするのはトークン先頭が `-` のときだけなので、`--` が標準・ゼロコストの手段。help / flag / `--` の解釈は cobra に任せる。
 
