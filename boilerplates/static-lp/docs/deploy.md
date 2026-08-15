@@ -9,18 +9,18 @@ Cloudflare アカウントの資格情報を渡す前提では作業しないこ
 
 ## 前提: このテンプレートのデプロイ方式
 
-`npm run build`（`tsc -b` → クライアントビルド → SSR ビルド → プリレンダ →
-`dist-ssr` 削除 → プリレンダ結果検証、まで単一コマンドに統合済み）を CI 側で実行し、
+CI 側で `npm run build` を実行し、
 `wrangler pages deploy dist --project-name=<wrangler.toml の name>` でデプロイする
-構成を前提にしている。
+構成を前提にしている。`npm run build` は `tsc -b` → クライアントビルド → SSR ビルド
+→ プリレンダ → `dist-ssr` 削除 → プリレンダ結果検証までを単一コマンドに統合済みである。
 
 つまり **ビルドと配信は CI（例: GitHub Actions）+ Wrangler CLI が担う**。Cloudflare
 Pages ダッシュボードの「Connect to Git」（Cloudflare 側が push を検知して自動ビルド
 する方式）は**使わない**。理由:
 
-- Cloudflare 側の自動ビルドは Node のバージョンやビルドコマンドを Cloudflare の
-  ビルド環境向けに個別設定する必要があり、本テンプレートの `npm run build`
-  （`tsc -b` を含む複数ステップの合成コマンド）と CI 側の設定が二重管理になる
+- Cloudflare 側の自動ビルドは、Node のバージョンやビルドコマンドを Cloudflare の
+  ビルド環境向けに個別設定する必要がある。その結果、本テンプレートの
+  `npm run build`（複数ステップの合成コマンド）と CI 側の設定が二重管理になる
 - 同じ push に対して Cloudflare 側の自動ビルドと CI 側の `wrangler pages deploy`
   が両方走ると、デプロイが二重に発生し、どちらが最終的に反映されたか分かりにくくなる
 
@@ -30,8 +30,8 @@ API から成果物をアップロードする方式）で作成する。`Makefi
 
 ## 1. （任意）独自ドメインを Cloudflare Registrar で取得する
 
-すでに他社レジストラでドメインを取得済みの場合はこの手順は不要（ネームサーバーを
-Cloudflare に向ける手順に読み替える）。
+すでに他社レジストラでドメインを取得済みなら、この手順は不要（ネームサーバーを
+Cloudflare へ向ける手順に読み替える）。
 
 1. https://dash.cloudflare.com/ にアクセスし、Cloudflare アカウントでログインする
 2. 左サイドメニューから「Domain Registration」（ドメイン登録）を選択する
@@ -66,9 +66,9 @@ make pages-create  # wrangler pages project create <name> --production-branch=ma
 3. 「Upload assets」（Direct Upload）を選択する（**「Connect to Git」は選ばない**。
    上記「前提」節の理由により CI 側と二重管理になるため）
 4. プロジェクト名は `wrangler.toml` の `name` と一致させる
-5. 初回アップロードとして、ローカルでビルドした `dist/` ディレクトリ、または
-   プレースホルダーのフォルダをドラッグ&ドロップしてプロジェクトを作成する
-   （初回作成後は CI からの `wrangler pages deploy` が実体を上書きする）
+5. 初回アップロードでは、ローカルでビルドした `dist/` かプレースホルダーの
+   フォルダをドラッグ&ドロップしてプロジェクトを作成する
+   （作成後は CI の `wrangler pages deploy` が実体を上書きする）
 6. 「Deploy site」を押してプロジェクトを確定する
 
 ### カスタムドメインを接続する
@@ -140,11 +140,14 @@ Cloudflare Email Routing で既存のメールアドレスへ転送できる。
 
 ### プレビュー URL（`*.pages.dev`）での確認
 
-Cloudflare Pages の Direct Upload プロジェクトは、デプロイ成功時に
-`https://<project>.pages.dev`（production ブランチ）、`wrangler pages deploy` に
-ブランチ名を指定した場合は `https://<branch>.<project>.pages.dev`（`Makefile` の
-`deploy-preview` ターゲットが `--branch=preview` で実行するのはこの形）のプレビュー
-URL が発行される。デプロイ完了後の CI ログ、または Cloudflare Pages ダッシュボードの
+Cloudflare Pages の Direct Upload プロジェクトは、デプロイ成功時にプレビュー URL を
+発行する。
+
+- production ブランチ: `https://<project>.pages.dev`
+- ブランチ名を指定した場合: `https://<branch>.<project>.pages.dev`
+
+`Makefile` の `deploy-preview` ターゲットは `--branch=preview` で実行するため、
+後者の形になる。デプロイ完了後の CI ログ、または Cloudflare Pages ダッシュボードの
 「Deployments」タブから実際の URL を確認できる。
 
 ### HTTP ステータス / セキュリティヘッダの確認
@@ -171,12 +174,12 @@ curl -s https://<your-domain-or-project>.pages.dev/ \
 ```
 
 X（Twitter）や Slack に公開 URL を貼り、タイトル・説明文・OG 画像のプレビューが
-正しく表示されることも併せて目視確認する（`og:image` に指定した画像ファイルを
-`public/` 配下に実際に配置していることが前提）。
+正しく表示されることも目視確認する。`og:image` に指定した画像ファイルを
+`public/` 配下に配置していることが前提である。
 
 ### CTA 到達確認
 
-`src/config/links.ts` で `mailto:` を使っている導線がある場合、ブラウザで実際に
-ページを開き、CTA ボタンをクリックして OS のメールクライアントが期待どおりの
+`src/config/links.ts` で `mailto:` を使っている導線がある場合は、ブラウザで
+ページを開いて CTA ボタンをクリックする。OS のメールクライアントが期待どおりの
 宛先で新規メール作成画面を起動することを目視確認する。問い合わせ先メールへの
 実際の到達確認は、項目4（Email Routing）の設定完了後に実施する。

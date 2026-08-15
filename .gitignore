@@ -26,3 +26,6 @@ Thumbs.db
 
 .specify/
 specs/
+
+# Node (textlint によるドキュメント校正用)
+node_modules/

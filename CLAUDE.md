@@ -42,7 +42,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
   | sh -s -- <template> <dest>
 ```
 
-`name` は `basename(<dest>)` から自動推定。Go テンプレートの `go.mod` も `basename(<dest>)` をローカル限定モジュール名で初期化するため、**公開する場合のみ** scaffold 完了後に `go mod edit -module github.com/<user>/<repo>` で書き換える（完了メッセージにも案内が出る）。
+`name` は `basename(<dest>)` から自動推定。Go テンプレートの `go.mod` も `basename(<dest>)` をローカル限定モジュール名で初期化する。**公開する場合のみ**、scaffold 完了後に `go mod edit -module github.com/<user>/<repo>` で書き換える（完了メッセージにも案内が出る）。
 
 理由: 構造模倣だと `envconfig` / 共通 logger / Makefile ターゲット等の既存資産が引き継がれず、ボイラープレートの恩恵が受けられない（#97 参照）。
 

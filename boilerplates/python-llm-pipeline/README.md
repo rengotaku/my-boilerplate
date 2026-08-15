@@ -9,18 +9,20 @@ uv + Typer + ruff + mypy + pytest ベースの、LLM を叩くバッチ/パイ�
 - **Package Manager**: [uv](https://docs.astral.sh/uv/) (10-100x faster than pip)
 - **CLI**: [Typer](https://typer.tiangolo.com/)
 - **Config**: [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) (env / `.env` 自動ロード)
-- **Logging**: [structlog](https://www.structlog.org/) (console / JSON 切替）
+- **Logging**: [structlog](https://www.structlog.org/)（console / JSON 切替）
 - **LLM backend seam**: `mypipeline.llm.base.LlmClient` Protocol + 例外階層
-  (`LlmError` / `TransientLlmError` / `RateLimitedError`) — パイプラインは
-  Protocol にのみ依存し、テストは fake 実装を注入する（ネットワーク不要）
+  （`LlmError` / `TransientLlmError` / `RateLimitedError`）。
+  パイプラインは Protocol にのみ依存する。テストは fake 実装を注入する
+  （ネットワーク不要）
 - **Subprocess backend**: `mypipeline.llm.subprocess_backend.SubprocessLlmClient`
-  — 外部 CLI ラッパー。runner/sleep を注入可能、transient のみ線形バックオフ
-  再試行・rate-limit は即 fail・大入力は `spill_argv` で組んだ argv を使い
-  0600/0700 の一時ファイルへスピル（`spill_argv` 未設定で閾値超のプロンプトが
-  来た場合は、パス文字列を暗黙にプロンプトへ差し替えず `LlmError` を送出する）
+  — 外部 CLI ラッパー。runner/sleep を注入できる。
+  transient のみ線形バックオフで再試行し、rate-limit は即 fail。
+  大入力は `spill_argv` で組んだ argv を使い、0600/0700 の一時ファイルへ
+  スピルする。`spill_argv` 未設定で閾値超のプロンプトが来た場合、
+  パス文字列を暗黙にプロンプトへ差し替えず `LlmError` を送出する
 - **HTTP API backend**: `mypipeline.llm.api_backend.HttpApiLlmClient`
-  （`llm-api` extra、httpx ベース） — コードフェンス除去 + dict 型検証つき
-  JSON 応答パース
+  （`llm-api` extra、httpx ベース）。
+  コードフェンス除去 + dict 型検証つき JSON 応答パース
 - **Prompt templates**: `mypipeline.prompts` — system/user 分離 + JSON skeleton 埋め込み
 - **State store**: `mypipeline.state.IngestState` — SQLite（WAL）+
   `PRAGMA user_version` による idempotent マイグレーション、watermark
@@ -129,9 +131,9 @@ LLM を叩くバッチ/パイプラインを組むときに崩れやすい前提
 1. **統一コールへの畳み込み（1 アイテム 1 コール契約を崩さない）**
    複数アイテムを裏で分割・結合して LLM に投げると、失敗時にどのアイテムが
    欠けたか追えなくなります。`LlmClient.complete()` は「1 回の呼び出し =
-   1 件分の応答」の契約を崩さず、バッチ化したいときは呼び出し元でループし、
-   各回の成否を `mypipeline.state.IngestState` の dedup ledger に記録して
-   ください。
+   1 件分の応答」の契約を崩しません。バッチ化したいときは呼び出し元で
+   ループしてください。各回の成否は `mypipeline.state.IngestState` の
+   dedup ledger に記録します。
 2. **同一入力の重複送信禁止（dedup ledger を使う）**
    同じ `(source, stable_id)` を再送すると、LLM 呼び出しコストが重複するだ
    けでなく、レート制限も余計に消費します。送信前に
@@ -144,9 +146,9 @@ LLM を叩くバッチ/パイプラインを組むときに崩れやすい前提
    ARG_MAX 対策の安全弁であって、縮約の代わりではありません — 大きすぎる
    入力は縮約するか要約してから渡してください。閾値超のプロンプトをファイル
    経由で渡したい場合は、ラップする CLI が実際にファイル入力を解釈すること
-   を確認したうえで `spill_argv=lambda path: [...]` を明示設定してください
-   （未設定のまま閾値を超えると、パス文字列を暗黙にプロンプトとして送る
-   silent 誤動作を避けるため `LlmError` になります）。送信直前には
+   を確認してください。そのうえで `spill_argv=lambda path: [...]` を
+   明示設定してください。未設定のまま閾値を超えると `LlmError` になります
+   （パス文字列を暗黙にプロンプトとして送る silent 誤動作を避けるため）。送信直前には
    `mypipeline.redaction.RedactionGate` を通し、API キー・トークン等が
    混入していないことを確認します。
 4. **limit・dry-run オプションでの試運転運用**
