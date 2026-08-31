@@ -26,7 +26,7 @@ jobs:
       matrix:
         template: [go-ssr-web, react-spa, python-web]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Scaffold project (${{ matrix.template }})
         run: |
