@@ -1,0 +1,22 @@
+name: Scaffold Verify vite-ts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/vite-ts/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-vite-ts.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/vite-ts/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-vite-ts.yml'
+      - '.github/workflows/scaffold-verify-react.yml'
+
+jobs:
+  scaffold:
+    uses: ./.github/workflows/scaffold-verify-react.yml
+    with:
+      template: vite-ts
