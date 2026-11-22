@@ -129,6 +129,8 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
+| `--no-auth` | `go-react-spa` / `react-spa` で、認証（ログイン画面・ユーザー一覧・JWT）を除いて scaffold する。バックエンドを持たない `react-spa` の単体アプリは、これを付ける |
+| `--no-github-templates` | `.github/` の PR・Issue テンプレートを入れない |
 
 Go テンプレートの場合、`go.mod` の `module` 行は `basename(<dest>)`（ローカル限定モジュール）で初期化されます。**公開予定の場合**はスキャフォールド後に canonical path へ書き換えてください:
 

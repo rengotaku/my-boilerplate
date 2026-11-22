@@ -1,0 +1,96 @@
+name: Scaffold Verify react-spa-noauth
+
+# react-spa を --no-auth で scaffold した結果を検証する。
+#   1. 認証まわりのファイルが無い
+#   2. index やレイアウトから認証のシンボルが消えている
+#   3. make ci（lint・型検査・テスト・ビルド）が通る
+#
+# .noauth-remove や noauth.sh を変えたとき、または認証まわりのファイルをテンプレートに
+# 足したときに、消し漏れで生成物が壊れるのをここで検出する。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-noauth.yml'
+  pull_request:
+    paths:
+      - 'boilerplates/react-spa/**'
+      - 'boilerplates/shared-react-ui/**'
+      - 'scripts/scaffold/**'
+      - '.github/workflows/scaffold-verify-react-spa-noauth.yml'
+
+jobs:
+  scaffold-react-spa-noauth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: boilerplates/react-spa/.node-version
+
+      - name: Scaffold (--no-auth)
+        run: |
+          bash scripts/scaffold/scaffold.sh \
+            template=react-spa \
+            dest=/tmp/test-react-spa-noauth \
+            name=test-react-spa-noauth \
+            no-auth=1
+
+      - name: Verify auth files are absent
+        run: |
+          dest=/tmp/test-react-spa-noauth
+          fail=0
+          for f in \
+            src/api/auth.ts \
+            src/api/users.ts \
+            src/hooks/useAuthStore.ts \
+            src/hooks/useUsers.ts \
+            src/schemas/auth.ts \
+            src/schemas/user.ts \
+            src/types/auth.ts \
+            src/types/user.ts \
+            src/pages/LoginPage.tsx \
+            src/pages/UsersPage.tsx; do
+            if [ -f "$dest/$f" ]; then
+              echo "FAIL (should be absent): $f"
+              fail=1
+            else
+              echo "OK (absent): $f"
+            fi
+          done
+          exit $fail
+
+      - name: Verify no auth symbols remain
+        run: |
+          dest=/tmp/test-react-spa-noauth
+          fail=0
+          check_absent() {
+            local file="$1" symbol="$2"
+            if grep -q "$symbol" "$dest/$file" 2>/dev/null; then
+              echo "FAIL: $file still references '$symbol'"
+              fail=1
+            else
+              echo "OK: $file has no '$symbol'"
+            fi
+          }
+          check_absent src/api/index.ts            authApi
+          check_absent src/api/index.ts            usersApi
+          check_absent src/hooks/index.ts          useAuthStore
+          check_absent src/hooks/index.ts          useUsers
+          check_absent src/pages/index.ts          LoginPage
+          check_absent src/pages/index.ts          UsersPage
+          check_absent src/App.tsx                 LoginPage
+          check_absent src/components/Layout.tsx   useAuthStore
+          exit $fail
+
+      - name: Install and run CI
+        working-directory: /tmp/test-react-spa-noauth
+        run: |
+          npm install
+          make ci
