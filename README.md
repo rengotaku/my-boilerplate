@@ -55,8 +55,8 @@ Collection of project boilerplates.
 | Name | Description |
 |------|-------------|
 | [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest |
-| [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
 | [go-cli-wrapper](./boilerplates/go-cli-wrapper) | 外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin） |
+| [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
 | [go-graphql-api](./boilerplates/go-graphql-api) | Go + gqlgen の GraphQL API ボイラープレート |
 | [go-grpc-api](./boilerplates/go-grpc-api) | クリーンアーキテクチャな Go gRPC API ボイラープレート |
 | [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / shadcn + recharts 管理画面 |

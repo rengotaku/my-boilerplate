@@ -14,6 +14,10 @@
 
 set -euo pipefail
 
+# glob の並び順はロケールで変わる（C と en_US で go-cli / go-cli-wrapper の順が逆になる）。
+# CI とローカルで同じ表になるよう固定する。
+export LC_ALL=C
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 README="$ROOT/README.md"
 BEGIN='<!-- BEGIN: template-list -->'
@@ -50,16 +54,24 @@ for toml in "$ROOT"/boilerplates/*/template.toml; do
 done
 [ "$count" -gt 0 ] || { echo "テンプレートが 0 件" >&2; exit 1; }
 
-grep -qF "$BEGIN" "$README" && grep -qF "$END" "$README" \
-  || { echo "README.md に $BEGIN / $END が無い" >&2; exit 1; }
+# BEGIN / END は、置換（awk）と同じ「行全体の一致」で、それぞれ 1 行だけ、BEGIN が先にあること。
+# 部分一致で検査すると、行頭や行末に空白があるときに検査を通り、awk が END を認識せず
+# README の後半を消してしまう。
+begin_n=$(grep -cxF -- "$BEGIN" "$README" || true)
+end_n=$(grep -cxF -- "$END" "$README" || true)
+[ "$begin_n" = 1 ] && [ "$end_n" = 1 ] \
+  || { echo "README.md に $BEGIN と $END が、行全体の一致でそれぞれ 1 行ずつ必要です（BEGIN=$begin_n, END=$end_n）" >&2; exit 1; }
+begin_line=$(grep -nxF -- "$BEGIN" "$README" | cut -d: -f1)
+end_line=$(grep -nxF -- "$END" "$README" | cut -d: -f1)
+[ "$begin_line" -lt "$end_line" ] || { echo "README.md の BEGIN が END より後ろにあります" >&2; exit 1; }
 
 tmp=$(mktemp -t gen-readme-list-XXXXXX)
 trap 'rm -f "$tmp"' EXIT
 
-awk -v begin="$BEGIN" -v end="$END" -v table="$table" '
-  $0 == begin { print; print table; skip = 1; next }
-  $0 == end   { skip = 0 }
-  !skip       { print }
+TABLE="$table" BEGIN="$BEGIN" END="$END" awk '
+  $0 == ENVIRON["BEGIN"] { print; print ENVIRON["TABLE"]; skip = 1; next }
+  $0 == ENVIRON["END"]   { skip = 0 }
+  !skip                  { print }
 ' "$README" > "$tmp"
 
 if [ "$mode" = "check" ]; then
