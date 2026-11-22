@@ -44,9 +44,6 @@ jobs:
             flags: 'no-auth=1 no-sample=1'
             expect_tables: ''
 
-    env:
-      DEST: ${{ runner.temp }}/python-web-${{ matrix.variant }}
-
     steps:
       - uses: actions/checkout@v6
 
@@ -65,9 +62,11 @@ jobs:
         env:
           FLAGS: ${{ matrix.flags }}
         run: |
+          dest="$RUNNER_TEMP/python-web-${{ matrix.variant }}"
+          echo "DEST=$dest" >> "$GITHUB_ENV"
           bash scripts/scaffold/scaffold.sh \
             template=python-web \
-            dest="$DEST" \
+            dest="$dest" \
             name=testapp \
             $FLAGS
 
