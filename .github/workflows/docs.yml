@@ -11,6 +11,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/docs.yml'
+      - 'boilerplates/*/template.toml'
+      - 'scripts/gen-readme-list.sh'
   pull_request:
     paths:
       - '**/*.md'
@@ -20,6 +22,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/docs.yml'
+      - 'boilerplates/*/template.toml'
+      - 'scripts/gen-readme-list.sh'
 
 jobs:
   textlint:
@@ -43,3 +47,7 @@ jobs:
       # テンプレート側には依存を増やしていない。
       - name: Lint docs
         run: npm run lint:docs
+
+      # README の一覧表が template.toml とずれていないか確かめる
+      - name: Check template list
+        run: make check-readme-list
