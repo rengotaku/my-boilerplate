@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vite-ts</title>
+  </head>
+  <body>
+    <main>
+      <h1>vite-ts</h1>
+      <p>テキストを入れて送信すると、空白を畳んだ結果と語数を表示します。</p>
+      <form id="sample-form">
+        <label for="sample-input">テキスト</label>
+        <textarea id="sample-input" rows="4" cols="40"></textarea>
+        <button type="submit">数える</button>
+      </form>
+      <output id="sample-output"></output>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

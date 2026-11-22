@@ -74,6 +74,7 @@ Collection of project boilerplates.
 | [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Tailwind + Zustand の最小 React SPA |
 | [rust-cli](./boilerplates/rust-cli) | Rust + clap + config + tracing の Batteries-included な CLI |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート |
+| [vite-ts](./boilerplates/vite-ts) | 素の Vite + TypeScript（React なし）の最小テンプレート。純粋関数のサンプルとテスト付き |
 <!-- END: template-list -->
 
 ## Roadmap
@@ -106,6 +107,7 @@ make stop-all
 | go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
 | go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
 | react-spa | 5173 | Vite dev |
+| vite-ts | 5176 | Vite dev (React なし) |
 
 ### New Project Checklist
 
