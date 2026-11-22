@@ -13,7 +13,7 @@ install:
 
 ## run: Start the Vite dev server
 run:
-	npm run dev
+	npm run dev -- --port $(PORT) --strictPort
 
 ## build: Build the production bundle
 build:

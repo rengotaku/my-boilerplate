@@ -60,7 +60,7 @@ make run
 make ci
 ```
 
-開発サーバのポートは `5176` です。`make stop` と `make status` はこのポートを見ます。
+開発サーバのポートは `5176` です。`make run` / `make stop` / `make status` は同じ `PORT` を見ます。`make run PORT=5180` のように変えると、起動・停止・状態確認がそろって 5180 を使います。5176 が別のプロセスに使われているときは、`make run` は別のポートへ移らずに失敗します。
 
 ## Commands
 
