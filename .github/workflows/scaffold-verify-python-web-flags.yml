@@ -127,3 +127,38 @@ jobs:
       - name: make ci
         working-directory: ${{ runner.temp }}/python-web-${{ matrix.variant }}
         run: make ci
+
+  flag-validation:
+    name: flag validation (python-web only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Reject --no-sample for other python templates
+        run: |
+          set -euo pipefail
+          fail=0
+          for template in python-cli python-llm-pipeline; do
+            dest="$RUNNER_TEMP/reject-$template"
+            log="$RUNNER_TEMP/reject-$template.log"
+            if bash scripts/scaffold/scaffold.sh \
+              template="$template" dest="$dest" name=rejected no-sample=1 \
+              >"$log" 2>&1; then
+              echo "::error::$template accepted no-sample=1"
+              fail=1
+            fi
+            if [ -e "$dest" ]; then
+              echo "::error::$template created a destination before aborting"
+              fail=1
+            else
+              echo "OK: $template rejected --no-sample and created no destination"
+            fi
+            if grep -q 'supported only for python-web' "$log"; then
+              echo "OK: $template reports the python-web-only rule"
+            else
+              echo "::error::$template error message does not explain the rule"
+              cat "$log"
+              fail=1
+            fi
+          done
+          exit "$fail"

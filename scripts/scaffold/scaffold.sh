@@ -80,9 +80,12 @@ if [[ "$family" != "go" && -n "$module" ]]; then
 fi
 
 # --- Feature-flag validation ---
-# --no-sample is python-web only. --no-auth exists for python-web and for the
-# React/Go templates (apply_noauth); the two implementations must stay apart.
-if [[ -n "$no_sample" && "$no_sample" != "0" && "$family" != "python" ]]; then
+# Both flags are python-web only for the python family; --no-auth additionally
+# exists for the React/Go templates (apply_noauth), and the two implementations
+# must stay apart. Compare the template (not the family): a python template
+# without --no-sample support (python-cli, python-llm-pipeline) must fail here
+# instead of silently scaffolding with the sample left in place.
+if [[ -n "$no_sample" && "$no_sample" != "0" && "$template" != "python-web" ]]; then
   die "no-sample= is supported only for python-web (template: $template)"
 fi
 if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" == "python" && "$template" != "python-web" ]]; then
