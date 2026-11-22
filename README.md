@@ -74,6 +74,7 @@ Collection of project boilerplates.
 | [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Tailwind + Zustand の最小 React SPA |
 | [rust-cli](./boilerplates/rust-cli) | Rust + clap + config + tracing の Batteries-included な CLI |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート |
+| [vite-ts](./boilerplates/vite-ts) | 素の Vite + TypeScript（React なし）の最小テンプレート。純粋関数のサンプルとテスト付き |
 <!-- END: template-list -->
 
 ## Roadmap
@@ -106,6 +107,7 @@ make stop-all
 | go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
 | go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
 | react-spa | 5173 | Vite dev |
+| vite-ts | 5176 | Vite dev (React なし) |
 
 ### New Project Checklist
 
@@ -129,8 +131,9 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`go-react-spa` 系は JWT 認証を除きます |
+| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`go-react-spa` / `react-spa` は認証（ログイン画面・ユーザー一覧・JWT）を除きます。バックエンドを持たない `react-spa` の単体アプリは、これを付けます |
 | `--no-sample` | `python-web` のみ。items の CRUD サンプルを scaffold 時に外します。`--no-auth` とは独立しており、同時に指定できます |
+| `--no-github-templates` | `.github/` の PR・Issue テンプレートを入れません |
 
 `python-web` で両方のフラグを同時に使う例:
 
