@@ -34,7 +34,7 @@
 #                             Defaults to basename(<dest>).
 #   --no-github-templates     Skip injecting .github/PULL_REQUEST_TEMPLATE.md and
 #                             .github/ISSUE_TEMPLATE/*.md into the scaffolded project.
-#   --no-auth                 (go-react-spa only) strip JWT auth at scaffold time.
+#   --no-auth                 (go-react-spa / react-spa) strip auth (login, users, JWT) at scaffold time.
 #
 # --list:
 #   --format=text  (default) human-readable columns: name / language / description
