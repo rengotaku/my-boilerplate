@@ -1,4 +1,4 @@
-.PHONY: stop-all status e2e e2e-install e2e-update-snapshots scaffold download-test lint-docs fix-docs help
+.PHONY: stop-all status e2e e2e-install e2e-update-snapshots scaffold download-test lint-docs fix-docs readme-list check-readme-list help
 
 # Keep in sync with @playwright/test version in e2e/package-lock.json
 # and the container image tag in .github/workflows/e2e.yml.
@@ -44,6 +44,14 @@ lint-docs:
 ## fix-docs: Apply textlint auto-fixes to all Markdown in this repository
 fix-docs:
 	npm run lint:docs:fix
+
+## readme-list: Regenerate the template table in README.md from boilerplates/*/template.toml
+readme-list:
+	@bash scripts/gen-readme-list.sh
+
+## check-readme-list: Fail if the README.md template table is out of date
+check-readme-list:
+	@bash scripts/gen-readme-list.sh --check
 
 ## help: Show this help
 help:
