@@ -2,10 +2,18 @@
 # Scaffold a standalone project from a monorepo template
 #
 # Usage:
-#   bash scripts/scaffold/scaffold.sh template=<name> dest=<path> name=<project-name> [go-module-name=<go-module>]
+#   bash scripts/scaffold/scaffold.sh template=<name> dest=<path> name=<project-name> \
+#     [go-module-name=<go-module>] [no-auth=1] [no-sample=1]
 #
 # go-module-name は Go テンプレートのみで必須。`go.mod` の `module` 行に書かれる
 # モジュールパス（例: github.com/user/repo）を指定する。
+#
+# no-auth=1:
+#   - python-web: 認証 (login / register / JWT / users) を除く
+#   - react / go: React SPA の JWT 認証を除く（従来の挙動）
+# no-sample=1:
+#   - python-web のみ: items の CRUD サンプルを除く
+# 両方のフラグは互いに独立しており、同時に指定できる。
 
 set -euo pipefail
 
@@ -26,6 +34,7 @@ name=""
 module=""
 no_github_templates=""
 no_auth=""
+no_sample=""
 
 for arg in "$@"; do
   case "$arg" in
@@ -35,6 +44,7 @@ for arg in "$@"; do
     go-module-name=*) module="${arg#go-module-name=}" ;;
     no-github-templates=*) no_github_templates="${arg#no-github-templates=}" ;;
     no-auth=*) no_auth="${arg#no-auth=}" ;;
+    no-sample=*) no_sample="${arg#no-sample=}" ;;
     *) die "Unknown argument: $arg" ;;
   esac
 done
@@ -67,6 +77,19 @@ fi
 if [[ "$family" != "go" && -n "$module" ]]; then
   warn "go-module-name= is ignored for $family templates"
   module=""
+fi
+
+# --- Feature-flag validation ---
+# Both flags are python-web only for the python family; --no-auth additionally
+# exists for the React/Go templates (apply_noauth), and the two implementations
+# must stay apart. Compare the template (not the family): a python template
+# without --no-sample support (python-cli, python-llm-pipeline) must fail here
+# instead of silently scaffolding with the sample left in place.
+if [[ -n "$no_sample" && "$no_sample" != "0" && "$template" != "python-web" ]]; then
+  die "no-sample= is supported only for python-web (template: $template)"
+fi
+if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" == "python" && "$template" != "python-web" ]]; then
+  die "no-auth= is supported only for python-web and the React/Go templates (template: $template)"
 fi
 
 # --- Copy template ---
@@ -120,6 +143,18 @@ if [[ -n "$generic_files" ]]; then
   done <<< "$generic_files"
 fi
 
+# --- Python feature flags (--no-auth / --no-sample) ---
+# Runs before the family replacements because the python-web manifests list
+# original src/myweb/... paths and python.sh renames that directory. Marker
+# removal happens here too, so scaffolding without any flag reproduces the
+# template byte-for-byte (the markers themselves never ship).
+if [[ "$template" == "python-web" ]]; then
+  info "Applying python-web feature flags..."
+  # shellcheck source=lib/python_features.sh
+  source "$SCRIPT_DIR/lib/python_features.sh"
+  apply_python_feature_flags "$dest" "$template" "$no_auth" "$no_sample"
+fi
+
 # --- Family-specific replacements ---
 info "Applying $family replacements..."
 
@@ -142,8 +177,10 @@ case "$family" in
     ;;
 esac
 
-# --- No-auth transformation ---
-if [[ -n "$no_auth" && "$no_auth" != "0" ]]; then
+# --- No-auth transformation (React / Go templates) ---
+# python-web is handled by apply_python_feature_flags above: reusing
+# apply_noauth here would write the React SPA files into a Python project.
+if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" != "python" ]]; then
   # shellcheck source=lib/noauth.sh
   source "$SCRIPT_DIR/lib/noauth.sh"
   if [[ -d "$dest/frontend" ]]; then
@@ -225,6 +262,16 @@ case "$family" in
     echo "  cd $dest"
     echo "  uv sync --all-extras"
     echo "  make ci"
+    if [[ -n "$no_auth" && "$no_auth" != "0" ]] || [[ -n "$no_sample" && "$no_sample" != "0" ]]; then
+      echo ""
+      echo "Optional parts removed at scaffold time:"
+      if [[ -n "$no_auth" && "$no_auth" != "0" ]]; then
+        echo "  - auth (login / register / JWT / users)"
+      fi
+      if [[ -n "$no_sample" && "$no_sample" != "0" ]]; then
+        echo "  - items CRUD sample"
+      fi
+    fi
     ;;
   rust)
     echo "  cd $dest"

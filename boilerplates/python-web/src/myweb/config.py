@@ -25,11 +25,13 @@ class Settings(BaseSettings):
     database_url: str = Field(
         default=f"sqlite:///{_BASE_DIR / 'myweb.db'}",
     )
+# @scaffold:remove-if no-auth
 
     jwt_secret: str = Field(default="dev-secret-change-me-in-production-32+")
     jwt_algorithm: str = Field(default="HS256")
     jwt_expire_minutes: int = Field(default=60 * 24)
     session_cookie_name: str = Field(default="session")
+# @scaffold:end
 
 
 _settings: Settings | None = None

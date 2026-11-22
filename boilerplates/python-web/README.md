@@ -27,6 +27,26 @@ make install
 make migrate     # Alembic で初回マイグレーション
 ```
 
+## Optional parts
+
+認証 (`--no-auth`) と items の CRUD サンプル (`--no-sample`) は scaffold 時に外せます。2 つは互いに独立しており、同時にも指定できます。
+
+- `--no-auth`: login / register / JWT / users を除きます。`config.py` の JWT とセッション Cookie の設定、`users` テーブルを作る初期マイグレーション、`base.html` のログイン・登録リンクも消えます。
+- `--no-sample`: items の CRUD サンプルを除きます。`Item` モデル、`items` テーブルを作る初期マイグレーション、items のテンプレートが消え、トップページは最小構成の案内に置き換わります。
+
+```bash
+# リポジトリ未取得の場合は download.sh 経由
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- python-web "$HOME/projects/my-app" --no-auth
+
+# リポジトリをクローン済みの場合は scaffold.sh を直接
+bash scripts/scaffold/scaffold.sh \
+  template=python-web dest="$HOME/projects/my-app" name=my-app \
+  no-auth=1 no-sample=1
+```
+
+外したあとも `make ci` と `alembic upgrade head` は通ります。依存パッケージ (`pyjwt` / `pwdlib`) は `pyproject.toml` に残るため、不要なら手で外してください。
+
 ## Development
 
 ```bash
@@ -90,3 +110,5 @@ tests/                    # テストスイート
 | `JWT_ALGORITHM` | `HS256` | JWT 署名アルゴリズム |
 | `JWT_EXPIRE_MINUTES` | `1440` | JWT 有効期限 (分) |
 | `SESSION_COOKIE_NAME` | `session` | セッション Cookie 名 |
+
+`--no-auth` で scaffold した場合、`JWT_SECRET` / `JWT_ALGORITHM` / `JWT_EXPIRE_MINUTES` / `SESSION_COOKIE_NAME` は読み込まれません。

@@ -1,0 +1,18 @@
+# Files removed when scaffolding python-web with --no-sample.
+# Each line is a path relative to the project root.
+# Lines starting with # and blank lines are ignored.
+#
+# Keep this list in sync with the items CRUD sample in this template.
+# Deleting a file here is not enough on its own when imports, router
+# registration, models, the initial migration or templates reference it:
+# those spots carry @scaffold:remove-if no-sample markers instead.
+# tests/test_routes.py is deliberately NOT listed: it keeps the shared
+# "GET / returns 200" test in every variant (see the markers in the file).
+src/myweb/routes/items.py
+src/myweb/repositories/item_repo.py
+src/myweb/services/item_service.py
+templates/items/new.html
+templates/items/edit.html
+templates/items/show.html
+tests/test_repositories.py
+tests/test_services.py
