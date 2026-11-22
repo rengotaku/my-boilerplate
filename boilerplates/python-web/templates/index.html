@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
+{# @scaffold:remove-if no-sample #}
 {% block title %}Item 一覧 - myweb{% endblock %}
+{# @scaffold:end #}
 
 {% block content %}
+{# @scaffold:remove-if no-sample #}
 <div x-data="{ confirmDelete: null }">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Item 一覧</h1>
@@ -50,4 +53,13 @@
     </div>
     {% endif %}
 </div>
+{# @scaffold:end #}
+{# @scaffold:keep-if no-sample #}
+{% if no_sample is defined %}
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">myweb</h1>
+    <p class="text-gray-500">最小構成で scaffold しました。ルートとテンプレートを追加して開発を始めてください。</p>
+</div>
+{% endif %}
+{# @scaffold:end #}
 {% endblock %}

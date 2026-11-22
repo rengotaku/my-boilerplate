@@ -1,0 +1,19 @@
+# Files removed when scaffolding python-web with --no-auth.
+# Each line is a path relative to the project root.
+# Lines starting with # and blank lines are ignored.
+#
+# Keep this list in sync with the auth-related files in this template.
+# Deleting a file here is not enough on its own when imports, router
+# registration, models, the initial migration or templates reference it:
+# those spots carry @scaffold:remove-if no-auth markers instead.
+src/myweb/auth/__init__.py
+src/myweb/auth/jwt_utils.py
+src/myweb/auth/password.py
+src/myweb/routes/auth.py
+src/myweb/repositories/user_repo.py
+src/myweb/services/user_service.py
+templates/auth/login.html
+templates/auth/register.html
+tests/test_auth.py
+tests/test_auth_routes.py
+tests/test_user_service.py

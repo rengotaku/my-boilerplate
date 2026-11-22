@@ -14,15 +14,15 @@ class TestSettings:
         s = Settings()
         assert s.app_env == "development"
         assert s.log_level == "INFO"
-        assert s.jwt_algorithm == "HS256"
+        assert s.jwt_algorithm == "HS256"  # @scaffold:remove-if no-auth
         assert "sqlite" in s.database_url
 
     def test_env_override(self, monkeypatch: MonkeyPatch) -> None:
         monkeypatch.setenv("APP_ENV", "production")
-        monkeypatch.setenv("JWT_SECRET", "from-env")
+        monkeypatch.setenv("JWT_SECRET", "from-env")  # @scaffold:remove-if no-auth
         s = Settings()
         assert s.app_env == "production"
-        assert s.jwt_secret == "from-env"
+        assert s.jwt_secret == "from-env"  # @scaffold:remove-if no-auth
 
     def test_get_settings_singleton(self) -> None:
         reset_settings()

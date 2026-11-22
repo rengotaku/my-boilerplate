@@ -129,6 +129,15 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
+| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`go-react-spa` 系は JWT 認証を除きます |
+| `--no-sample` | `python-web` のみ。items の CRUD サンプルを scaffold 時に外します。`--no-auth` とは独立しており、同時に指定できます |
+
+`python-web` で両方のフラグを同時に使う例:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
+  | sh -s -- python-web ~/projects/my-app --no-auth --no-sample
+```
 
 Go テンプレートの場合、`go.mod` の `module` 行は `basename(<dest>)`（ローカル限定モジュール）で初期化されます。**公開予定の場合**はスキャフォールド後に canonical path へ書き換えてください:
 

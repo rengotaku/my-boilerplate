@@ -19,6 +19,7 @@ class TestIndexPage:
         """GET / が HTML コンテンツを返す."""
         response = client.get("/")
         assert "text/html" in response.headers["content-type"]
+# @scaffold:remove-if no-sample
 
     def test_index_contains_items_heading(self, client: TestClient) -> None:
         """トップページにアイテム関連の見出しが含まれる."""
@@ -302,6 +303,7 @@ class TestDeleteItem:
         """存在しないアイテムの削除で 404 を返す."""
         response = client.post("/items/99999/delete")
         assert response.status_code == 404
+# @scaffold:end
 
 
 # =============================================================================
@@ -311,6 +313,7 @@ class TestDeleteItem:
 
 class TestRouteEdgeCases:
     """ルートのエッジケーステスト."""
+# @scaffold:remove-if no-sample
 
     def test_create_with_special_chars(self, client: TestClient) -> None:
         """特殊文字を含む name で作成できる."""
@@ -329,6 +332,7 @@ class TestRouteEdgeCases:
             follow_redirects=False,
         )
         assert response.status_code == 302
+# @scaffold:end
 
     def test_static_files_accessible(self, client: TestClient) -> None:
         """静的ファイルパスが設定されている."""

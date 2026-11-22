@@ -17,7 +17,7 @@
 #
 # Usage:
 #   curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-#     | sh -s -- <template> <dest> [--name=NAME] [--no-github-templates] [--no-auth]
+#     | sh -s -- <template> <dest> [--name=NAME] [--no-github-templates] [--no-auth] [--no-sample]
 #   curl -sSL .../download.sh | sh -s -- --list [--format=json]
 #   curl -sSL .../download.sh | sh -s -- <template> --tree
 #   curl -sSL .../download.sh | sh -s -- <template> <dest> --pick=PATH[,PATH...] [--apply] [--overwrite]
@@ -34,7 +34,12 @@
 #                             Defaults to basename(<dest>).
 #   --no-github-templates     Skip injecting .github/PULL_REQUEST_TEMPLATE.md and
 #                             .github/ISSUE_TEMPLATE/*.md into the scaffolded project.
-#   --no-auth                 (go-react-spa only) strip JWT auth at scaffold time.
+#   --no-auth                 Strip auth at scaffold time. python-web: login /
+#                             register / JWT / users. go-react-spa (and the
+#                             react-spa frontend it composes): JWT auth.
+#   --no-sample               (python-web only) Strip the items CRUD sample at
+#                             scaffold time. Independent of --no-auth, so both
+#                             flags can be combined.
 #
 # --list:
 #   --format=text  (default) human-readable columns: name / language / description
@@ -111,7 +116,7 @@ die() {
 usage() {
   cat <<'EOF'
 Usage:
-  download.sh <template> <dest> [--name=NAME] [--no-github-templates] [--no-auth]
+  download.sh <template> <dest> [--name=NAME] [--no-github-templates] [--no-auth] [--no-sample]
   download.sh --list [--format=text|json]
   download.sh <template> --tree
   download.sh <template> <dest> --pick=PATH[,PATH...] [--apply] [--overwrite]
@@ -125,6 +130,7 @@ dest=""
 name=""
 no_github_templates=""
 no_auth=""
+no_sample=""
 mode="scaffold"
 format="text"
 pick=""
@@ -140,6 +146,7 @@ while [ $# -gt 0 ]; do
     --name=*) name="${1#--name=}" ;;
     --no-github-templates) no_github_templates="1" ;;
     --no-auth) no_auth="1" ;;
+    --no-sample) no_sample="1" ;;
     --list) mode="list" ;;
     --tree) mode="tree" ;;
     --pick=*)
@@ -473,11 +480,12 @@ run_scaffold() {
   # (those that ship a `.compose.toml`, e.g. go-react-spa) read sibling
   # templates from $extracted during scaffolding, so the full tarball must
   # remain available — do not pre-trim it down to $extracted/$template here.
-  info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module}${no_auth:+ no-auth})"
+  info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module}${no_auth:+ no-auth}${no_sample:+ no-sample})"
   scaffold_args="template=$template dest=$dest name=$name"
   [ -n "$module" ] && scaffold_args="$scaffold_args go-module-name=$module"
   [ -n "$no_github_templates" ] && scaffold_args="$scaffold_args no-github-templates=1"
   [ -n "$no_auth" ] && scaffold_args="$scaffold_args no-auth=1"
+  [ -n "$no_sample" ] && scaffold_args="$scaffold_args no-sample=1"
   # shellcheck disable=SC2086
   bash "$extracted/scripts/scaffold/scaffold.sh" $scaffold_args
 
