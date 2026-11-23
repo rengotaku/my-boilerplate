@@ -53,7 +53,7 @@ go-ssr-web/
 
 ## Prerequisites
 
-- Go 1.24+
+- Go 1.26+
 - [golangci-lint](https://golangci-lint.run/welcome/install/) (for linting)
 - [atlas](https://atlasgo.io/) CLI (optional — only required for `make migrate-diff` / `migrate-apply`)
 

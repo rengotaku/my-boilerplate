@@ -48,7 +48,7 @@ func main() {
 	if os.Getenv("APP_ENV") == "production" {
 		logHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})
 	} else {
-		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
+		logHandler = tint.NewTextHandler(os.Stderr, &tint.Options{
 			Level:      &logLevel,
 			TimeFormat: time.Kitchen,
 		})

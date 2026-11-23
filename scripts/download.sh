@@ -51,9 +51,7 @@
 #
 # --tree:
 #   Prints a flat sorted list of files under the template directory (relative to
-#   the template root). Composite templates (those that ship a `.compose.toml`)
-#   include a trailing note explaining that frontend/ is materialized at
-#   scaffold time from a sibling template.
+#   the template root).
 #
 # --pick:
 #   --pick=PATH[,PATH...]   Files / directories under the template to copy.
@@ -65,10 +63,6 @@
 #   --overwrite             When --apply is set, replace existing files at the
 #                           destination. Without --overwrite the default is to
 #                           skip existing files.
-#   Composite templates (those with a .compose.toml) are supported, but
-#   `frontend/`, `frontend.overlay/`, and `.compose.toml` itself are skipped
-#   with a [WARN]: those entries only make sense after scaffold-time compose
-#   and copying them into an existing project would do the wrong thing.
 #
 # Go templates (scaffold mode): the `module` line in go.mod is auto-set to
 # basename(<dest>), producing a local-only module suitable for prototyping. If
@@ -393,20 +387,11 @@ run_tree() {
   ( cd "$tdir" && find . -mindepth 1 -type f \
       | sed -E 's|^\./|  |' \
       | sort )
-  if [ -f "$tdir/.compose.toml" ]; then
-    printf '\n'
-    printf 'Note: composite template — frontend/ is materialized from a sibling\n'
-    printf '      template at scaffold time (see .compose.toml). The tree above\n'
-    printf '      shows only the overlay diff, not the final scaffolded layout.\n'
-  fi
 }
 
 run_pick() {
   tdir=$(resolve_template_dir "$template")
   [ -n "$tdir" ] || die "Template '$template' not found at ${REPO}@${REF}"
-
-  is_composite=""
-  [ -f "$tdir/.compose.toml" ] && is_composite="1"
 
   prefix="[DRY-RUN] "
   [ -n "$apply" ] && prefix=""
@@ -418,21 +403,8 @@ run_pick() {
   # spaces working — though we expect none of our templates to ship such files.
   # The inner loop emits only candidate file paths on stdout; not-found
   # warnings go to stderr so they don't get re-processed by the outer loop.
-  #
-  # For composite templates, frontend/ and frontend.overlay/ only make sense
-  # after scaffold-time compose, and .compose.toml itself is a scaffold-only
-  # manifest. Skip those three with a [WARN] so callers see why their path was
-  # dropped instead of getting a silent partial result.
   printf '%s\n' "$pick" | tr ',' '\n' | while IFS= read -r path || [ -n "$path" ]; do
     [ -z "$path" ] && continue
-    if [ -n "$is_composite" ]; then
-      case "$path" in
-        frontend | frontend/* | frontend.overlay | frontend.overlay/* | .compose.toml)
-          warn "skip overlay path: $path (composite template '$template' — only meaningful after scaffold-time compose)"
-          continue
-          ;;
-      esac
-    fi
     src="$src_root/$path"
     if [ ! -e "$src" ]; then
       warn "not found in template: $path"
@@ -478,10 +450,7 @@ run_scaffold() {
 
   # Always invoke scaffold.sh. It rewrites template-name placeholders
   # (Makefile / HTML / Go module path / package.json name etc.) so the
-  # resulting directory is a usable standalone project. Templates that ship a
-  # `.compose.toml` read sibling templates from $extracted during scaffolding,
-  # so the full tarball must remain available — do not pre-trim it down to
-  # $extracted/$template here.
+  # resulting directory is a usable standalone project.
   info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module}${no_auth:+ no-auth}${no_sample:+ no-sample})"
   scaffold_args="template=$template dest=$dest name=$name"
   [ -n "$module" ] && scaffold_args="$scaffold_args go-module-name=$module"
