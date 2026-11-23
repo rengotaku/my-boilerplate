@@ -58,19 +58,13 @@ Collection of project boilerplates.
 | [go-cli-wrapper](./boilerplates/go-cli-wrapper) | 外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin） |
 | [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
 | [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / shadcn + recharts 管理画面 |
-| [go-react-spa-noauth](./boilerplates/go-react-spa-noauth) | go-react-spa から JWT 認証を除いた版（scaffold 時に自動展開） |
-| [go-react-spa](./boilerplates/go-react-spa) | gin + embed で React SPA を同梱するフルスタック monolith（JWT 認証付き） |
-| [go-ssr-web-minimal](./boilerplates/go-ssr-web-minimal) | 最小構成の Go SSR Web（gin + html/template + embed + slog + envconfig + 素の CSS） |
-| [go-ssr-web](./boilerplates/go-ssr-web) | Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット） |
 | [mcp-server](./boilerplates/mcp-server) | MCP Server (stdio) template with TypeScript, Vitest, and @modelcontextprotocol/sdk |
 | [python-cli](./boilerplates/python-cli) | uv + Typer + ruff + mypy + pytest の Python CLI |
 | [python-llm-pipeline](./boilerplates/python-llm-pipeline) | uv + Typer + ruff + mypy + pytest の LLM パイプライン基盤 (backend Protocol / retry / SQLite state store) |
 | [python-web](./boilerplates/python-web) | FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite の Web ボイラープレート |
 | [react-spa-cloudflare](./boilerplates/react-spa-cloudflare) | Cloudflare Pages デプロイ向けに最適化された React SPA |
 | [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Tailwind + Zustand の最小 React SPA |
-| [rust-cli](./boilerplates/rust-cli) | Rust + clap + config + tracing の Batteries-included な CLI |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート |
-| [vite-ts](./boilerplates/vite-ts) | 素の Vite + TypeScript（React なし）の最小テンプレート。純粋関数のサンプルとテスト付き |
 <!-- END: template-list -->
 
 ## Roadmap
@@ -79,7 +73,6 @@ Collection of project boilerplates.
 |----------|----------|--------|
 | - | python-cli | Done |
 | - | go-cli | Done |
-| - | rust-cli | Done |
 | Future | go-web | Planned |
 
 ## Dev Server Management
@@ -96,11 +89,8 @@ make stop-all
 
 | Project | Port | Usage |
 |---------|------|-------|
-| go-ssr-web | 8082 | SSR Web |
-| go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
 | go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
 | react-spa | 5173 | Vite dev |
-| vite-ts | 5176 | Vite dev (React なし) |
 
 ### New Project Checklist
 
@@ -116,7 +106,7 @@ When adding a new server project:
 ```bash
 # どのテンプレートも基本これだけ。`name` は <dest> から自動推定される
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- go-ssr-web ~/projects/my-new-app
+  | sh -s -- go-react-admin ~/projects/my-new-app
 ```
 
 オプション:
@@ -124,7 +114,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`go-react-spa` / `react-spa` は認証（ログイン画面・ユーザー一覧・JWT）を除きます。バックエンドを持たない `react-spa` の単体アプリは、これを付けます |
+| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`react-spa` は認証（ログイン画面・ユーザー一覧・JWT）を除きます。バックエンドを持たない `react-spa` の単体アプリは、これを付けます |
 | `--no-sample` | `python-web` のみ。items の CRUD サンプルを scaffold 時に外します。`--no-auth` とは独立しており、同時に指定できます |
 | `--no-github-templates` | `.github/` の PR・Issue テンプレートを入れません |
 

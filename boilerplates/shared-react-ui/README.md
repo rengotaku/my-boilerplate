@@ -49,7 +49,7 @@ src = "shared-react-ui/src/ui"
 dest = "src/components/ui"
 ```
 
-`scripts/scaffold/lib/compose.sh` reads the manifest at scaffold time and
+`scripts/scaffold/lib/shared_ui.sh` reads the manifest at scaffold time and
 rsync's the listed source into the destination, excluding `*.stories.tsx`. The
 manifest is removed from the scaffolded project so the result is self-contained.
 
@@ -61,7 +61,7 @@ making local `make install` / `make ci` work without touching scaffold.
 
 1. Drop `<name>.tsx` and `<name>.stories.tsx` into `src/ui/`.
 2. Verify it renders in `npm run gallery`.
-3. No template-level changes are needed — `compose.sh` picks up the file.
+3. No template-level changes are needed — `shared_ui.sh` picks up the file.
 
 ## Why not a workspace package?
 

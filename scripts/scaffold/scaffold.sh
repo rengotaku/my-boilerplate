@@ -19,9 +19,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Templates live under boilerplates/ (#229). compose_template / merge_shared_ui
-# resolve sibling templates and shared-react-ui relative to this root, and the
-# manifests (.compose.toml / .shared-ui.toml) store template-root-relative paths.
+# Templates live under boilerplates/ (#229). merge_shared_ui resolves
+# shared-react-ui relative to this root, and the .shared-ui.toml manifests store
+# template-root-relative paths.
 TEMPLATES_ROOT="$REPO_ROOT/boilerplates"
 
 # shellcheck source=lib/common.sh
@@ -48,13 +48,6 @@ for arg in "$@"; do
     *) die "Unknown argument: $arg" ;;
   esac
 done
-
-# --- Template aliases ---
-# go-react-spa-noauth is a virtual template: same as go-react-spa with no-auth applied.
-if [[ "$template" == "go-react-spa-noauth" ]]; then
-  template="go-react-spa"
-  no_auth="1"
-fi
 
 # --- Validation ---
 [[ -z "$template" ]] && die "Missing required argument: template="
@@ -96,35 +89,27 @@ fi
 info "Copying template '$template' to '$dest'..."
 copy_template "$TEMPLATES_ROOT/$template" "$dest"
 
-# --- Composite-template merge (runs before family replacements so the
-#     materialized base tree is visible to subsequent steps). ---
-# shellcheck source=lib/compose.sh
-source "$SCRIPT_DIR/lib/compose.sh"
-
-if [[ -f "$dest/.compose.toml" ]]; then
-  info "Composing template '$template' (manifest: .compose.toml)..."
-  compose_template "$dest" "$TEMPLATES_ROOT" "$name"
-fi
+# --- shared-react-ui merge ---
+# shellcheck source=lib/shared_ui.sh
+source "$SCRIPT_DIR/lib/shared_ui.sh"
 
 # template.toml is metadata consumed by `download.sh --list` / `--tree`; the
-# scaffolded project does not need it. Composite templates may also drag in
-# the base template's template.toml under frontend/ — drop that too.
+# scaffolded project does not need it. Templates that keep the React app in a
+# frontend/ sub-tree may also drop the base template's template.toml there.
 rm -f "$dest/template.toml" "$dest/frontend/template.toml"
 
-# --- shared-react-ui merge (runs after compose_template so composed sub-trees
-#     can also opt-in via their own .shared-ui.toml). ---
 if [[ -f "$dest/.shared-ui.toml" ]]; then
   info "Merging shared-react-ui (manifest: .shared-ui.toml)..."
   merge_shared_ui "$dest" "$TEMPLATES_ROOT"
 fi
-# go-react-spa scaffolds frontend/ from the react-spa base; pick up the
-# manifest that landed inside the composed sub-tree, too.
+# Templates such as go-react-admin keep the React app in a frontend/ sub-tree;
+# pick up the manifest that landed there, too.
 if [[ -f "$dest/frontend/.shared-ui.toml" ]]; then
   info "Merging shared-react-ui into frontend/..."
   merge_shared_ui "$dest/frontend" "$TEMPLATES_ROOT"
 fi
 
-# --- Node version resolution (go-react-spa: frontend/ was materialized above) ---
+# --- Node version resolution (templates with a frontend/ sub-tree) ---
 if [[ -d "$dest/frontend" ]]; then
   resolve_node_version_files "$dest/frontend"
 fi
@@ -170,10 +155,6 @@ case "$family" in
   python)
     source "$SCRIPT_DIR/lib/python.sh"
     apply_python_replacements "$dest" "$template" "$name"
-    ;;
-  rust)
-    source "$SCRIPT_DIR/lib/rust.sh"
-    apply_rust_replacements "$dest" "$template" "$name"
     ;;
 esac
 
@@ -224,25 +205,8 @@ echo "Next steps:"
 case "$family" in
   go)
     echo "  cd $dest"
-    if [[ "$template" == "go-react-spa" ]]; then
-      # Composite template: `make install` runs `go mod download` + `npm ci`
-      # against the pre-composed frontend/, then `make build` produces a
-      # single Go binary embedding the SPA bundle.
-      echo "  make install"
-      echo "  make build"
-      echo "  ./bin/server"
-      if [[ -z "$no_auth" || "$no_auth" == "0" ]]; then
-        echo ""
-        echo "Auth not needed? Remove it at scaffold time:"
-        echo "  Use template go-react-spa-noauth, or add --no-auth to the download command."
-        echo "  Manual removal: delete src/api/auth.ts users.ts, src/hooks/useAuthStore.ts,"
-        echo "  src/pages/LoginPage.tsx, src/schemas/auth.ts user.ts, src/types/auth.ts user.ts"
-        echo "  then clean up the re-exports in the corresponding index.ts files."
-      fi
-    else
-      echo "  go mod tidy"
-      echo "  make ci"
-    fi
+    echo "  go mod tidy"
+    echo "  make ci"
     echo ""
     echo "Publishing this module? Update go.mod's module line to a canonical path:"
     echo "  go mod edit -module github.com/<user>/<repo>"

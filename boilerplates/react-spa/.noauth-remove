@@ -1,6 +1,7 @@
 # Frontend auth files to remove when applying --no-auth transformation.
-# Each line is a path relative to the React project root (frontend/ for
-# go-react-spa, or the project root for standalone react-spa).
+# Each line is a path relative to the React project root (the project root for
+# standalone React templates, frontend/ for templates that keep the React app
+# in a sub-tree).
 # Lines starting with # and blank lines are ignored.
 #
 # Keep this list in sync with the auth-related source files in this template.

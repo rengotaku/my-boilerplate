@@ -5,10 +5,6 @@ set -euo pipefail
 
 # Valid template names
 VALID_TEMPLATES=(
-  go-ssr-web
-  go-ssr-web-minimal
-  go-react-spa
-  go-react-spa-noauth
   go-react-admin
   go-cli
   go-cli-wrapper
@@ -18,10 +14,8 @@ VALID_TEMPLATES=(
   python-cli
   python-web
   python-llm-pipeline
-  rust-cli
   chrome-extension
   mcp-server
-  vite-ts
 )
 
 # Artifacts to remove after copy.
@@ -88,8 +82,8 @@ die() {
   exit 1
 }
 
-# Detect template family: go, react, python, rust
-# chrome-extension, mcp-server, static-lp and vite-ts are Node/Vite/TypeScript
+# Detect template family: go, react, python
+# chrome-extension, mcp-server and static-lp are Node/Vite/TypeScript
 # projects (not named "react-*"); they reuse the react family's replacements
 # (package.json name + wrangler.toml name + .node-version resolution), which are
 # framework-agnostic.
@@ -99,11 +93,9 @@ detect_family() {
     chrome-extension) echo "react" ;;
     mcp-server) echo "react" ;;
     static-lp) echo "react" ;;
-    vite-ts) echo "react" ;;
     go-*) echo "go" ;;
     react-*) echo "react" ;;
     python-*) echo "python" ;;
-    rust-*) echo "rust" ;;
     *) die "Unknown template family for: $template" ;;
   esac
 }

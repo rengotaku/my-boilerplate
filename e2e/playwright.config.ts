@@ -56,10 +56,6 @@ export default defineConfig({
     makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
     ...makeVisualProjects("react-spa", "http://localhost:4174"),
     ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
-    // go-ssr-web: visual before functional to capture empty-state snapshots
-    // before CRUD tests create users that would overflow the mobile table
-    ...makeVisualProjects("go-ssr-web", "http://localhost:8085"),
-    makeFunctionalProject("go-ssr-web", "http://localhost:8085"),
   ],
   webServer: [
     {
@@ -73,13 +69,6 @@ export default defineConfig({
       command:
         "cd ../boilerplates/react-spa-cloudflare && npm run build && npm run preview -- --port 4175",
       url: "http://localhost:4175",
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      command: "../boilerplates/go-ssr-web/scripts/run-with-tailwind.sh",
-      env: { PORT: "8085" },
-      url: "http://localhost:8085/",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },

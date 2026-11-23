@@ -9,8 +9,8 @@
 #   apply_noauth <frontend_dir> [<go_root>]
 #
 # <frontend_dir> is the root of the React source tree:
-#   - go-react-spa:  $dest/frontend
-#   - react-spa:     $dest
+#   - frontend/ sub-tree (go-react-admin): $dest/frontend
+#   - standalone React template:           $dest
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
 #   - files listed in $go_root/.noauth-remove

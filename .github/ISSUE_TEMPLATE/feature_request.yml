@@ -26,7 +26,7 @@ body:
     attributes:
       label: 対象プロジェクト
       description: 特定のボイラープレートに関する場合は記載
-      placeholder: "例: go-ssr-web, react-spa, 新規"
+      placeholder: "例: go-react-admin, react-spa, 新規"
     validations:
       required: false
 
