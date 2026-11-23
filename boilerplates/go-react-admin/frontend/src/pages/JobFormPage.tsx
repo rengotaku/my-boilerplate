@@ -1,6 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import {
+  useRef,
+  useState,
+  type ComponentProps,
+  type ComponentType,
+  type FormEvent,
+} from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { CheckboxInput } from "@astryxdesign/core/CheckboxInput";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { VStack } from "@astryxdesign/core/VStack";
 import { useJob, useCreateJob, useUpdateJob } from "@/hooks/useJobs";
 import type { JobInput, JobView } from "@/types/job";
 
@@ -21,16 +34,18 @@ function EditJobForm({ id }: { id: number }) {
   const { data, isLoading, isError, error } = useJob(id);
 
   if (isLoading) {
-    return <div className="text-sm text-slate-500">Loading…</div>;
+    return <Text type="supporting">Loading…</Text>;
   }
   if (isError || !data) {
     return (
-      <div className="flex flex-col gap-4">
-        <CancelLink />
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Failed to load job: {(error as Error)?.message ?? "not found"}
-        </div>
-      </div>
+      <VStack gap={4}>
+        <Button label="Cancel" href="/jobs" variant="ghost" size="sm" />
+        <Banner
+          status="error"
+          title="Failed to load job"
+          description={(error as Error)?.message ?? "not found"}
+        />
+      </VStack>
     );
   }
   return <JobForm mode="edit" id={id} job={data} />;
@@ -42,6 +57,23 @@ interface JobFormProps {
   job?: JobView;
 }
 
+// Astryx's TextInputProps does not declare the native `required` attribute
+// (only isRequired, which adds aria-required + the visual marker). The
+// implementation spreads extra props onto the inner <input>, so widening the
+// type restores the browser's own empty-field check. The submit handler also
+// checks the two fields, so the guard holds even where native validation is
+// bypassed.
+type TextInputWithNativeRequiredProps = ComponentProps<typeof TextInput> & {
+  required?: boolean;
+};
+const RequiredTextInput =
+  TextInput as unknown as ComponentType<TextInputWithNativeRequiredProps>;
+
+interface FormErrors {
+  name?: string;
+  schedule?: string;
+}
+
 function JobForm({ mode, id, job }: JobFormProps) {
   const navigate = useNavigate();
   const createJob = useCreateJob();
@@ -51,12 +83,32 @@ function JobForm({ mode, id, job }: JobFormProps) {
   const [kind, setKind] = useState(job?.kind ?? "");
   const [schedule, setSchedule] = useState(job?.schedule ?? "");
   const [enabled, setEnabled] = useState(job?.enabled ?? true);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const nameRef = useRef<HTMLInputElement>(null);
+  const scheduleRef = useRef<HTMLInputElement>(null);
 
   const mutation = mode === "edit" ? updateJob : createJob;
   const serverError = mutation.isError ? (mutation.error as Error)?.message : undefined;
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // Native `required` normally stops the submit before this runs; this is the
+    // fallback for browsers/tests that let the submit through, and it also
+    // points at the first empty field.
+    const nextErrors: FormErrors = {};
+    if (name === "") nextErrors.name = "Name is required.";
+    if (schedule === "") nextErrors.schedule = "Schedule is required.";
+    setErrors(nextErrors);
+    if (nextErrors.name) {
+      nameRef.current?.focus();
+      return;
+    }
+    if (nextErrors.schedule) {
+      scheduleRef.current?.focus();
+      return;
+    }
+
     const input: JobInput = {
       name,
       kind: kind || undefined,
@@ -71,82 +123,73 @@ function JobForm({ mode, id, job }: JobFormProps) {
   };
 
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
-      <h1 className="text-xl font-semibold">
-        {mode === "edit" ? "Edit job" : "New job"}
-      </h1>
+    <VStack gap={6} maxWidth={640}>
+      <Heading level={1}>{mode === "edit" ? "Edit job" : "New job"}</Heading>
 
-      {serverError && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {serverError}
-        </div>
-      )}
+      {serverError && <Banner status="error" title={serverError} />}
 
-      <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-700">Name</span>
-          <input
-            aria-label="Name"
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-400 focus:outline-none"
+      <form onSubmit={onSubmit}>
+        <VStack gap={4}>
+          <RequiredTextInput
+            ref={nameRef}
+            label="Name"
             value={name}
+            onChange={(value) => {
+              setName(value);
+              if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+            }}
+            isRequired
             required
-            onChange={(e) => setName(e.target.value)}
+            status={errors.name ? { type: "error", message: errors.name } : undefined}
+            width="100%"
           />
-        </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-700">Kind</span>
-          <input
-            aria-label="Kind"
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-400 focus:outline-none"
+          <TextInput
+            label="Kind"
             value={kind}
+            onChange={setKind}
             placeholder="task"
-            onChange={(e) => setKind(e.target.value)}
+            width="100%"
           />
-        </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-700">Schedule</span>
-          <input
-            aria-label="Schedule"
-            className="rounded-md border border-slate-300 px-2 py-1 font-mono text-sm focus:border-indigo-400 focus:outline-none"
-            value={schedule}
-            required
-            onChange={(e) => setSchedule(e.target.value)}
+          <VStack gap={1}>
+            <RequiredTextInput
+              ref={scheduleRef}
+              label="Schedule"
+              value={schedule}
+              onChange={(value) => {
+                setSchedule(value);
+                if (errors.schedule) {
+                  setErrors((prev) => ({ ...prev, schedule: undefined }));
+                }
+              }}
+              isRequired
+              required
+              status={
+                errors.schedule ? { type: "error", message: errors.schedule } : undefined
+              }
+              width="100%"
+            />
+            <Text type="supporting">Cron spec, e.g. @every 20s, 0 2 * * *, @hourly.</Text>
+          </VStack>
+
+          <CheckboxInput
+            label="Enabled"
+            value={enabled}
+            onChange={(checked) => setEnabled(checked)}
           />
-          <span className="text-xs text-slate-400">
-            Cron spec, e.g. <span className="font-mono">@every 20s</span>,{" "}
-            <span className="font-mono">0 2 * * *</span>,{" "}
-            <span className="font-mono">@hourly</span>.
-          </span>
-        </label>
 
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => setEnabled(e.target.checked)}
-          />
-          <span className="text-sm font-medium text-slate-700">Enabled</span>
-        </label>
-
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving…" : "Save"}
-          </Button>
-          <Link to="/jobs" className="text-sm text-slate-500 hover:text-slate-800">
-            Cancel
-          </Link>
-        </div>
+          <HStack gap={3} align="center">
+            <Button
+              type="submit"
+              label="Save"
+              variant="primary"
+              isLoading={mutation.isPending}
+            />
+            <Button label="Cancel" href="/jobs" variant="ghost" />
+          </HStack>
+        </VStack>
       </form>
-    </div>
-  );
-}
-
-function CancelLink() {
-  return (
-    <Link to="/jobs" className="text-sm text-slate-500 hover:text-slate-800">
-      Cancel
-    </Link>
+    </VStack>
   );
 }

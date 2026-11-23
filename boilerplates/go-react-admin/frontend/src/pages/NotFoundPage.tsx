@@ -1,13 +1,14 @@
-import { Link } from "react-router-dom";
+import { Button } from "@astryxdesign/core/Button";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 
 export function NotFoundPage() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-      <h1 className="text-4xl font-bold text-slate-800">404</h1>
-      <p className="text-slate-500">This page could not be found.</p>
-      <Link to="/runs" className="text-sm text-indigo-600 hover:underline">
-        Go to Runs
-      </Link>
-    </div>
+    <VStack gap={3} align="center" paddingBlock={10}>
+      <Heading level={1}>404</Heading>
+      <Text type="supporting">This page could not be found.</Text>
+      <Button label="Go to Runs" href="/runs" variant="primary" />
+    </VStack>
   );
 }

@@ -1,4 +1,4 @@
-.PHONY: install setup build build-frontend compose-ui embed-dist run run-binary run-server run-frontend stop status \
+.PHONY: install setup build build-frontend embed-dist run run-binary run-server run-frontend stop status \
   lint lint-frontend lint-fix format format-check \
   test test-frontend test-cov test-watch coverage \
   check ci clean help
@@ -19,29 +19,8 @@ GO_PKGS := ./cmd/... ./internal/...
 # (.github/workflows/go-react-admin.yml).
 GOLANGCI_VERSION := v2.11.2
 
-# shared-react-ui: composed in-place from the sibling repo dir during local dev.
-# Outside the monorepo (after scaffold) the source dir is absent and the
-# compose-ui target becomes a no-op, so the scaffolded project keeps working.
-SHARED_UI_SRC := ../shared-react-ui/src/ui
-SHARED_UI_DEST := $(FRONTEND_DIR)/src/components/ui
-SHARED_ADMIN_SRC := ../shared-react-ui/src/admin
-SHARED_ADMIN_DEST := $(FRONTEND_DIR)/src/components/admin
-
-## compose-ui: Materialize frontend/src/components/{ui,admin}/ from ../shared-react-ui/ (no-op outside monorepo)
-compose-ui:
-	@if [ -d "$(SHARED_UI_SRC)" ]; then \
-	  echo "[compose-ui] $(SHARED_UI_SRC) -> $(SHARED_UI_DEST) (excl. *.stories.tsx)"; \
-	  mkdir -p $(SHARED_UI_DEST); \
-	  rsync -a --exclude='*.stories.tsx' $(SHARED_UI_SRC)/ $(SHARED_UI_DEST)/; \
-	fi
-	@if [ -d "$(SHARED_ADMIN_SRC)" ]; then \
-	  echo "[compose-ui] $(SHARED_ADMIN_SRC) -> $(SHARED_ADMIN_DEST) (excl. *.stories.tsx)"; \
-	  mkdir -p $(SHARED_ADMIN_DEST); \
-	  rsync -a --exclude='*.stories.tsx' $(SHARED_ADMIN_SRC)/ $(SHARED_ADMIN_DEST)/; \
-	fi
-
 ## install: Install Go modules and frontend deps
-install: compose-ui
+install:
 	go mod download
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm ci; fi
 
@@ -53,7 +32,7 @@ setup: install
 		| sh -s -- -b "$$(go env GOPATH)/bin" $(GOLANGCI_VERSION)
 
 ## build-frontend: Build the React admin console into internal/static/dist
-build-frontend: compose-ui
+build-frontend:
 	@if [ -d $(FRONTEND_DIR) ]; then \
 	  cd $(FRONTEND_DIR) && npm run build; \
 	else \
@@ -104,7 +83,7 @@ lint: embed-dist
 	golangci-lint run
 
 ## lint-frontend: Run the frontend linter
-lint-frontend: compose-ui
+lint-frontend:
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run lint; else echo "no frontend/ yet"; fi
 
 ## lint-fix: Auto-fix frontend lint issues
@@ -116,7 +95,7 @@ format:
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run format; else echo "no frontend/ yet"; fi
 
 ## format-check: Check frontend formatting
-format-check: compose-ui
+format-check:
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run format:check; else echo "no frontend/ yet"; fi
 
 ## test: Run Go tests
@@ -124,7 +103,7 @@ test: embed-dist
 	go test $(GO_PKGS)
 
 ## test-frontend: Run frontend tests
-test-frontend: compose-ui
+test-frontend:
 	@if [ -d $(FRONTEND_DIR) ]; then cd $(FRONTEND_DIR) && npm run test; else echo "no frontend/ yet"; fi
 
 ## test-cov: Run Go tests with coverage

@@ -1,24 +1,21 @@
 name: Scaffold Verify go-react-admin
 
 # go-react-admin is a standalone Go + React admin-console template whose
-# frontend composes shared UI + admin components from boilerplates/shared-react-ui/ at
-# scaffold time. This workflow scaffolds the template into a temp dir and runs
-# the full lint + test pipeline (make ci) to prove the scaffolded project is
-# self-contained. Triggered by changes to boilerplates/go-react-admin/, the shared UI
-# source, the scaffold scripts, or this workflow itself.
+# frontend owns its admin components. This workflow scaffolds the template into
+# a temp dir and runs the full lint + test pipeline (make ci) to prove the
+# scaffolded project is self-contained. Triggered by changes to
+# boilerplates/go-react-admin/, the scaffold scripts, or this workflow itself.
 
 on:
   push:
     branches: [main]
     paths:
       - 'boilerplates/go-react-admin/**'
-      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-admin.yml'
   pull_request:
     paths:
       - 'boilerplates/go-react-admin/**'
-      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-go-react-admin.yml'
 

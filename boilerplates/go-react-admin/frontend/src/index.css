@@ -1,101 +1,148 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
-/*
- * src/components/ui and src/components/admin are composed from shared-react-ui
- * and kept out of VCS in the monorepo (see .gitignore). Tailwind v4's automatic
- * source detection skips .gitignored paths, which would drop every utility used
- * only by those components. Register them explicitly so their classes are always
- * generated. (Harmless once scaffolded — the files are tracked there.)
- */
-@source "./components/ui";
-@source "./components/admin";
-
-@custom-variant dark (&:is(.dark *));
-
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+/* Astryx does not load web fonts: theme.css only names typefaces. Keep the
+   stack local so the app never calls out to a font CDN. */
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP",
+    sans-serif;
+  line-height: 1.6;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+/* Page column for the routed views (Layout wraps <Outlet /> with it). */
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-    box-sizing: border-box;
-  }
-  body {
-    @apply bg-background text-foreground;
-    margin: 0;
-    font-family:
-      system-ui,
-      -apple-system,
-      sans-serif;
-    line-height: 1.6;
-  }
+/* Log viewer: a dark, fixed-height pane so the page keeps its shape while the
+   log scrolls inside. Colours are fixed (not theme tokens) because the pane is
+   dark in both light and dark mode. */
+.log-panel {
+  box-sizing: border-box;
+  max-height: 480px;
+  overflow: auto;
+  border: 1px solid var(--color-border, #d0d7de);
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.log-empty {
+  border: 1px solid var(--color-border, #d0d7de);
+  border-radius: 8px;
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--color-text-secondary, #4e606f);
+}
+
+.log-line {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  white-space: pre-wrap;
+}
+
+.log-time {
+  flex: none;
+  color: #94a3b8;
+}
+
+.log-level {
+  flex: none;
+  text-transform: uppercase;
+}
+
+.log-level-debug {
+  color: #94a3b8;
+}
+
+.log-level-info {
+  color: #e2e8f0;
+}
+
+.log-level-warn,
+.log-level-warning {
+  color: #fbbf24;
+}
+
+.log-level-error {
+  color: #fca5a5;
+}
+
+.log-phase {
+  flex: none;
+  color: #a5b4fc;
+}
+
+.log-message {
+  color: #e2e8f0;
+}
+
+/* Event timeline: a vertical rail with a dot per event. StatusDot provides the
+   dots; the rail is drawn with a border so it follows the row height. */
+.event-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.event-item {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+
+.event-item:last-child {
+  padding-bottom: 0;
+}
+
+.event-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.event-rail::after {
+  content: "";
+  flex: 1;
+  width: 1px;
+  background: var(--color-border-emphasized, #ccd3db);
+}
+
+.event-item:last-child .event-rail::after {
+  display: none;
+}
+
+.event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Chart canvases need a concrete height; recharts' ResponsiveContainer fills
+   whatever box it is given. */
+.chart-box {
+  width: 100%;
+}
+
+/* DataTable delegates row clicks from the wrapper; the pointer cursor is the
+   only visual affordance the Astryx rows need. */
+.data-table-clickable tbody tr {
+  cursor: pointer;
 }

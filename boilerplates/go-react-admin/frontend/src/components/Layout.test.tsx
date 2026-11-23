@@ -41,8 +41,11 @@ describe("Layout sidebar collapse", () => {
 
     await user.click(screen.getByRole("button", { name: "Collapse sidebar" }));
 
-    // collapsed → text labels hidden, expand control available
-    expect(screen.queryByText("Runs")).not.toBeInTheDocument();
+    // collapsed → the same control now offers to expand (labels stay in the
+    // DOM for screen readers; Astryx hides them visually)
     expect(screen.getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Expand sidebar" }));
+    expect(screen.getByRole("button", { name: "Collapse sidebar" })).toBeInTheDocument();
   });
 });

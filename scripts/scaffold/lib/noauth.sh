@@ -14,9 +14,9 @@
 #
 # <template> is the template the project was scaffolded from. It selects the
 # Layout.tsx that is written: only react-spa gets the Astryx Layout here.
-# go-react-admin still ships Tailwind + shared-react-ui (no @astryxdesign/core),
-# and react-spa-cloudflare's --no-auth path is broken already (#333), so both
-# keep the pre-Astryx Layout unchanged.
+# go-react-admin and react-spa-cloudflare are on Astryx as well, but both
+# --no-auth paths are broken already (#333); this issue does not fix them, so
+# they keep the pre-Astryx Layout unchanged.
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
 #   - files listed in $go_root/.noauth-remove
@@ -180,20 +180,21 @@ export function Layout() {
 }
 NOAUTH_EOF
   else
-    # go-react-admin still ships Tailwind + shared-react-ui (no @astryxdesign/core),
-    # and react-spa-cloudflare's --no-auth path is broken already (#333). Keep the
-    # pre-Astryx Layout unchanged for both.
+    # go-react-admin and react-spa-cloudflare are on Astryx, but their --no-auth
+    # paths are broken already (#333). Keep the pre-Astryx Layout unchanged for
+    # both; fixing them is out of scope here.
     cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
 import { Outlet, NavLink } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
+// This Layout predates Astryx and is kept as-is for the broken --no-auth paths
+// (#333). The class names are inert now that Tailwind is gone, but the file
+// still compiles.
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+  `rounded-md px-3 py-2 text-sm font-medium transition-colors ${
     isActive
       ? "bg-primary-foreground/15 text-primary-foreground"
       : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-  );
+  }`;
 
 export function Layout() {
   return (
