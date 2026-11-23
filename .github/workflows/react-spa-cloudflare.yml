@@ -5,12 +5,10 @@ on:
     branches: [main]
     paths:
       - 'boilerplates/react-spa-cloudflare/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa-cloudflare.yml'
   pull_request:
     paths:
       - 'boilerplates/react-spa-cloudflare/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa-cloudflare.yml'
 
 defaults:

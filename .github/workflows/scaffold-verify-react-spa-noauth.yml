@@ -13,13 +13,11 @@ on:
     branches: [main]
     paths:
       - 'boilerplates/react-spa/**'
-      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa-noauth.yml'
   pull_request:
     paths:
       - 'boilerplates/react-spa/**'
-      - 'boilerplates/shared-react-ui/**'
       - 'scripts/scaffold/**'
       - '.github/workflows/scaffold-verify-react-spa-noauth.yml'
 

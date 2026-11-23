@@ -5,7 +5,6 @@ on:
     paths:
       - "boilerplates/react-spa/**"
       - "boilerplates/react-spa-cloudflare/**"
-      - "boilerplates/shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -13,7 +12,6 @@ on:
     paths:
       - "boilerplates/react-spa/**"
       - "boilerplates/react-spa-cloudflare/**"
-      - "boilerplates/shared-react-ui/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 

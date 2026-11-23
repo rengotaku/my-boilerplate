@@ -5,12 +5,10 @@ on:
     branches: [main]
     paths:
       - 'boilerplates/react-spa/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa.yml'
   pull_request:
     paths:
       - 'boilerplates/react-spa/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/react-spa.yml'
 
 defaults:
