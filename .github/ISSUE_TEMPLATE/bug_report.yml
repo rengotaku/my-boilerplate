@@ -12,7 +12,7 @@ body:
     attributes:
       label: 対象プロジェクト
       description: どのボイラープレートで発生しましたか？
-      placeholder: "例: go-react-admin, react-spa"
+      placeholder: "例: go-ssr-web, react-spa"
     validations:
       required: true
 

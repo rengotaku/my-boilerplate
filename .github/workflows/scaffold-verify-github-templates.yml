@@ -6,6 +6,7 @@ on:
     paths:
       - 'meta/github-workflow/**'
       - 'scripts/scaffold/scaffold.sh'
+      - 'boilerplates/go-ssr-web/**'
       - 'boilerplates/go-react-admin/**'
       - 'boilerplates/react-spa/**'
       - 'boilerplates/python-web/**'
@@ -14,6 +15,7 @@ on:
     paths:
       - 'meta/github-workflow/**'
       - 'scripts/scaffold/scaffold.sh'
+      - 'boilerplates/go-ssr-web/**'
       - 'boilerplates/go-react-admin/**'
       - 'boilerplates/react-spa/**'
       - 'boilerplates/python-web/**'
@@ -24,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        template: [go-react-admin, react-spa, python-web]
+        template: [go-ssr-web, go-react-admin, react-spa, python-web]
     steps:
       - uses: actions/checkout@v6
 
