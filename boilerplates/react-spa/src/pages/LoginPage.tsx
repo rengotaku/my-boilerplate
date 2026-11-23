@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { Card } from "@astryxdesign/core/Card";
+import { Heading } from "@astryxdesign/core/Heading";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { VStack } from "@astryxdesign/core/VStack";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { authApi } from "@/api";
 import { useAuthStore } from "@/hooks";
 import { loginFormSchema, type LoginFormData } from "@/schemas";
@@ -23,7 +25,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
@@ -48,61 +50,67 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto mt-12 w-full max-w-sm">
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">Sign in</h1>
+    <div className="page-narrow">
+      <Card maxWidth={420} padding={4}>
+        <VStack gap={4}>
+          <Heading level={1}>Sign in</Heading>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div className="flex flex-col">
-          <label
-            htmlFor="login-email"
-            className="mb-1 text-xs font-medium text-muted-foreground"
-          >
-            Email
-          </label>
-          <Input
-            id="login-email"
-            type="email"
-            autoComplete="username"
-            {...register("email")}
-            aria-invalid={!!errors.email}
-          />
-          {errors.email && (
-            <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
-          )}
-        </div>
+          <form noValidate onSubmit={handleSubmit(onSubmit)}>
+            <VStack gap={4}>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field }) => (
+                  <TextInput
+                    label="Email"
+                    type="email"
+                    autoComplete="username"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    status={
+                      errors.email
+                        ? { type: "error", message: errors.email.message }
+                        : undefined
+                    }
+                  />
+                )}
+              />
 
-        <div className="flex flex-col">
-          <label
-            htmlFor="login-password"
-            className="mb-1 text-xs font-medium text-muted-foreground"
-          >
-            Password
-          </label>
-          <Input
-            id="login-password"
-            type="password"
-            autoComplete="current-password"
-            {...register("password")}
-            aria-invalid={!!errors.password}
-          />
-          {errors.password && (
-            <span className="mt-1 text-xs text-destructive">
-              {errors.password.message}
-            </span>
-          )}
-        </div>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field }) => (
+                  <TextInput
+                    label="Password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    status={
+                      errors.password
+                        ? { type: "error", message: errors.password.message }
+                        : undefined
+                    }
+                  />
+                )}
+              />
 
-        {submitError && (
-          <Alert variant="destructive">
-            <AlertDescription>Error: {submitError}</AlertDescription>
-          </Alert>
-        )}
+              {submitError && <Banner status="error" title={`Error: ${submitError}`} />}
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-          Sign in
-        </Button>
-      </form>
+              <Button
+                label="Sign in"
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+              />
+            </VStack>
+          </form>
+        </VStack>
+      </Card>
     </div>
   );
 }

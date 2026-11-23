@@ -1,20 +1,17 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { EmptyState } from "@astryxdesign/core/EmptyState";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Spinner } from "@astryxdesign/core/Spinner";
+import { Table, pixel, proportional, type TableColumn } from "@astryxdesign/core/Table";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { VStack } from "@astryxdesign/core/VStack";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks";
+import { useCreateUser, useDeleteUser, useUpdateUser, useUsers } from "@/hooks";
 import {
   userCreateFormSchema,
   userUpdateFormSchema,
@@ -23,6 +20,9 @@ import {
 } from "@/schemas";
 import type { User } from "@/types";
 
+// Astryx's Table requires rows to satisfy Record<string, unknown>.
+type UserRow = User & Record<string, unknown>;
+
 interface CreateFormProps {
   isPending: boolean;
   onSubmit: (data: UserCreateFormData) => void;
@@ -30,7 +30,7 @@ interface CreateFormProps {
 
 function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -41,66 +41,73 @@ function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
 
   return (
     <form
+      noValidate
       onSubmit={handleSubmit((data) => onSubmit(data))}
-      className="mb-6 flex flex-wrap items-start gap-3"
       onReset={() => reset()}
     >
-      <div className="flex flex-col">
-        <label
-          htmlFor="user-name"
-          className="mb-1 text-xs font-medium text-muted-foreground"
-        >
-          Name
-        </label>
-        <Input
-          id="user-name"
-          {...register("name")}
-          aria-invalid={!!errors.name}
-          className="w-48"
+      <HStack gap={3} vAlign="start" wrap="wrap">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <TextInput
+              label="Name"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              autoComplete="off"
+              width={192}
+              status={
+                errors.name ? { type: "error", message: errors.name.message } : undefined
+              }
+            />
+          )}
         />
-        {errors.name && (
-          <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <label
-          htmlFor="user-email"
-          className="mb-1 text-xs font-medium text-muted-foreground"
-        >
-          Email
-        </label>
-        <Input
-          id="user-email"
-          {...register("email")}
-          aria-invalid={!!errors.email}
-          className="w-64"
+        <Controller
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <TextInput
+              label="Email"
+              type="email"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              autoComplete="off"
+              width={256}
+              status={
+                errors.email
+                  ? { type: "error", message: errors.email.message }
+                  : undefined
+              }
+            />
+          )}
         />
-        {errors.email && (
-          <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <label
-          htmlFor="user-password"
-          className="mb-1 text-xs font-medium text-muted-foreground"
-        >
-          Password
-        </label>
-        <Input
-          id="user-password"
-          type="password"
-          autoComplete="new-password"
-          {...register("password")}
-          aria-invalid={!!errors.password}
-          className="w-48"
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <TextInput
+              label="Password"
+              type="password"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              autoComplete="new-password"
+              width={192}
+              status={
+                errors.password
+                  ? { type: "error", message: errors.password.message }
+                  : undefined
+              }
+            />
+          )}
         />
-        {errors.password && (
-          <span className="mt-1 text-xs text-destructive">{errors.password.message}</span>
-        )}
-      </div>
-      <Button type="submit" disabled={isPending}>
-        Create
-      </Button>
+        <Button label="Create" type="submit" variant="primary" isLoading={isPending} />
+      </HStack>
     </form>
   );
 }
@@ -114,7 +121,7 @@ interface EditFormProps {
 
 function EditUserForm({ user, isPending, onSubmit, onCancel }: EditFormProps) {
   const {
-    register,
+    control,
     handleSubmit,
     setValue,
     formState: { errors },
@@ -129,50 +136,50 @@ function EditUserForm({ user, isPending, onSubmit, onCancel }: EditFormProps) {
   }, [user, setValue]);
 
   return (
-    <form
-      onSubmit={handleSubmit((data) => onSubmit(data))}
-      className="mb-6 flex flex-wrap items-start gap-3"
-    >
-      <div className="flex flex-col">
-        <label
-          htmlFor="user-name"
-          className="mb-1 text-xs font-medium text-muted-foreground"
-        >
-          Name
-        </label>
-        <Input
-          id="user-name"
-          {...register("name")}
-          aria-invalid={!!errors.name}
-          className="w-48"
+    <form noValidate onSubmit={handleSubmit((data) => onSubmit(data))}>
+      <HStack gap={3} vAlign="start" wrap="wrap">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <TextInput
+              label="Name"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              autoComplete="off"
+              width={192}
+              status={
+                errors.name ? { type: "error", message: errors.name.message } : undefined
+              }
+            />
+          )}
         />
-        {errors.name && (
-          <span className="mt-1 text-xs text-destructive">{errors.name.message}</span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <label
-          htmlFor="user-email"
-          className="mb-1 text-xs font-medium text-muted-foreground"
-        >
-          Email
-        </label>
-        <Input
-          id="user-email"
-          {...register("email")}
-          aria-invalid={!!errors.email}
-          className="w-64"
+        <Controller
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <TextInput
+              label="Email"
+              type="email"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              autoComplete="off"
+              width={256}
+              status={
+                errors.email
+                  ? { type: "error", message: errors.email.message }
+                  : undefined
+              }
+            />
+          )}
         />
-        {errors.email && (
-          <span className="mt-1 text-xs text-destructive">{errors.email.message}</span>
-        )}
-      </div>
-      <Button type="submit" disabled={isPending}>
-        Update
-      </Button>
-      <Button type="button" variant="outline" onClick={onCancel}>
-        Cancel
-      </Button>
+        <Button label="Update" type="submit" variant="primary" isLoading={isPending} />
+        <Button label="Cancel" type="button" variant="secondary" onClick={onCancel} />
+      </HStack>
     </form>
   );
 }
@@ -214,30 +221,49 @@ export function UsersPage() {
 
   if (isLoading) {
     return (
-      <div className="mt-8 flex justify-center">
-        <Loader2
-          className="size-8 animate-spin text-primary"
-          aria-label="Loading"
-          role="progressbar"
-        />
-      </div>
+      <HStack hAlign="center" paddingBlockStart={8}>
+        <Spinner />
+      </HStack>
     );
   }
 
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Error: {error.message}</AlertDescription>
-      </Alert>
-    );
+    return <Banner status="error" title={`Error: ${error.message}`} />;
   }
 
   const mutationError =
     createUser.error?.message || updateUser.error?.message || deleteUser.error?.message;
 
+  const columns: TableColumn<UserRow>[] = [
+    { key: "name", header: "Name", width: proportional(1, { minWidth: 160 }) },
+    { key: "email", header: "Email", width: proportional(1, { minWidth: 200 }) },
+    {
+      key: "actions",
+      header: "Actions",
+      width: pixel(190),
+      renderCell: (row) => (
+        <HStack gap={1}>
+          <Button
+            label="Edit"
+            size="sm"
+            variant="ghost"
+            onClick={() => setEditingUser(row as User)}
+          />
+          <Button
+            label="Delete"
+            size="sm"
+            variant="ghost"
+            onClick={() => handleDelete(row.id)}
+            isDisabled={deleteUser.isPending}
+          />
+        </HStack>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">Users</h1>
+    <VStack gap={4}>
+      <Heading level={1}>Users</Heading>
 
       {editingUser ? (
         <EditUserForm
@@ -255,55 +281,23 @@ export function UsersPage() {
         />
       )}
 
-      {mutationError && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>Error: {mutationError}</AlertDescription>
-        </Alert>
-      )}
+      {mutationError && <Banner status="error" title={`Error: ${mutationError}`} />}
 
       {users && users.length > 0 ? (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setEditingUser(user)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(user.id)}
-                        disabled={deleteUser.isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <Table
+          data={users as UserRow[]}
+          columns={columns}
+          idKey="id"
+          hasHover
+          textOverflow="wrap"
+        />
       ) : (
-        <p className="text-muted-foreground">No users found.</p>
+        <EmptyState
+          headingLevel={2}
+          title="No users found."
+          description="Create the first user with the form above."
+        />
       )}
-    </div>
+    </VStack>
   );
 }

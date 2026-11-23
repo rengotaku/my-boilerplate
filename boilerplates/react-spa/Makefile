@@ -1,4 +1,4 @@
-.PHONY: install compose-ui run build preview stop status lint lint-fix format format-check \
+.PHONY: install run build preview stop status lint lint-fix format format-check \
 	test test-watch test-cov check ci clean help
 
 # Default target
@@ -7,23 +7,9 @@
 # Variables
 PORT ?= 5173
 
-# shared-react-ui: composed in-place from sibling repo dir during local dev.
-# Outside the monorepo (after scaffold) the source dir is absent and the
-# target becomes a no-op, so the scaffolded project keeps working unchanged.
-SHARED_UI_SRC := ../shared-react-ui/src/ui
-SHARED_UI_DEST := src/components/ui
-
-## install: Install dependencies (composes shared-react-ui first)
-install: compose-ui
+## install: Install dependencies
+install:
 	npm install
-
-## compose-ui: Materialize src/components/ui/ from ../shared-react-ui/ (no-op outside monorepo)
-compose-ui:
-	@if [ -d "$(SHARED_UI_SRC)" ]; then \
-		echo "[compose-ui] $(SHARED_UI_SRC) -> $(SHARED_UI_DEST) (excl. *.stories.tsx)"; \
-		mkdir -p $(SHARED_UI_DEST); \
-		rsync -a --exclude='*.stories.tsx' $(SHARED_UI_SRC)/ $(SHARED_UI_DEST)/; \
-	fi
 
 ## run: Start the Vite dev server
 run:

@@ -165,9 +165,9 @@ if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" != "python" ]]; then
   # shellcheck source=lib/noauth.sh
   source "$SCRIPT_DIR/lib/noauth.sh"
   if [[ -d "$dest/frontend" ]]; then
-    apply_noauth "$dest/frontend" "$dest"
+    apply_noauth "$dest/frontend" "$dest" "$template"
   else
-    apply_noauth "$dest"
+    apply_noauth "$dest" "" "$template"
   fi
 fi
 

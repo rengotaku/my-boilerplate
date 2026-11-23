@@ -63,7 +63,7 @@ Collection of project boilerplates.
 | [python-llm-pipeline](./boilerplates/python-llm-pipeline) | uv + Typer + ruff + mypy + pytest の LLM パイプライン基盤 (backend Protocol / retry / SQLite state store) |
 | [python-web](./boilerplates/python-web) | FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite の Web ボイラープレート |
 | [react-spa-cloudflare](./boilerplates/react-spa-cloudflare) | Cloudflare Pages デプロイ向けに最適化された React SPA |
-| [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Tailwind + Zustand の最小 React SPA |
+| [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Astryx + Zustand の最小 React SPA |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート |
 <!-- END: template-list -->
 

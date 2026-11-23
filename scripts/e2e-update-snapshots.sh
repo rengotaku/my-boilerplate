@@ -31,7 +31,7 @@ docker run --rm --ipc=host --network=host \
     go version
 
     echo "--> Composing shared-react-ui into React templates"
-    for dir in boilerplates/react-spa boilerplates/react-spa-cloudflare; do
+    for dir in boilerplates/react-spa-cloudflare; do
       src="boilerplates/shared-react-ui/src/ui"
       dest="${dir}/src/components/ui"
       if [ -d "$src" ]; then
