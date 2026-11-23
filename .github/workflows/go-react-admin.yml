@@ -2,22 +2,19 @@ name: go-react-admin CI
 
 # go-react-admin is a standalone Go + React admin-console template (worker+web
 # single binary, gin + embed, SQLite metrics store, jsonl persistlog,
-# Prometheus). Its frontend composes shared UI + admin components from
-# boilerplates/shared-react-ui/ at install time (make compose-ui). This workflow runs the
-# full lint + test pipeline whenever boilerplates/go-react-admin/, the shared UI source, or
-# this workflow itself is modified.
+# Prometheus). Its frontend owns its admin components and is built on Astryx.
+# This workflow runs the full lint + test pipeline whenever
+# boilerplates/go-react-admin/ or this workflow itself is modified.
 
 on:
   push:
     branches: [main]
     paths:
       - 'boilerplates/go-react-admin/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/go-react-admin.yml'
   pull_request:
     paths:
       - 'boilerplates/go-react-admin/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/go-react-admin.yml'
 
 defaults:
@@ -45,9 +42,6 @@ jobs:
 
       - name: Install golangci-lint
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.11.2
-
-      - name: Compose shared UI + admin components
-        run: make compose-ui
 
       - name: Install dependencies (Go modules + npm install)
         run: make install
