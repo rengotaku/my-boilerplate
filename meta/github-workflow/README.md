@@ -19,13 +19,13 @@ GitHub issue / PR の運用テンプレートと運用ガイド一式。
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- go-ssr-web ~/projects/my-app
+  | sh -s -- go-react-admin ~/projects/my-app
 ```
 
 注入をスキップしたい場合は `--no-github-templates` を指定する:
 
 ```bash
-curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app --no-github-templates
+curl -sSL .../download.sh | sh -s -- go-react-admin ~/projects/my-app --no-github-templates
 ```
 
 ## 詳細

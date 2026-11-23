@@ -6,7 +6,7 @@ on:
       working-directory:
         required: true
         type: string
-        description: "Project directory (e.g., go-ssr-web)"
+        description: "Project directory (e.g., go-cli)"
       test-paths:
         required: false
         type: string

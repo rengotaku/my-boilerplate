@@ -1,6 +1,6 @@
 # shared-react-ui manifest.
 #
-# At scaffold time, scripts/scaffold/lib/compose.sh reads this manifest and
+# At scaffold time, scripts/scaffold/lib/shared_ui.sh reads this manifest and
 # rsync's <repo_root>/<ui.src>/*.tsx (excluding *.stories.tsx) into
 # <dest>/<ui.dest>/, then deletes this manifest. The result is a self-contained
 # project that owns its UI components — the shadcn "copy/paste to add" workflow

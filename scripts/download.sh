@@ -23,7 +23,7 @@
 #   curl -sSL .../download.sh | sh -s -- <template> <dest> --pick=PATH[,PATH...] [--apply] [--overwrite]
 #
 # Required (scaffold / pick):
-#   <template>   Template directory name (e.g., go-cli, go-react-spa, react-spa).
+#   <template>   Template directory name (e.g., go-cli, react-spa).
 #                Validated against the actual contents of the downloaded
 #                tarball; an unknown name prints the available list.
 #   <dest>       Destination directory. In scaffold mode it must not exist
@@ -35,8 +35,8 @@
 #   --no-github-templates     Skip injecting .github/PULL_REQUEST_TEMPLATE.md and
 #                             .github/ISSUE_TEMPLATE/*.md into the scaffolded project.
 #   --no-auth                 Strip auth at scaffold time. python-web: login /
-#                             register / JWT / users. go-react-spa and
-#                             react-spa: login, users, JWT auth.
+#                             register / JWT / users. react-spa: login, users,
+#                             JWT auth.
 #   --no-sample               (python-web only) Strip the items CRUD sample at
 #                             scaffold time. Independent of --no-auth, so both
 #                             flags can be combined.
@@ -79,7 +79,7 @@
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
 # Examples:
-#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
+#   curl -sSL .../download.sh | sh -s -- go-react-admin ~/projects/my-app
 #   curl -sSL .../download.sh | sh -s -- --list
 #   curl -sSL .../download.sh | sh -s -- --list --format=json
 #   curl -sSL .../download.sh | sh -s -- go-cli --tree
@@ -476,10 +476,10 @@ run_scaffold() {
 
   # Always invoke scaffold.sh. It rewrites template-name placeholders
   # (Makefile / HTML / Go module path / package.json name etc.) so the
-  # resulting directory is a usable standalone project. Composite templates
-  # (those that ship a `.compose.toml`, e.g. go-react-spa) read sibling
-  # templates from $extracted during scaffolding, so the full tarball must
-  # remain available — do not pre-trim it down to $extracted/$template here.
+  # resulting directory is a usable standalone project. Templates that ship a
+  # `.compose.toml` read sibling templates from $extracted during scaffolding,
+  # so the full tarball must remain available — do not pre-trim it down to
+  # $extracted/$template here.
   info "Scaffolding $template -> $dest (name=$name${module:+ go-module-name=$module}${no_auth:+ no-auth}${no_sample:+ no-sample})"
   scaffold_args="template=$template dest=$dest name=$name"
   [ -n "$module" ] && scaffold_args="$scaffold_args go-module-name=$module"

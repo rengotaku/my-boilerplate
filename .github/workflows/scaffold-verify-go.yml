@@ -6,7 +6,7 @@ on:
       template:
         required: true
         type: string
-        description: "Go template name (e.g., go-ssr-web)"
+        description: "Go template name (e.g., go-react-admin)"
 
 jobs:
   scaffold-go:

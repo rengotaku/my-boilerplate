@@ -1,4 +1,0 @@
-name = "rust-cli"
-language = "Rust"
-description = "Rust + clap + config + tracing の Batteries-included な CLI"
-tags = ["cli", "clap"]

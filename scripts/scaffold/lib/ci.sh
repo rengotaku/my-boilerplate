@@ -133,7 +133,6 @@ transform_workflow() {
   BEGIN {
     in_paths = 0
     in_defaults = 0
-    in_compose_step = 0
   }
 
   # Replace workflow name
@@ -182,33 +181,17 @@ transform_workflow() {
     next
   }
 
-  # Strip template prefix from cache-dependency-path; also remap
-  # react-spa/ -> frontend/ for the go-react-spa composite template
+  # Strip template prefix from cache-dependency-path
   /cache-dependency-path:/ {
     gsub(template "/", "")
-    gsub("react-spa/", "frontend/")
     print
     next
   }
 
-  # Strip template prefix from node-version-file / python-version-file; also
-  # remap react-spa/ -> frontend/ for the go-react-spa composite template
+  # Strip template prefix from node-version-file / python-version-file
   /node-version-file:/ || /python-version-file:/ {
     gsub(template "/", "")
-    gsub("react-spa/", "frontend/")
     print
-    next
-  }
-
-  # Skip the "Compose frontend" step (pre-composed during scaffold; make compose is a no-op)
-  /^      - name: Compose frontend/ {
-    in_compose_step = 1
-    next
-  }
-  in_compose_step && /^      - / {
-    in_compose_step = 0
-  }
-  in_compose_step {
     next
   }
 
@@ -258,10 +241,9 @@ transform_workflow() {
   ' "$src" > "$dest_file"
 
   # Templates live under boilerplates/ in the monorepo (#229), so source
-  # workflow paths carry that prefix (e.g. boilerplates/go-ssr-web/go.mod).
+  # workflow paths carry that prefix (e.g. boilerplates/go-cli/go.mod).
   # The awk above strips the template-name segment but leaves "boilerplates/";
   # a standalone scaffolded project has no such directory, so drop the prefix
-  # wholesale. This also collapses the composite remap boilerplates/react-spa/
-  # -> boilerplates/frontend/ down to frontend/.
+  # wholesale.
   sed_inplace 's#boilerplates/##g' "$dest_file"
 }

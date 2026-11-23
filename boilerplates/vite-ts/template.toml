@@ -1,4 +1,0 @@
-name = "vite-ts"
-language = "TypeScript"
-description = "素の Vite + TypeScript（React なし）の最小テンプレート。純粋関数のサンプルとテスト付き"
-tags = ["vite", "typescript", "vanilla", "vitest"]
