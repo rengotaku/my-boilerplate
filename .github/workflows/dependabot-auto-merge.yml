@@ -14,6 +14,11 @@ jobs:
     timeout-minutes: 90
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
+    # 待っている間に新しい push（リベースや更新）があれば、古い実行を取り消し、
+    # 新しい実行が新しい SHA で待ち合わせからやり直す
+    concurrency:
+      group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       # 依存の更新だけをする PR なので、実行するスクリプトは PR の内容ではなく
       # base（main）の版にする。レビュー済みのスクリプトだけを write 権限で動かす
@@ -42,8 +47,10 @@ jobs:
         if: steps.wait-checks.outcome == 'success'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          # 待ち合わせで検証した SHA。これが head からずれていたらマージしない
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge --squash --delete-branch "$PR_URL"
+        run: gh pr merge --squash --delete-branch --match-head-commit "$EXPECTED_SHA" "$PR_URL"
 
       # 待ち合わせの失敗・時間切れ（と、その後のマージの失敗）は、
       # マージせずに PR を残して人に渡す

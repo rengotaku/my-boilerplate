@@ -233,6 +233,56 @@ else
   ng "check run の一覧を gh api で見る" "argv.log: $(cat "$TMP/wait-then-success/argv.log")"
 fi
 
+# ---- 7. ワークフロー: 検証した SHA にマージを固定する --------------------
+# 待っている間に Dependabot が PR を更新すると、古い実行が旧 SHA の成功を
+# 確認して、新しい SHA をマージしてしまう。マージ先の SHA を固定し、
+# 新しい push では古い実行を取り消すことを確かめる。
+WORKFLOW="$REPO_ROOT/.github/workflows/dependabot-auto-merge.yml"
+printf '\n'
+if python3 -c 'import yaml' >/dev/null 2>&1; then
+  printf '(ワークフローは yaml で読む)\n'
+  python3 - "$WORKFLOW" >"$TMP/workflow-facts.txt" <<'PY'
+import sys
+import yaml
+
+with open(sys.argv[1]) as f:
+    workflow = yaml.safe_load(f)
+
+job = workflow["jobs"]["auto-merge"]
+merge_run = ""
+merge_env = {}
+for step in job.get("steps", []):
+    if "gh pr merge" in (step.get("run") or ""):
+        merge_run = step["run"]
+        merge_env = step.get("env") or {}
+        break
+
+concurrency = job.get("concurrency") or {}
+cancel = concurrency.get("cancel-in-progress")
+
+print("MERGE_STEP=%s" % ("yes" if merge_run else "no"))
+print("MATCH_FLAG=%s" % ("yes" if "--match-head-commit" in merge_run else "no"))
+print("MATCH_SHA=%s" % ("yes" if '"$EXPECTED_SHA"' in merge_run else "no"))
+print("EXPECTED_ENV=%s" % merge_env.get("EXPECTED_SHA", ""))
+print("GROUP=%s" % (concurrency.get("group") or ""))
+print("CANCEL=%s" % ("true" if cancel is True else str(cancel)))
+PY
+  assert_contains "マージのステップがある" "MERGE_STEP=yes" "$TMP/workflow-facts.txt"
+  assert_contains "マージに --match-head-commit がある" "MATCH_FLAG=yes" "$TMP/workflow-facts.txt"
+  assert_contains "マージが EXPECTED_SHA を指定する" "MATCH_SHA=yes" "$TMP/workflow-facts.txt"
+  assert_contains "EXPECTED_SHA は head の SHA" 'EXPECTED_ENV=${{ github.event.pull_request.head.sha }}' "$TMP/workflow-facts.txt"
+  assert_contains "concurrency の group に PR 番号が入る" 'GROUP=dependabot-auto-merge-${{ github.event.pull_request.number }}' "$TMP/workflow-facts.txt"
+  assert_contains "新しい実行で古い実行を取り消す" "CANCEL=true" "$TMP/workflow-facts.txt"
+else
+  printf '(python3 の yaml が無いので grep で代用する)\n'
+  assert_contains "マージに --match-head-commit がある" "--match-head-commit" "$WORKFLOW"
+  assert_contains "マージが EXPECTED_SHA を指定する" '--match-head-commit "$EXPECTED_SHA"' "$WORKFLOW"
+  assert_contains "EXPECTED_SHA は head の SHA" 'EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}' "$WORKFLOW"
+  assert_contains "concurrency の group に PR 番号が入る" 'group: dependabot-auto-merge-${{ github.event.pull_request.number }}' "$WORKFLOW"
+  assert_contains "新しい実行で古い実行を取り消す" "cancel-in-progress: true" "$WORKFLOW"
+fi
+assert_not_contains "マージに --auto を使っていない" "--auto" "$WORKFLOW"
+
 # ---- まとめ ---------------------------------------------------------------
 printf '\n%s passed, %s failed\n' "$pass" "$fail"
 if [ "$fail" -ne 0 ]; then
