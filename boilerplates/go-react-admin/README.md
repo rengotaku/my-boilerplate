@@ -4,7 +4,7 @@
 テンプレート。1 つのバイナリに **worker デーモン** と **web サーバ** を
 同居させる。ジョブの実行履歴（runs）・フェーズ・メトリクスを SQLite に
 蓄積し、jsonl ログと Prometheus メトリクスを出力する。React 製の管理画面
-（shadcn/ui + recharts）で可視化する。
+（Astryx + recharts）で可視化する。
 
 サンプルドメインとして「ジョブ（jobs）とその実行（runs / phases / metrics）」を
 同梱しているので、自分の運用対象（バッチ・クローラ・ETL など）に差し替えて使う
@@ -38,8 +38,7 @@ go-react-admin/
 │       ├── static_embed.go       # //go:build !dev — dist/ を埋め込み
 │       ├── static_dev.go         # //go:build dev   — 空スタブ
 │       └── dist/                 # vite build 出力（バイナリに埋め込み）
-├── frontend/                 # Vite + React 管理画面（shadcn/ui + recharts）
-│   └── .shared-ui.toml       # shared-react-ui の ui + admin を materialize する manifest
+├── frontend/                 # Vite + React 管理画面（Astryx + recharts）
 ├── go.mod
 └── Makefile
 ```
@@ -85,13 +84,26 @@ go-react-admin/
 | POST   | /api/restart                  | worker+web の再起動（toml 値を再読込）        |
 | GET    | /{anything-else}              | SPA fallback（埋め込み dist/、クライアント側ルーティング用） |
 
-### shared-react-ui の admin compose
+### 画面の部品（Astryx）
 
-`frontend/.shared-ui.toml` の `[ui]` / `[admin]` セクションが scaffold 時に働く。
-`shared-react-ui/src/{ui,admin}` を `frontend/src/components/{ui,admin}` へ
-materialize する。これにより scaffold 後のプロジェクトは shared-react-ui に
-依存せず自己完結する（shadcn の「コピペで追加」ワークフローを維持）。
-monorepo 内のローカル開発では `make compose-ui` が同じ merge を行う。
+`@astryxdesign/core` / `@astryxdesign/theme-neutral` / `@astryxdesign/cli` を
+`0.7.12` に固定し、テーマは `neutral`・`mode="system"` を使う。CSS は
+reset → astryx → theme → `index.css` の順に読み、`<html data-astryx-theme="neutral">`
+でテーマを有効にする。フォントはシステムフォントのみ。
+
+管理画面の部品（テーブル・ドロワー・ページ送り・タブ・バッジ・ステッパー・
+フィルタ）は `frontend/src/components/admin/` にある。Astryx の `Table` /
+`Drawer` / `Pagination` / `TabList` / `Badge` / `Stepper` / `Selector` /
+`SegmentedControl` で作る。
+
+グラフは Astryx に部品が無いため recharts を残す。色は `useTheme` の
+`--color-data-*` トークンから取る。
+
+部品の props と Do / Don't は、推測で書かず次のコマンドで確認する:
+
+```bash
+npx @astryxdesign/cli@0.7.12 component Table --dense
+```
 
 ## Prerequisites
 
@@ -103,7 +115,7 @@ monorepo 内のローカル開発では `make compose-ui` が同じ merge を行
 ## Quick start
 
 ```bash
-# Bootstrap: install（shared UI/admin compose + go mod download + npm ci）+ 開発ツール（air, golangci-lint）
+# Bootstrap: install（go mod download + npm ci）+ 開発ツール（air, golangci-lint）
 make setup
 
 # Build: vite build -> internal/static/dist/、go build で dist/ を埋め込み
@@ -128,9 +140,8 @@ make stop
 ## Available commands
 
 ```bash
-make install         # compose-ui + go mod download + npm ci
+make install         # go mod download + npm ci
 make setup           # install + 開発ツール（air, golangci-lint）
-make compose-ui      # shared-react-ui の ui/admin を frontend/ に materialize（monorepo 外では no-op）
 make build-frontend  # vite build -> internal/static/dist/
 make build           # build-frontend + go build（単一バイナリ）
 make run             # Go (air, -tags dev) + Vite を並行起動
@@ -187,9 +198,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
   | sh -s -- go-react-admin ~/projects/my-admin
 ```
 
-scaffold は `frontend/src/components/{ui,admin}` を shared-react-ui から
-materialize する（`.shared-ui.toml` は削除される）。あわせて Go の module path と
-`package.json` の `name` を書き換える。
+scaffold は Go の module path と `package.json` の `name` を書き換える。
 `make install && make build && ./bin/server` がそのまま動く自己完結ディレクトリ
 を生成する。
 
