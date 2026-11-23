@@ -5,24 +5,61 @@ on: pull_request
 permissions:
   contents: write
   pull-requests: write
+  # 待つために、PR の head のコミットに付く check run を読む
+  checks: read
 
 jobs:
   auto-merge:
+    # 待ち合わせ（既定 60 分）と、その前後の処理に余裕を持たせる
+    timeout-minutes: 90
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
+    # 待っている間に新しい push（リベースや更新）があれば、古い実行を取り消し、
+    # 新しい実行が新しい SHA で待ち合わせからやり直す
+    concurrency:
+      group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
+      # 依存の更新だけをする PR なので、実行するスクリプトは PR の内容ではなく
+      # base（main）の版にする。レビュー済みのスクリプトだけを write 権限で動かす
+      - name: Check out the base branch for the wait script
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
       - name: Fetch dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge for patch/minor updates
+      - name: Wait for the other checks to succeed
+        id: wait-checks
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+          SELF_NAME: auto-merge
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/dependabot-wait-checks.sh
+
+      - name: Squash-merge patch/minor updates after the checks succeeded
+        if: steps.wait-checks.outcome == 'success'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          # 待ち合わせで検証した SHA。これが head からずれていたらマージしない
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash --delete-branch --match-head-commit "$EXPECTED_SHA" "$PR_URL"
+
+      # 待ち合わせの失敗・時間切れ（と、その後のマージの失敗）は、
+      # マージせずに PR を残して人に渡す
+      - name: Label for manual review when the checks did not succeed
+        if: failure()
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+        run: gh pr edit "$PR_URL" --add-label "needs-review"
 
       - name: Label major updates for manual review
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
