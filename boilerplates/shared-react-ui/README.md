@@ -1,7 +1,7 @@
 # shared-react-ui
 
 Single source of truth for shadcn/ui primitives shared across the React templates
-(`react-spa`, `react-spa-cloudflare`, `react-spa-graphql`, and future React
+(`react-spa`, `react-spa-cloudflare`, and future React
 templates). Components are defined here once and **composed into each template's
 `src/components/ui/`** at scaffold time, so the final scaffolded project owns
 its UI files and the shadcn "copy/paste to add" workflow is preserved.

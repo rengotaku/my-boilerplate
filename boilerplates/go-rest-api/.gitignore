@@ -1,5 +1,0 @@
-bin/
-tmp/
-*.exe
-app.db
-migrations/atlas.sum

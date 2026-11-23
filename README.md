@@ -57,12 +57,9 @@ Collection of project boilerplates.
 | [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest |
 | [go-cli-wrapper](./boilerplates/go-cli-wrapper) | 外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin） |
 | [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
-| [go-graphql-api](./boilerplates/go-graphql-api) | Go + gqlgen の GraphQL API ボイラープレート |
-| [go-grpc-api](./boilerplates/go-grpc-api) | クリーンアーキテクチャな Go gRPC API ボイラープレート |
 | [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / shadcn + recharts 管理画面 |
 | [go-react-spa-noauth](./boilerplates/go-react-spa-noauth) | go-react-spa から JWT 認証を除いた版（scaffold 時に自動展開） |
 | [go-react-spa](./boilerplates/go-react-spa) | gin + embed で React SPA を同梱するフルスタック monolith（JWT 認証付き） |
-| [go-rest-api](./boilerplates/go-rest-api) | Gin + GORM + JWT の Batteries Included な REST API |
 | [go-ssr-web-minimal](./boilerplates/go-ssr-web-minimal) | 最小構成の Go SSR Web（gin + html/template + embed + slog + envconfig + 素の CSS） |
 | [go-ssr-web](./boilerplates/go-ssr-web) | Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット） |
 | [mcp-server](./boilerplates/mcp-server) | MCP Server (stdio) template with TypeScript, Vitest, and @modelcontextprotocol/sdk |
@@ -70,7 +67,6 @@ Collection of project boilerplates.
 | [python-llm-pipeline](./boilerplates/python-llm-pipeline) | uv + Typer + ruff + mypy + pytest の LLM パイプライン基盤 (backend Protocol / retry / SQLite state store) |
 | [python-web](./boilerplates/python-web) | FastAPI + Jinja2 + Alpine.js + Tailwind CSS + SQLite の Web ボイラープレート |
 | [react-spa-cloudflare](./boilerplates/react-spa-cloudflare) | Cloudflare Pages デプロイ向けに最適化された React SPA |
-| [react-spa-graphql](./boilerplates/react-spa-graphql) | Apollo Client + codegen で GraphQL を扱う React SPA |
 | [react-spa](./boilerplates/react-spa) | Vite + TypeScript + Tailwind + Zustand の最小 React SPA |
 | [rust-cli](./boilerplates/rust-cli) | Rust + clap + config + tracing の Batteries-included な CLI |
 | [static-lp](./boilerplates/static-lp) | SEO 向けにビルド時プリレンダリング（SSG）する、Cloudflare Pages デプロイ向け静的 LP テンプレート |
@@ -100,9 +96,6 @@ make stop-all
 
 | Project | Port | Usage |
 |---------|------|-------|
-| go-rest-api | 8080 | REST API |
-| go-graphql-api | 8081 | GraphQL API |
-| go-grpc-api | 50051 | gRPC |
 | go-ssr-web | 8082 | SSR Web |
 | go-ssr-web-minimal | 8083 | SSR Web (no DB / auth / Tailwind) |
 | go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |

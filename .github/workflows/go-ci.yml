@@ -6,7 +6,7 @@ on:
       working-directory:
         required: true
         type: string
-        description: "Project directory (e.g., go-rest-api)"
+        description: "Project directory (e.g., go-ssr-web)"
       test-paths:
         required: false
         type: string

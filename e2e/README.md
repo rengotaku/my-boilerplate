@@ -30,8 +30,7 @@ cd e2e && npm run test:a11y      # a11y only
 
 | Directory | Description |
 |-----------|-------------|
-| `react-spa-graphql/` | react-spa-graphql ↔ go-graphql-api |
-| `react-spa/` | react-spa ↔ go-rest-api |
+| `react-spa/` | react-spa (API mocked in specs) |
 | `react-spa-cloudflare/` | react-spa-cloudflare (standalone, no backend) |
 
 ## Visual Regression (VRT)
@@ -47,12 +46,12 @@ Pixel output depends on the browser + OS + font stack. Both CI and local baselin
 make e2e-update-snapshots
 ```
 
-The script launches the same container CI uses, builds all three SPAs, and regenerates VRT baselines. Commit the resulting `*-snapshots/*.png` files.
+The script launches the same container CI uses, builds the React SPAs, and regenerates VRT baselines. Commit the resulting `*-snapshots/*.png` files.
 
 The container runs with `--user $(id -u):$(id -g)`, so generated files (snapshots, `node_modules`, `package-lock.json`, `dist/`, `test-results/`, `playwright-report/`) are owned by the host user — no `sudo` needed afterwards. If you have leftover root-owned files from before this change, remove them once and rerun:
 
 ```bash
-sudo rm -rf react-spa/{node_modules,dist} react-spa-graphql/{node_modules,dist} \
+sudo rm -rf react-spa/{node_modules,dist} \
   react-spa-cloudflare/{node_modules,dist} e2e/{node_modules,test-results,playwright-report}
 ```
 
