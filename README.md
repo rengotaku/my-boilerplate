@@ -89,7 +89,7 @@ make stop-all
 
 | Project | Port | Usage |
 |---------|------|-------|
-| go-ssr-web | 8082 | SSR Web |
+| go-ssr-web | 8080 | SSR Web |
 | react-spa | 5173 | Vite dev |
 
 ### New Project Checklist
