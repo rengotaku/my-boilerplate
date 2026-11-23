@@ -6,7 +6,9 @@
 # Variables
 BIN_DIR := bin
 COVERAGE_FILE := coverage.out
-PORT ?= 8082
+# Keep the same default as cmd/server/main.go (PORT,default=8080) so that
+# `make run`, `make stop` and `make status` all talk about the same port.
+PORT ?= 8080
 TAILWIND_VERSION ?= v4.1.5
 TAILWIND_BIN := $(BIN_DIR)/tailwindcss
 # OS/arch detection: linux-x64 / linux-arm64 / macos-x64 / macos-arm64
@@ -52,7 +54,7 @@ $(BINARIES): $(BIN_DIR)/%:
 
 ## run: Run the server (Tailwind CSS をビルドしてから起動)
 run: tailwind-build
-	go run ./cmd/server
+	PORT=$(PORT) go run ./cmd/server
 
 ## stop: Stop the server
 stop:

@@ -1,4 +1,28 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+
+// go-ssr-web keeps its data in a SQLite file (DATABASE_DSN). The integration
+// tests create users, while the VRT baselines capture an empty user list, and
+// the server would otherwise reuse the app.db left by the previous run. Give
+// each server a database file of its own, created fresh for every run (#342).
+const makeGoSSRWebDatabase = () => {
+  const dir = mkdtempSync(join(tmpdir(), "go-ssr-web-e2e-"));
+  process.on("exit", () => {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // Best effort: a leftover temp directory must not fail the run.
+    }
+  });
+  return join(dir, "app.db");
+};
+
+const GO_SSR_WEB_VRT_PORT = "8085";
+const GO_SSR_WEB_CRUD_PORT = "8086";
+const goSSRWebVRTDatabase = makeGoSSRWebDatabase();
+const goSSRWebCRUDDatabase = makeGoSSRWebDatabase();
 
 const viewports = {
   mobile: { width: 375, height: 667 },
@@ -56,10 +80,10 @@ export default defineConfig({
     makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
     ...makeVisualProjects("react-spa", "http://localhost:4174"),
     ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
-    // go-ssr-web: visual before functional to capture empty-state snapshots
-    // before CRUD tests create users that would overflow the mobile table
-    ...makeVisualProjects("go-ssr-web", "http://localhost:8085"),
-    makeFunctionalProject("go-ssr-web", "http://localhost:8085"),
+    // go-ssr-web runs two servers with separate databases: the VRT projects
+    // read the empty one, the integration / a11y project writes the other.
+    ...makeVisualProjects("go-ssr-web", `http://localhost:${GO_SSR_WEB_VRT_PORT}`),
+    makeFunctionalProject("go-ssr-web", `http://localhost:${GO_SSR_WEB_CRUD_PORT}`),
   ],
   webServer: [
     {
@@ -78,9 +102,18 @@ export default defineConfig({
     },
     {
       command: "../boilerplates/go-ssr-web/scripts/run-with-tailwind.sh",
-      env: { PORT: "8085" },
-      url: "http://localhost:8085/",
-      reuseExistingServer: !process.env.CI,
+      env: { PORT: GO_SSR_WEB_VRT_PORT, DATABASE_DSN: goSSRWebVRTDatabase },
+      url: `http://localhost:${GO_SSR_WEB_VRT_PORT}/`,
+      // Always start our own server: a reused one would not use this run's
+      // temporary database, which is the point of the two entries above.
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
+      command: "../boilerplates/go-ssr-web/scripts/run-with-tailwind.sh",
+      env: { PORT: GO_SSR_WEB_CRUD_PORT, DATABASE_DSN: goSSRWebCRUDDatabase },
+      url: `http://localhost:${GO_SSR_WEB_CRUD_PORT}/`,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
   ],

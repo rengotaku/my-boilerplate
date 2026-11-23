@@ -32,6 +32,7 @@ cd e2e && npm run test:a11y      # a11y only
 |-----------|-------------|
 | `react-spa/` | react-spa (API mocked in specs) |
 | `react-spa-cloudflare/` | react-spa-cloudflare (standalone, no backend) |
+| `go-ssr-web/` | go-ssr-web (real HTTP server + SQLite) |
 
 ## Visual Regression (VRT)
 
@@ -70,7 +71,7 @@ Failed runs in CI upload `e2e/test-results/` and `e2e/playwright-report/` as art
 
 ## Local Development
 
-Tests start backend APIs and Vite preview servers automatically. If servers are already running, they are reused (`reuseExistingServer: true` outside CI).
+Tests start backend APIs and Vite preview servers automatically. If servers are already running, they are reused (`reuseExistingServer: true` outside CI) — except the two go-ssr-web servers. Those are always started by Playwright because each one owns a database file created fresh for the run (VRT reads an empty database, the integration tests write to a separate one), so reusing a server would compare against leftover data.
 
 ```bash
 cd e2e && npx playwright test --headed          # Run with browser visible
