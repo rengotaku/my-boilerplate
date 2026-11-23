@@ -25,7 +25,7 @@
 | `chrome-extension` | TypeScript | Manifest V3 の Chrome 拡張です |
 | `go-cli` | Go | cobra + slog + envconfig の Go CLI です |
 | `go-cli-wrapper` | Go | 外部 CLI のラッパー向け Go CLI です |
-| `go-react-admin` | Go+React | 管理コンソールの Go + React フルスタックです。React は `frontend/` にあります |
+| `go-ssr-web` | Go | Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット）です |
 | `mcp-server` | TypeScript | stdio の MCP サーバーです |
 | `python-cli` | Python | uv + Typer の Python CLI です |
 | `python-llm-pipeline` | Python | LLM パイプラインの基盤です |
@@ -36,7 +36,7 @@
 
 README の表は `make readme-list` で `template.toml` から生成します。表が古い場合は、CI の `make check-readme-list`（`.github/workflows/docs.yml`）が失敗します。`download.sh --list` も同じ `template.toml` を読みます。
 
-画面を持つテンプレートは `react-spa`、`react-spa-cloudflare`、`go-react-admin`、`static-lp` です。前の 3 つは Astryx（`@astryxdesign/core`、`@astryxdesign/theme-neutral`、`@astryxdesign/cli` の `0.7.12`）を使います。`static-lp` は軽さを優先し、使う部品だけを直接持ちます。
+画面を持つテンプレートは `react-spa`、`react-spa-cloudflare`、`static-lp` です。前の 2 つは Astryx（`@astryxdesign/core`、`@astryxdesign/theme-neutral`、`@astryxdesign/cli` の `0.7.12`）を使います。`static-lp` は軽さを優先し、使う部品だけを直接持ちます。
 
 ## データフロー
 
@@ -50,11 +50,11 @@ README の表は `make readme-list` で `template.toml` から生成します。
 
 | フラグ | 対象 | 効き方 |
 |---|---|---|
-| `--no-auth` | `python-web` と `react-spa` | `python-web` は login / register / JWT / users を除きます。`react-spa` は React SPA の認証（ログイン、ユーザー）を除きます。`react-spa-cloudflare` と `go-react-admin` は、指定すると壊れた生成物になる既知の不具合があります（#333、ADR 0003） |
+| `--no-auth` | `python-web` と `react-spa` | `python-web` は login / register / JWT / users を除きます。`react-spa` は React SPA の認証（ログイン、ユーザー）を除きます。`react-spa-cloudflare` は、指定すると壊れた生成物になる既知の不具合があります（#333、ADR 0003） |
 | `--no-sample` | `python-web` のみ | items の CRUD サンプルを除きます。`--no-auth` とは独立しています |
 | `--no-github-templates` | すべて | `meta/github-workflow/` の PR / Issue テンプレートを生成物へ入れません |
 
-`--no-auth` の `react-spa` 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`react-spa-cloudflare` と `go-react-admin` は、#333 のとおり壊れています。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
+`--no-auth` の `react-spa` 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`react-spa-cloudflare` は、#333 のとおり壊れています。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
 
 ## どこを触れば何が変わるか
 
@@ -72,3 +72,4 @@ README の表は `make readme-list` で `template.toml` から生成します。
 - [0001: 直近リポジトリからのテンプレ抽出は「推奨度・高」のみ採用し static-lp / python-llm-pipeline を新設する](adr/0001-extract-templates-from-recent-repos.md)
 - [0002: scaffold のあとに毎回消されるサンプルはフラグで外せるようにし、テンプレート一覧は template.toml を正本にする](adr/0002-scaffold-flags-and-template-list-source.md)
 - [0003: 使っていないテンプレートを削除し、画面のある React テンプレートは Astryx を前提にする](adr/0003-adopt-astryx-for-react-templates.md)
+- [0004: go-ssr-web を戻し、管理コンソール向けテンプレートを削除する](adr/0004-restore-go-ssr-web-and-remove-admin-template.md)

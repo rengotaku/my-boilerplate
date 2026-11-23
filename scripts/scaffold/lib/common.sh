@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Valid template names
 VALID_TEMPLATES=(
-  go-react-admin
+  go-ssr-web
   go-cli
   go-cli-wrapper
   react-spa

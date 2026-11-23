@@ -22,6 +22,17 @@ updates:
           - "minor"
           - "patch"
 
+  # Go (go-ssr-web)
+  - package-ecosystem: "gomod"
+    directory: "/go-ssr-web"
+    schedule:
+      interval: "monthly"
+    groups:
+      go-ssr-web-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"

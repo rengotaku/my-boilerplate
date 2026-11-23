@@ -1,0 +1,4 @@
+name = "go-ssr-web"
+language = "Go"
+description = "Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット）"
+tags = ["web", "ssr", "gin"]

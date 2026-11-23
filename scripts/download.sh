@@ -79,7 +79,7 @@
 #   MY_BOILERPLATE_REF   Override ref / branch / tag (default: main).
 #
 # Examples:
-#   curl -sSL .../download.sh | sh -s -- go-react-admin ~/projects/my-app
+#   curl -sSL .../download.sh | sh -s -- go-ssr-web ~/projects/my-app
 #   curl -sSL .../download.sh | sh -s -- --list
 #   curl -sSL .../download.sh | sh -s -- --list --format=json
 #   curl -sSL .../download.sh | sh -s -- go-cli --tree

@@ -5,6 +5,7 @@ on:
     paths:
       - "boilerplates/react-spa/**"
       - "boilerplates/react-spa-cloudflare/**"
+      - "boilerplates/go-ssr-web/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
   push:
@@ -12,6 +13,7 @@ on:
     paths:
       - "boilerplates/react-spa/**"
       - "boilerplates/react-spa-cloudflare/**"
+      - "boilerplates/go-ssr-web/**"
       - "e2e/**"
       - ".github/workflows/e2e.yml"
 
@@ -27,6 +29,12 @@ jobs:
       options: --ipc=host
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.25"
+          cache-dependency-path: |
+            boilerplates/go-ssr-web/go.sum
 
       - uses: actions/setup-node@v6
         with:

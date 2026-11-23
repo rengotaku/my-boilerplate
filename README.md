@@ -57,7 +57,7 @@ Collection of project boilerplates.
 | [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest |
 | [go-cli-wrapper](./boilerplates/go-cli-wrapper) | 外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin） |
 | [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
-| [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / Astryx + recharts 管理画面 |
+| [go-ssr-web](./boilerplates/go-ssr-web) | Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット） |
 | [mcp-server](./boilerplates/mcp-server) | MCP Server (stdio) template with TypeScript, Vitest, and @modelcontextprotocol/sdk |
 | [python-cli](./boilerplates/python-cli) | uv + Typer + ruff + mypy + pytest の Python CLI |
 | [python-llm-pipeline](./boilerplates/python-llm-pipeline) | uv + Typer + ruff + mypy + pytest の LLM パイプライン基盤 (backend Protocol / retry / SQLite state store) |
@@ -89,7 +89,7 @@ make stop-all
 
 | Project | Port | Usage |
 |---------|------|-------|
-| go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
+| go-ssr-web | 8082 | SSR Web |
 | react-spa | 5173 | Vite dev |
 
 ### New Project Checklist
@@ -106,7 +106,7 @@ When adding a new server project:
 ```bash
 # どのテンプレートも基本これだけ。`name` は <dest> から自動推定される
 curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/scripts/download.sh \
-  | sh -s -- go-react-admin ~/projects/my-new-app
+  | sh -s -- go-ssr-web ~/projects/my-new-app
 ```
 
 オプション:

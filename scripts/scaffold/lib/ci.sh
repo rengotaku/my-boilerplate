@@ -241,7 +241,7 @@ transform_workflow() {
   ' "$src" > "$dest_file"
 
   # Templates live under boilerplates/ in the monorepo (#229), so source
-  # workflow paths carry that prefix (e.g. boilerplates/go-cli/go.mod).
+  # workflow paths carry that prefix (e.g. boilerplates/go-ssr-web/go.mod).
   # The awk above strips the template-name segment but leaves "boilerplates/";
   # a standalone scaffolded project has no such directory, so drop the prefix
   # wholesale.
