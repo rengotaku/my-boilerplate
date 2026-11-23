@@ -6,7 +6,7 @@ superseded_by: null
 date: 2026-11-23
 issues: [320, 323, 326, 327, 328, 329, 330, 331]
 tags: [astryx, shared-react-ui, template-removal, react-spa, go-react-admin, static-lp]
-description: #304 の利用実態の調査を受け、使っていない 9 つのテンプレートを削除した。画面のある 3 つのテンプレートは UI を Astryx に統一し、共有 UI と合成の仕組みをやめた。static-lp は軽さを優先して部品を直接持つ
+description: 利用実態の調査（#304）を受け、使っていない 9 つのテンプレートを削除した。画面のある 3 つのテンプレートは UI を Astryx に統一し、共有 UI と合成の仕組みをやめた。static-lp は軽さを優先して部品を直接持つ
 ---
 
 # ADR 0003: 使っていないテンプレートを削除し、画面のある React テンプレートは Astryx を前提にする

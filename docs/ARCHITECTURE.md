@@ -50,11 +50,11 @@ README の表は `make readme-list` で `template.toml` から生成します。
 
 | フラグ | 対象 | 効き方 |
 |---|---|---|
-| `--no-auth` | `python-web` と、React / Go のテンプレート | `python-web` は login / register / JWT / users を除きます。React / Go は React SPA の認証と Go の JWT を除きます |
+| `--no-auth` | `python-web` と `react-spa` | `python-web` は login / register / JWT / users を除きます。`react-spa` は React SPA の認証（ログイン、ユーザー）を除きます。`react-spa-cloudflare` と `go-react-admin` は、指定すると壊れた生成物になる既知の不具合があります（#333、ADR 0003） |
 | `--no-sample` | `python-web` のみ | items の CRUD サンプルを除きます。`--no-auth` とは独立しています |
 | `--no-github-templates` | すべて | `meta/github-workflow/` の PR / Issue テンプレートを生成物へ入れません |
 
-`--no-auth` の React / Go 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
+`--no-auth` の `react-spa` 側（`react-spa-cloudflare` と `go-react-admin` は #333 のとおり壊れています）は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
 
 ## どこを触れば何が変わるか
 
@@ -62,7 +62,7 @@ README の表は `make readme-list` で `template.toml` から生成します。
 |---|---|
 | 新しいテンプレートを足す | `boilerplates/<name>/template.toml` を追加し、`scripts/scaffold/lib/common.sh` の `VALID_TEMPLATES` と `detect_family` に足します。`.github/workflows/<name>.yml` と `scaffold-verify-<name>.yml` を用意し、`make readme-list` で README を更新します。サーバーを持つ場合は、ルート `Makefile` の `SERVERS` とポート表にも足します |
 | 画面の部品を変える | 各テンプレートの `src/components/` などを直接変えます。Astryx の版は各 `package.json` で固定しており、CSS の読み込み順は `src/main.tsx` の reset → 部品 → テーマです。`react-spa` と `react-spa-cloudflare` は、見た目が変わったら `make e2e-update-snapshots` で VRT の基準画像を更新します |
-| `--no-auth` を変える | React / Go は `scripts/scaffold/lib/noauth.sh` と各テンプレートの `.noauth-remove` を直します。検証は `scaffold-verify-react-spa-noauth.yml` です。`python-web` は `scripts/scaffold/lib/python_features.sh`、`.noauth-remove`、`@scaffold` の目印を直し、`scaffold-verify-python-web-flags.yml` で見ます |
+| `--no-auth` を変える | `react-spa` は `scripts/scaffold/lib/noauth.sh` と各テンプレートの `.noauth-remove` を直します。検証は `scaffold-verify-react-spa-noauth.yml` です。`python-web` は `scripts/scaffold/lib/python_features.sh`、`.noauth-remove`、`@scaffold` の目印を直し、`scaffold-verify-python-web-flags.yml` で見ます |
 | CI を足す | `.github/workflows/<template>.yml` を足します。生成物の CI になるので、テンプレート名を含む paths やモノレポ固有の設定は `scaffold.sh` の変換が前提です。デプロイは `<template>-deploy.yml` です |
 
 ## ADR への導線
