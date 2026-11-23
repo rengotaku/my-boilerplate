@@ -79,6 +79,21 @@ describe("UsersPage", () => {
     });
   });
 
+  it("moves focus to the first invalid field on submit", async () => {
+    const user = userEvent.setup();
+    render(<UsersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Name")).toHaveFocus();
+    });
+  });
+
   it("shows validation error for invalid email", async () => {
     const user = userEvent.setup();
     render(<UsersPage />);

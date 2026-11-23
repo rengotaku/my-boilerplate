@@ -22,6 +22,17 @@ describe("LoginPage", () => {
     });
   });
 
+  it("moves focus to the first invalid field on submit", async () => {
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Email")).toHaveFocus();
+    });
+  });
+
   it("logs in successfully and stores token", async () => {
     const user = userEvent.setup();
     render(<LoginPage />);

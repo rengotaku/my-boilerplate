@@ -6,11 +6,16 @@
 # When <go_root> is provided, also removes Go backend JWT auth code.
 #
 # Usage:
-#   apply_noauth <frontend_dir> [<go_root>]
+#   apply_noauth <frontend_dir> [<go_root>] [<template>]
 #
 # <frontend_dir> is the root of the React source tree:
 #   - frontend/ sub-tree (go-react-admin): $dest/frontend
 #   - standalone React template:           $dest
+#
+# <template> is the template the project was scaffolded from. It selects the
+# Layout.tsx that is written: only react-spa uses Astryx, so react-spa-cloudflare
+# and go-react-admin keep the Tailwind-based Layout. Their package.json has no
+# @astryxdesign/core, and importing it there would break the build.
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
 #   - files listed in $go_root/.noauth-remove
@@ -78,6 +83,7 @@ _remove_go_files() {
 apply_noauth() {
   local fdir="$1"
   local go_root="${2:-}"
+  local template="${3:-}"
 
   info "[no-auth] Removing auth files..."
   _remove_frontend_files "$fdir"
@@ -140,7 +146,9 @@ export { HomePage } from "./HomePage";
 export { NotFoundPage } from "./NotFoundPage";
 NOAUTH_EOF
 
-  cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
+  if [[ "$template" == "react-spa" ]]; then
+    # react-spa is the only template on Astryx (#327).
+    cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
 import { Outlet, useLocation } from "react-router-dom";
 import { AppShell } from "@astryxdesign/core/AppShell";
 import { Text } from "@astryxdesign/core/Text";
@@ -170,6 +178,42 @@ export function Layout() {
   );
 }
 NOAUTH_EOF
+  else
+    # react-spa-cloudflare and go-react-admin still ship Tailwind + shared-react-ui
+    # (no @astryxdesign/core), so they keep the pre-Astryx Layout.
+    cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
+import { Outlet, NavLink } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+    isActive
+      ? "bg-primary-foreground/15 text-primary-foreground"
+      : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+  );
+
+export function Layout() {
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="bg-primary text-primary-foreground shadow">
+        <div className="mx-auto flex h-14 max-w-5xl items-center px-4">
+          <span className="mr-6 text-lg font-semibold">React SPA</span>
+          <nav className="flex items-center gap-1">
+            <NavLink to="/" end className={navLinkClass}>
+              Home
+            </NavLink>
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+NOAUTH_EOF
+  fi
 
   cat > "$fdir/src/components/Layout.test.tsx" << 'NOAUTH_EOF'
 import { render, screen } from "@testing-library/react";

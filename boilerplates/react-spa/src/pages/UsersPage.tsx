@@ -54,6 +54,8 @@ function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
               label="Name"
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
               autoComplete="off"
               width={192}
               status={
@@ -71,6 +73,8 @@ function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
               type="email"
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
               autoComplete="off"
               width={256}
               status={
@@ -90,6 +94,8 @@ function CreateUserForm({ isPending, onSubmit }: CreateFormProps) {
               type="password"
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
               autoComplete="new-password"
               width={192}
               status={
@@ -140,6 +146,8 @@ function EditUserForm({ user, isPending, onSubmit, onCancel }: EditFormProps) {
               label="Name"
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
               autoComplete="off"
               width={192}
               status={
@@ -157,6 +165,8 @@ function EditUserForm({ user, isPending, onSubmit, onCancel }: EditFormProps) {
               type="email"
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
               autoComplete="off"
               width={256}
               status={

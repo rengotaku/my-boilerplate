@@ -67,6 +67,8 @@ export function LoginPage() {
                     autoComplete="username"
                     value={field.value}
                     onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
                     status={
                       errors.email
                         ? { type: "error", message: errors.email.message }
@@ -86,6 +88,8 @@ export function LoginPage() {
                     autoComplete="current-password"
                     value={field.value}
                     onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
                     status={
                       errors.password
                         ? { type: "error", message: errors.password.message }
