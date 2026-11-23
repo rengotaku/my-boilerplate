@@ -1,0 +1,31 @@
+name: Verify Dependabot Wait Checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/dependabot-wait-checks.sh'
+      - 'scripts/verify-dependabot-wait.sh'
+      - '.github/workflows/verify-dependabot-wait.yml'
+  pull_request:
+    paths:
+      - 'scripts/dependabot-wait-checks.sh'
+      - 'scripts/verify-dependabot-wait.sh'
+      - '.github/workflows/verify-dependabot-wait.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check shell syntax
+        run: bash -n scripts/dependabot-wait-checks.sh scripts/verify-dependabot-wait.sh
+
+      # 偽の gh を PATH に置いて、待つ・失敗で止まる・自分を待たない・
+      # 0 件で止まる動きを確かめる。トークンもネットワークも使わない
+      - name: Run the fake-gh tests
+        run: bash scripts/verify-dependabot-wait.sh
