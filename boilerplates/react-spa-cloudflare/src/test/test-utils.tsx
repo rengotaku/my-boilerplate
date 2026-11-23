@@ -1,16 +1,37 @@
 import { render as rtlRender, type RenderOptions } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import { Theme } from "@astryxdesign/core/theme";
+import { LinkProvider } from "@astryxdesign/core/Link";
+import { neutralTheme } from "@astryxdesign/theme-neutral/built";
 import type { ReactNode, ReactElement } from "react";
+
+import { RouterLink } from "@/components/RouterLink";
 
 interface WrapperProps {
   children: ReactNode;
 }
 
-export function TestWrapper({ children }: WrapperProps) {
-  return <BrowserRouter>{children}</BrowserRouter>;
+/**
+ * Astryx needs its Theme and link contexts. Use this alone when the component
+ * under test brings its own router (App renders BrowserRouter internally).
+ */
+export function AstryxWrapper({ children }: WrapperProps) {
+  return (
+    <Theme theme={neutralTheme} mode="light">
+      <LinkProvider component={RouterLink}>{children}</LinkProvider>
+    </Theme>
+  );
 }
 
-function render(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) {
+export function TestWrapper({ children }: WrapperProps) {
+  return (
+    <BrowserRouter>
+      <AstryxWrapper>{children}</AstryxWrapper>
+    </BrowserRouter>
+  );
+}
+
+function render(ui: ReactElement, options?: RenderOptions) {
   return rtlRender(ui, { wrapper: TestWrapper, ...options });
 }
 

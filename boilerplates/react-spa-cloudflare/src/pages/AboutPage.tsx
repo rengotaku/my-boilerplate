@@ -1,29 +1,30 @@
-import { Link as RouterLink } from "react-router-dom";
-
-import { Button } from "@/components/ui/button";
+import { Button } from "@astryxdesign/core/Button";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 
 export function AboutPage() {
   return (
-    <div>
-      <h1 className="mb-3 text-3xl font-bold tracking-tight">About</h1>
+    <VStack gap={4}>
+      <Heading level={1}>About</Heading>
 
-      <p className="mb-4 text-sm leading-relaxed">
+      <Text>
         This is a React SPA boilerplate designed for deployment on Cloudflare Pages. It
-        includes a modern tech stack with TypeScript, Tailwind CSS, shadcn/ui, and a
-        comprehensive testing setup.
-      </p>
+        includes a modern tech stack with TypeScript, Astryx, and a comprehensive testing
+        setup.
+      </Text>
 
-      <h2 className="mb-2 mt-6 text-xl font-semibold">SPA Routing</h2>
+      <Heading level={2}>SPA Routing</Heading>
 
-      <p className="mb-6 text-sm leading-relaxed">
+      <Text>
         This page demonstrates client-side routing. You can access this page directly via
         URL or by navigating from the home page. The Cloudflare Pages configuration
         ensures proper fallback routing for SPA navigation.
-      </p>
+      </Text>
 
-      <Button asChild>
-        <RouterLink to="/">Back to Home</RouterLink>
-      </Button>
-    </div>
+      <div>
+        <Button label="Back to Home" href="/" variant="primary" />
+      </div>
+    </VStack>
   );
 }

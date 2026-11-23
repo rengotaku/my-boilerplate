@@ -1,40 +1,42 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
-import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect } from "vitest";
 import { GreetingForm } from "./GreetingForm";
 
-const renderGreetingForm = () => {
-  return render(
-    <BrowserRouter>
-      <GreetingForm />
-    </BrowserRouter>
-  );
-};
-
 describe("GreetingForm", () => {
   it("renders the heading", () => {
-    renderGreetingForm();
+    render(<GreetingForm />);
     expect(screen.getByRole("heading", { name: /Greeting Demo/i })).toBeInTheDocument();
   });
 
   it("renders name input field", () => {
-    renderGreetingForm();
+    render(<GreetingForm />);
     expect(screen.getByLabelText(/Your Name/i)).toBeInTheDocument();
   });
 
   it("renders submit button", () => {
-    renderGreetingForm();
+    render(<GreetingForm />);
     expect(screen.getByRole("button", { name: /Say Hello/i })).toBeInTheDocument();
   });
 
   it("shows validation error for empty name", async () => {
     const user = userEvent.setup();
-    renderGreetingForm();
+    render(<GreetingForm />);
 
     const submitButton = screen.getByRole("button", { name: /Say Hello/i });
     await user.click(submitButton);
 
     expect(await screen.findByText(/Name is required/i)).toBeInTheDocument();
+  });
+
+  it("moves focus to the invalid field on submit", async () => {
+    const user = userEvent.setup();
+    render(<GreetingForm />);
+
+    await user.click(screen.getByRole("button", { name: /Say Hello/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Your Name/i)).toHaveFocus();
+    });
   });
 });

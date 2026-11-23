@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
-import { useParams, Link as RouterLink } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Button } from "@astryxdesign/core/Button";
+import { Card } from "@astryxdesign/core/Card";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useGreetingStore } from "@/hooks/useGreetingStore";
 
 export function GreetingPage() {
@@ -20,20 +23,14 @@ export function GreetingPage() {
   const decodedName = name ? decodeURIComponent(name) : "Guest";
 
   return (
-    <div className="text-center">
-      <h1 className="mb-4 text-4xl font-bold tracking-tight">Hello, {decodedName}!</h1>
+    <VStack gap={6} hAlign="center" paddingBlockStart={4}>
+      <Heading level={1}>Hello, {decodedName}!</Heading>
 
-      <Card className="mx-auto my-8 max-w-sm">
-        <CardContent className="p-6">
-          <p className="text-lg font-medium text-muted-foreground">
-            You are visitor #{visitCount}
-          </p>
-        </CardContent>
+      <Card padding={4}>
+        <Text type="supporting">You are visitor #{visitCount}</Text>
       </Card>
 
-      <Button asChild variant="outline" size="lg">
-        <RouterLink to="/greeting">Try Another Name</RouterLink>
-      </Button>
-    </div>
+      <Button label="Try Another Name" href="/greeting" variant="primary" />
+    </VStack>
   );
 }

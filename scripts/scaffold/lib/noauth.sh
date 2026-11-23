@@ -13,9 +13,10 @@
 #   - standalone React template:           $dest
 #
 # <template> is the template the project was scaffolded from. It selects the
-# Layout.tsx that is written: only react-spa uses Astryx, so react-spa-cloudflare
-# and go-react-admin keep the Tailwind-based Layout. Their package.json has no
-# @astryxdesign/core, and importing it there would break the build.
+# Layout.tsx that is written: only react-spa gets the Astryx Layout here.
+# go-react-admin still ships Tailwind + shared-react-ui (no @astryxdesign/core),
+# and react-spa-cloudflare's --no-auth path is broken already (#333), so both
+# keep the pre-Astryx Layout unchanged.
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
 #   - files listed in $go_root/.noauth-remove
@@ -179,8 +180,9 @@ export function Layout() {
 }
 NOAUTH_EOF
   else
-    # react-spa-cloudflare and go-react-admin still ship Tailwind + shared-react-ui
-    # (no @astryxdesign/core), so they keep the pre-Astryx Layout.
+    # go-react-admin still ships Tailwind + shared-react-ui (no @astryxdesign/core),
+    # and react-spa-cloudflare's --no-auth path is broken already (#333). Keep the
+    # pre-Astryx Layout unchanged for both.
     cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
 import { Outlet, NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
