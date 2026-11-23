@@ -1,0 +1,29 @@
+name: Scaffold Verify no-auth templates
+
+# --no-auth を実装しているのは react-spa と python-web だけ (#333)。
+# それ以外のテンプレートに指定したときは、コピーの前にエラーで止まり、
+# dest を残さないことを確かめる。python-cli / python-llm-pipeline の
+# 既存の拒否も、同じスクリプトでまとめて確認する。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/scaffold/**'
+      - 'boilerplates/*/template.toml'
+      - '.github/workflows/scaffold-verify-no-auth-templates.yml'
+  pull_request:
+    paths:
+      - 'scripts/scaffold/**'
+      - 'boilerplates/*/template.toml'
+      - '.github/workflows/scaffold-verify-no-auth-templates.yml'
+
+jobs:
+  verify:
+    name: no-auth template support
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Verify the templates that accept --no-auth
+        run: bash scripts/scaffold/verify-no-auth-templates.sh

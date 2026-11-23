@@ -10,7 +10,8 @@
 #
 # no-auth=1:
 #   - python-web: 認証 (login / register / JWT / users) を除く
-#   - react / go: React SPA の JWT 認証を除く（従来の挙動）
+#   - react-spa: React SPA の JWT 認証を除く
+#   - 上記以外のテンプレートには実装が無いため、コピーの前にエラーで拒否する
 # no-sample=1:
 #   - python-web のみ: items の CRUD サンプルを除く
 # 両方のフラグは互いに独立しており、同時に指定できる。
@@ -71,16 +72,18 @@ if [[ "$family" != "go" && -n "$module" ]]; then
 fi
 
 # --- Feature-flag validation ---
-# Both flags are python-web only for the python family; --no-auth additionally
-# exists for the React/Go templates (apply_noauth), and the two implementations
-# must stay apart. Compare the template (not the family): a python template
-# without --no-sample support (python-cli, python-llm-pipeline) must fail here
-# instead of silently scaffolding with the sample left in place.
+# Runs before the copy so an unsupported combination fails without leaving a
+# destination behind. Both flags are python-web only for the python family;
+# --no-auth is additionally implemented for react-spa only. Compare the
+# template (not the family): a template that shares the family but not the
+# implementation (python-cli, python-llm-pipeline, react-spa-cloudflare, ...)
+# must fail here instead of silently scaffolding with the auth code left in
+# place, or (for react-spa-cloudflare) with a broken project.
 if [[ -n "$no_sample" && "$no_sample" != "0" && "$template" != "python-web" ]]; then
   die "no-sample= is supported only for python-web (template: $template)"
 fi
-if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" == "python" && "$template" != "python-web" ]]; then
-  die "no-auth= is supported only for python-web and the React/Go templates (template: $template)"
+if [[ -n "$no_auth" && "$no_auth" != "0" && "$template" != "python-web" && "$template" != "react-spa" ]]; then
+  die "no-auth= is supported only for react-spa and python-web (template: $template)"
 fi
 
 # --- Copy template ---
@@ -141,9 +144,10 @@ case "$family" in
     ;;
 esac
 
-# --- No-auth transformation (React / Go templates) ---
+# --- No-auth transformation (react-spa) ---
 # python-web is handled by apply_python_feature_flags above: reusing
 # apply_noauth here would write the React SPA files into a Python project.
+# Every other template was rejected by the validation above.
 if [[ -n "$no_auth" && "$no_auth" != "0" && "$family" != "python" ]]; then
   # shellcheck source=lib/noauth.sh
   source "$SCRIPT_DIR/lib/noauth.sh"
