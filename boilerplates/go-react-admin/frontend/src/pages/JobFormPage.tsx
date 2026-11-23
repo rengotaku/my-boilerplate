@@ -1,4 +1,10 @@
-import { useState, type FormEvent } from "react";
+import {
+  useRef,
+  useState,
+  type ComponentProps,
+  type ComponentType,
+  type FormEvent,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
@@ -51,6 +57,23 @@ interface JobFormProps {
   job?: JobView;
 }
 
+// Astryx's TextInputProps does not declare the native `required` attribute
+// (only isRequired, which adds aria-required + the visual marker). The
+// implementation spreads extra props onto the inner <input>, so widening the
+// type restores the browser's own empty-field check. The submit handler also
+// checks the two fields, so the guard holds even where native validation is
+// bypassed.
+type TextInputWithNativeRequiredProps = ComponentProps<typeof TextInput> & {
+  required?: boolean;
+};
+const RequiredTextInput =
+  TextInput as unknown as ComponentType<TextInputWithNativeRequiredProps>;
+
+interface FormErrors {
+  name?: string;
+  schedule?: string;
+}
+
 function JobForm({ mode, id, job }: JobFormProps) {
   const navigate = useNavigate();
   const createJob = useCreateJob();
@@ -60,12 +83,32 @@ function JobForm({ mode, id, job }: JobFormProps) {
   const [kind, setKind] = useState(job?.kind ?? "");
   const [schedule, setSchedule] = useState(job?.schedule ?? "");
   const [enabled, setEnabled] = useState(job?.enabled ?? true);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const nameRef = useRef<HTMLInputElement>(null);
+  const scheduleRef = useRef<HTMLInputElement>(null);
 
   const mutation = mode === "edit" ? updateJob : createJob;
   const serverError = mutation.isError ? (mutation.error as Error)?.message : undefined;
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // Native `required` normally stops the submit before this runs; this is the
+    // fallback for browsers/tests that let the submit through, and it also
+    // points at the first empty field.
+    const nextErrors: FormErrors = {};
+    if (name === "") nextErrors.name = "Name is required.";
+    if (schedule === "") nextErrors.schedule = "Schedule is required.";
+    setErrors(nextErrors);
+    if (nextErrors.name) {
+      nameRef.current?.focus();
+      return;
+    }
+    if (nextErrors.schedule) {
+      scheduleRef.current?.focus();
+      return;
+    }
+
     const input: JobInput = {
       name,
       kind: kind || undefined,
@@ -87,11 +130,17 @@ function JobForm({ mode, id, job }: JobFormProps) {
 
       <form onSubmit={onSubmit}>
         <VStack gap={4}>
-          <TextInput
+          <RequiredTextInput
+            ref={nameRef}
             label="Name"
             value={name}
-            onChange={setName}
+            onChange={(value) => {
+              setName(value);
+              if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+            }}
             isRequired
+            required
+            status={errors.name ? { type: "error", message: errors.name } : undefined}
             width="100%"
           />
 
@@ -104,11 +153,21 @@ function JobForm({ mode, id, job }: JobFormProps) {
           />
 
           <VStack gap={1}>
-            <TextInput
+            <RequiredTextInput
+              ref={scheduleRef}
               label="Schedule"
               value={schedule}
-              onChange={setSchedule}
+              onChange={(value) => {
+                setSchedule(value);
+                if (errors.schedule) {
+                  setErrors((prev) => ({ ...prev, schedule: undefined }));
+                }
+              }}
               isRequired
+              required
+              status={
+                errors.schedule ? { type: "error", message: errors.schedule } : undefined
+              }
               width="100%"
             />
             <Text type="supporting">Cron spec, e.g. @every 20s, 0 2 * * *, @hourly.</Text>
