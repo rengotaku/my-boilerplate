@@ -7,15 +7,21 @@
 # `react-spa-cloudflare` used to produce a broken project, and `go-ssr-web`
 # a half-rewritten one.
 #
+# The template list is read from lib/common.sh's VALID_TEMPLATES, the same list
+# scaffold.sh validates against. A template added there is therefore covered
+# here without editing this script.
+#
 # Checks:
 #   1. react-spa + no-auth=1                     -> rc=0
 #   2. python-web + no-auth=1                    -> rc=0
-#   3. unsupported templates + no-auth=1         -> rc!=0, no destination,
+#   3. every other template + no-auth=1          -> rc!=0, no destination,
 #                                                   message names the two
 #                                                   supported templates
-#   4. the same templates without no-auth        -> rc=0
+#   4. every template without no-auth            -> rc=0
 #   5. react-spa-cloudflare + no-auth=0          -> rc=0
-#   6. python-cli / python-llm-pipeline + no-auth=1 -> rc!=0 (unchanged)
+#   6. python-cli / python-llm-pipeline + no-auth=1 -> rc!=0, no destination
+#      (they are rejected by the python-family rule, so only the exit status
+#      and the missing destination are checked)
 #
 # The scaffolds only copy and rewrite files; no dependency install runs.
 #
@@ -29,6 +35,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCAFFOLD="$SCRIPT_DIR/scaffold.sh"
 
+# shellcheck source=lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
 fail=0
 ok() { printf 'OK   %s\n' "$*"; }
 ng() {
@@ -38,11 +47,6 @@ ng() {
 
 work="$(mktemp -d "${TMPDIR:-/tmp}/verify-no-auth-XXXXXX")"
 trap 'rm -rf "$work"' EXIT
-
-# Templates without a --no-auth implementation (check 3 / 4).
-unsupported="react-spa-cloudflare go-ssr-web go-cli static-lp chrome-extension mcp-server"
-# Python templates that never had --no-auth support; their rejection must stay.
-unsupported_python="python-cli python-llm-pipeline"
 
 # Results of the last run_scaffold call.
 LAST_LABEL=""
@@ -100,7 +104,8 @@ expect_accepted() {
   fi
 }
 
-expect_rejected() {
+# The rejection itself: a non-zero exit and no destination left behind.
+expect_rejected_basic() {
   run_scaffold "$@"
   if [[ "$LAST_RC" -eq 0 ]]; then
     ng "$LAST_LABEL: expected a non-zero exit, got rc=0"
@@ -109,6 +114,12 @@ expect_rejected() {
   else
     ok "$LAST_LABEL: rejected before the copy"
   fi
+}
+
+# expect_rejected <label> <template> — plus the message must name the two
+# supported templates, so the fix is discoverable from the error alone.
+expect_rejected() {
+  expect_rejected_basic "$@"
   expect_log_words "$LAST_LOG" react-spa python-web
   if [[ -n "$MISSING_WORDS" ]]; then
     ng "$LAST_LABEL: the message does not name:$MISSING_WORDS"
@@ -118,27 +129,47 @@ expect_rejected() {
   fi
 }
 
-# --- 1 / 2: the two supported templates keep working -------------------------
-expect_accepted react-spa-noauth react-spa no-auth=1
-expect_accepted python-web-noauth python-web no-auth=1
-
-# --- 3: unsupported templates are rejected before the copy -------------------
-for template in $unsupported; do
-  expect_rejected "reject-$template" "$template" no-auth=1
+# --- 1 / 2 / 3 / 6: reject everything except the two supported templates -----
+accepted_noauth=0
+rejected_noauth=0
+for template in "${VALID_TEMPLATES[@]}"; do
+  case "$template" in
+    react-spa | python-web)
+      expect_accepted "noauth-$template" "$template" no-auth=1
+      accepted_noauth=$((accepted_noauth + 1))
+      ;;
+    python-*)
+      # python-cli / python-llm-pipeline: rejected by the python-family rule.
+      expect_rejected_basic "reject-$template" "$template" no-auth=1
+      rejected_noauth=$((rejected_noauth + 1))
+      ;;
+    *)
+      expect_rejected "reject-$template" "$template" no-auth=1
+      rejected_noauth=$((rejected_noauth + 1))
+      ;;
+  esac
 done
 
 # --- 5: no-auth=0 means "not requested", so it stays allowed ----------------
 expect_accepted react-spa-cloudflare-noauth0 react-spa-cloudflare no-auth=0
 
-# --- 4: the same templates scaffold unchanged without the flag ---------------
-for template in $unsupported; do
+# --- 4: every template scaffolds unchanged without the flag -----------------
+plain=0
+for template in "${VALID_TEMPLATES[@]}"; do
   expect_accepted "plain-$template" "$template"
+  plain=$((plain + 1))
 done
 
-# --- 6: the python templates without --no-auth support keep failing ---------
-for template in $unsupported_python; do
-  expect_rejected "reject-$template" "$template" no-auth=1
-done
+# --- Coverage: every entry must be exercised exactly once -------------------
+total="${#VALID_TEMPLATES[@]}"
+printf '\n'
+printf 'VALID_TEMPLATES: %d\n' "$total"
+printf '  accepted with no-auth=1:     %d\n' "$accepted_noauth"
+printf '  rejected with no-auth=1:     %d\n' "$rejected_noauth"
+printf '  scaffolded without no-auth:  %d\n' "$plain"
+if [[ $((accepted_noauth + rejected_noauth)) -ne "$total" || "$plain" -ne "$total" ]]; then
+  ng "the loops did not cover every VALID_TEMPLATES entry exactly once"
+fi
 
 printf '\n'
 if [[ "$fail" == "0" ]]; then

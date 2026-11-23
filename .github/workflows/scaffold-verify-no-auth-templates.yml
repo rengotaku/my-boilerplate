@@ -10,10 +10,12 @@ on:
     branches: [main]
     paths:
       - 'scripts/scaffold/**'
+      - 'boilerplates/*/template.toml'
       - '.github/workflows/scaffold-verify-no-auth-templates.yml'
   pull_request:
     paths:
       - 'scripts/scaffold/**'
+      - 'boilerplates/*/template.toml'
       - '.github/workflows/scaffold-verify-no-auth-templates.yml'
 
 jobs:
