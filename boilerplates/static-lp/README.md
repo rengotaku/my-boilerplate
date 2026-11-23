@@ -130,7 +130,7 @@ make deploy-preview  # プレビューデプロイ
 
 | Target | Description |
 |--------|-------------|
-| `make install` | 依存関係のインストール（shared-react-ui の合成を含む） |
+| `make install` | 依存関係のインストール |
 | `make run` | 開発サーバー起動 |
 | `make build` | 本番ビルド（プリレンダ・検証込み） |
 | `make preview` | 本番ビルドのプレビュー |
