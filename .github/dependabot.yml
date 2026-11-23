@@ -2,7 +2,7 @@ version: 2
 updates:
   # Python (python-cli)
   - package-ecosystem: "pip"
-    directory: "/python-cli"
+    directory: "/boilerplates/python-cli"
     schedule:
       interval: "monthly"
     groups:
@@ -13,7 +13,7 @@ updates:
 
   # Go (go-cli)
   - package-ecosystem: "gomod"
-    directory: "/go-cli"
+    directory: "/boilerplates/go-cli"
     schedule:
       interval: "monthly"
     groups:
@@ -24,7 +24,7 @@ updates:
 
   # Go (go-ssr-web)
   - package-ecosystem: "gomod"
-    directory: "/go-ssr-web"
+    directory: "/boilerplates/go-ssr-web"
     schedule:
       interval: "monthly"
     groups:
