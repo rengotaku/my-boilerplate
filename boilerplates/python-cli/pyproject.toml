@@ -16,7 +16,7 @@ keywords = ["cli", "boilerplate", "typer"]
 dependencies = [
     "typer>=0.26.7",
     "pydantic-settings>=2.14.1",
-    "structlog>=25.5.0",
+    "structlog>=26.1.0",
 ]
 
 [project.optional-dependencies]
