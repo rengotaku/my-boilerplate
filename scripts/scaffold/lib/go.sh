@@ -19,11 +19,6 @@ apply_go_replacements() {
   # Replace import paths in all .go files
   find "$dest" -name '*.go' -exec sed "${SED_INPLACE_ARGS[@]}" "s|\"${old_module}/|\"${module}/|g" {} +
 
-  # Handle gqlgen.yml autobind (go-graphql-api)
-  if [[ -f "$dest/gqlgen.yml" ]]; then
-    sed_inplace "s|\"${old_module}/|\"${module}/|g" "$dest/gqlgen.yml"
-  fi
-
   # Handle .golangci.yml local-prefixes
   if [[ -f "$dest/.golangci.yml" ]]; then
     sed_inplace "s|${old_module}|${module}|g" "$dest/.golangci.yml"

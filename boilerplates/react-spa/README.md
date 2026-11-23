@@ -71,9 +71,8 @@ VITE_API_BASE_URL=http://localhost:8080
 
 ## Backend Integration
 
-This SPA is designed to work with:
-- `go-rest-api` - REST API backend
-- `go-graphql-api` - GraphQL API backend
+This SPA talks to a REST API through `src/api/`. Point `VITE_API_BASE_URL` at
+your backend; this repository no longer ships a standalone REST API template.
 
 ## Notes
 

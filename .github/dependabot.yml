@@ -22,39 +22,6 @@ updates:
           - "minor"
           - "patch"
 
-  # Go (go-rest-api)
-  - package-ecosystem: "gomod"
-    directory: "/go-rest-api"
-    schedule:
-      interval: "monthly"
-    groups:
-      go-rest-api-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
-  # Go (go-graphql-api)
-  - package-ecosystem: "gomod"
-    directory: "/go-graphql-api"
-    schedule:
-      interval: "monthly"
-    groups:
-      go-graphql-api-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
-  # Go (go-grpc-api)
-  - package-ecosystem: "gomod"
-    directory: "/go-grpc-api"
-    schedule:
-      interval: "monthly"
-    groups:
-      go-grpc-api-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
   # Go (go-ssr-web)
   - package-ecosystem: "gomod"
     directory: "/go-ssr-web"

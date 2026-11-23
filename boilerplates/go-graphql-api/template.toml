@@ -1,4 +1,0 @@
-name = "go-graphql-api"
-language = "Go"
-description = "Go + gqlgen の GraphQL API ボイラープレート"
-tags = ["api", "graphql", "gqlgen"]

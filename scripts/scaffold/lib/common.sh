@@ -5,9 +5,6 @@ set -euo pipefail
 
 # Valid template names
 VALID_TEMPLATES=(
-  go-rest-api
-  go-graphql-api
-  go-grpc-api
   go-ssr-web
   go-ssr-web-minimal
   go-react-spa
@@ -16,7 +13,6 @@ VALID_TEMPLATES=(
   go-cli
   go-cli-wrapper
   react-spa
-  react-spa-graphql
   react-spa-cloudflare
   static-lp
   python-cli

@@ -52,10 +52,8 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    makeFunctionalProject("react-spa-graphql", "http://localhost:4173"),
     makeFunctionalProject("react-spa", "http://localhost:4174"),
     makeFunctionalProject("react-spa-cloudflare", "http://localhost:4175"),
-    ...makeVisualProjects("react-spa-graphql", "http://localhost:4173"),
     ...makeVisualProjects("react-spa", "http://localhost:4174"),
     ...makeVisualProjects("react-spa-cloudflare", "http://localhost:4175"),
     // go-ssr-web: visual before functional to capture empty-state snapshots
@@ -65,30 +63,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: process.env.GO_GRAPHQL_API_BIN
-        ? process.env.GO_GRAPHQL_API_BIN
-        : "cd ../boilerplates/go-graphql-api && go run ./cmd/server",
-      url: "http://localhost:8080/health",
-      reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
-    },
-    {
-      command: process.env.GO_REST_API_BIN
-        ? `PORT=8081 ${process.env.GO_REST_API_BIN}`
-        : "cd ../boilerplates/go-rest-api && PORT=8081 go run ./cmd/server",
-      url: "http://localhost:8081/health",
-      reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
-    },
-    {
-      command: "cd ../boilerplates/react-spa-graphql && npm run build && npm run preview",
-      url: "http://localhost:4173",
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
       command:
-        "cd ../boilerplates/react-spa && VITE_API_BASE_URL=http://localhost:8081 npm run build && npm run preview -- --port 4174",
+        "cd ../boilerplates/react-spa && npm run build && npm run preview -- --port 4174",
       url: "http://localhost:4174",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,

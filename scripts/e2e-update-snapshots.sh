@@ -31,7 +31,7 @@ docker run --rm --ipc=host --network=host \
     go version
 
     echo "--> Composing shared-react-ui into React templates"
-    for dir in boilerplates/react-spa boilerplates/react-spa-graphql boilerplates/react-spa-cloudflare; do
+    for dir in boilerplates/react-spa boilerplates/react-spa-cloudflare; do
       src="boilerplates/shared-react-ui/src/ui"
       dest="${dir}/src/components/ui"
       if [ -d "$src" ]; then
@@ -44,7 +44,6 @@ docker run --rm --ipc=host --network=host \
 
     echo "--> Installing frontend dependencies"
     (cd boilerplates/react-spa && npm ci)
-    (cd boilerplates/react-spa-graphql && npm ci)
     (cd boilerplates/react-spa-cloudflare && npm ci)
     (cd e2e && npm ci)
 
