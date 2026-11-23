@@ -1,7 +1,12 @@
 import { render as rtlRender, type RenderOptions } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
+import { Theme } from "@astryxdesign/core/theme";
+import { LinkProvider } from "@astryxdesign/core/Link";
+import { neutralTheme } from "@astryxdesign/theme-neutral/built";
 import type { ReactNode, ReactElement } from "react";
+
+import { RouterLink } from "@/components/RouterLink";
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -25,7 +30,11 @@ function makeWrapper({ initialEntries = ["/"] }: WrapperOptions) {
     const queryClient = createTestQueryClient();
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries}>
+          <Theme theme={neutralTheme} mode="light">
+            <LinkProvider component={RouterLink}>{children}</LinkProvider>
+          </Theme>
+        </MemoryRouter>
       </QueryClientProvider>
     );
   };
