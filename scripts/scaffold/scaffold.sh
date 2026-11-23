@@ -19,9 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Templates live under boilerplates/ (#229). merge_shared_ui resolves
-# shared-react-ui relative to this root, and the .shared-ui.toml manifests store
-# template-root-relative paths.
+# Templates live under boilerplates/ (#229).
 TEMPLATES_ROOT="$REPO_ROOT/boilerplates"
 
 # shellcheck source=lib/common.sh
@@ -89,25 +87,10 @@ fi
 info "Copying template '$template' to '$dest'..."
 copy_template "$TEMPLATES_ROOT/$template" "$dest"
 
-# --- shared-react-ui merge ---
-# shellcheck source=lib/shared_ui.sh
-source "$SCRIPT_DIR/lib/shared_ui.sh"
-
 # template.toml is metadata consumed by `download.sh --list` / `--tree`; the
 # scaffolded project does not need it. Templates that keep the React app in a
 # frontend/ sub-tree may also drop the base template's template.toml there.
 rm -f "$dest/template.toml" "$dest/frontend/template.toml"
-
-if [[ -f "$dest/.shared-ui.toml" ]]; then
-  info "Merging shared-react-ui (manifest: .shared-ui.toml)..."
-  merge_shared_ui "$dest" "$TEMPLATES_ROOT"
-fi
-# Templates such as go-react-admin keep the React app in a frontend/ sub-tree;
-# pick up the manifest that landed there, too.
-if [[ -f "$dest/frontend/.shared-ui.toml" ]]; then
-  info "Merging shared-react-ui into frontend/..."
-  merge_shared_ui "$dest/frontend" "$TEMPLATES_ROOT"
-fi
 
 # --- Node version resolution (templates with a frontend/ sub-tree) ---
 if [[ -d "$dest/frontend" ]]; then
