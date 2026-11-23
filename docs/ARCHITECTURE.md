@@ -54,7 +54,7 @@ README の表は `make readme-list` で `template.toml` から生成します。
 | `--no-sample` | `python-web` のみ | items の CRUD サンプルを除きます。`--no-auth` とは独立しています |
 | `--no-github-templates` | すべて | `meta/github-workflow/` の PR / Issue テンプレートを生成物へ入れません |
 
-`--no-auth` の `react-spa` 側（`react-spa-cloudflare` と `go-react-admin` は #333 のとおり壊れています）は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
+`--no-auth` の `react-spa` 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`react-spa-cloudflare` と `go-react-admin` は、#333 のとおり壊れています。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
 
 ## どこを触れば何が変わるか
 
