@@ -38,12 +38,12 @@ Collection of project boilerplates.
 
 ## Quality Gates (CI)
 
-| Check | Python | Go | Rust |
-|-------|--------|-----|------|
-| Linting | ruff | golangci-lint | clippy |
-| Type checking | mypy | Go標準 | Rust標準 |
-| Formatting | ruff format | gofmt | rustfmt |
-| Tests + Coverage | pytest --cov (80%+) | go test -cover (80%+) | cargo test (80%+) |
+| Check | Python | Go |
+|-------|--------|-----|
+| Linting | ruff | golangci-lint |
+| Type checking | mypy | Go標準 |
+| Formatting | ruff format | gofmt |
+| Tests + Coverage | pytest --cov (80%+) | go test -cover (80%+) |
 
 ## Available Boilerplates
 
