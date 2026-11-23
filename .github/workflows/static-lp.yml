@@ -5,12 +5,10 @@ on:
     branches: [main]
     paths:
       - 'boilerplates/static-lp/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/static-lp.yml'
   pull_request:
     paths:
       - 'boilerplates/static-lp/**'
-      - 'boilerplates/shared-react-ui/**'
       - '.github/workflows/static-lp.yml'
 
 defaults:
@@ -30,9 +28,6 @@ jobs:
           node-version-file: boilerplates/static-lp/.node-version
           cache: 'npm'
           cache-dependency-path: boilerplates/static-lp/package-lock.json
-
-      - name: Compose shared-react-ui
-        run: make compose-ui
 
       - name: Install dependencies
         run: npm ci
