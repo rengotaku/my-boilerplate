@@ -42,6 +42,14 @@ describe("RunsPage interactions", () => {
     });
     expect(screen.getByText("Events")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
+
+    // The drawer bar names the panel; the body heading carries the run identity,
+    // status and duration. There is no second bare "Run #1" heading.
+    expect(screen.getByRole("heading", { name: "Run detail" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Run #1 · nightly-export" })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Run #1" })).not.toBeInTheDocument();
   });
 
   it("filters rows by the job name column filter", async () => {

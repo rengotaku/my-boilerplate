@@ -92,7 +92,8 @@ export function RunsPage() {
       <Drawer
         open={selectedId !== null}
         onClose={() => setSelectedId(null)}
-        title={selectedId !== null ? `Run #${selectedId}` : ""}
+        title="Run detail"
+        label={selectedId !== null ? `Run #${selectedId}` : "Run detail"}
       >
         {selectedId !== null && <RunDetailContent runId={selectedId} />}
       </Drawer>
