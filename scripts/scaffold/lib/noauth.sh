@@ -9,14 +9,13 @@
 #   apply_noauth <frontend_dir> [<go_root>] [<template>]
 #
 # <frontend_dir> is the root of the React source tree:
-#   - frontend/ sub-tree (go-react-admin): $dest/frontend
-#   - standalone React template:           $dest
+#   - standalone React template: $dest
 #
 # <template> is the template the project was scaffolded from. It selects the
 # Layout.tsx that is written: only react-spa gets the Astryx Layout here.
-# go-react-admin and react-spa-cloudflare are on Astryx as well, but both
-# --no-auth paths are broken already (#333); this issue does not fix them, so
-# they keep the pre-Astryx Layout unchanged.
+# react-spa-cloudflare is on Astryx as well, but its --no-auth path is broken
+# already (#333); this issue does not fix it, so it keeps the pre-Astryx Layout
+# unchanged.
 #
 # <go_root> (optional) is the Go project root. When provided, removes:
 #   - files listed in $go_root/.noauth-remove
@@ -180,9 +179,9 @@ export function Layout() {
 }
 NOAUTH_EOF
   else
-    # go-react-admin and react-spa-cloudflare are on Astryx, but their --no-auth
-    # paths are broken already (#333). Keep the pre-Astryx Layout unchanged for
-    # both; fixing them is out of scope here.
+    # react-spa-cloudflare is on Astryx, but its --no-auth path is broken
+    # already (#333). Keep the pre-Astryx Layout unchanged; fixing it is out of
+    # scope here.
     cat > "$fdir/src/components/Layout.tsx" << 'NOAUTH_EOF'
 import { Outlet, NavLink } from "react-router-dom";
 

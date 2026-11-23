@@ -57,7 +57,6 @@ Collection of project boilerplates.
 | [chrome-extension](./boilerplates/chrome-extension) | Chrome Extension (MV3) with Vite, @crxjs, TypeScript, Vitest |
 | [go-cli-wrapper](./boilerplates/go-cli-wrapper) | 外部 CLI ラッパー向け Go CLI（execx + logscan + fallback + envx + fakebin） |
 | [go-cli](./boilerplates/go-cli) | Batteries-included な Go CLI（cobra + slog + envconfig + Make ターゲット） |
-| [go-react-admin](./boilerplates/go-react-admin) | 管理コンソール（運用ダッシュボード）を全面に据えた Go + React フルスタック。worker+web 単一バイナリ / gin + embed / SQLite メトリクスストア / jsonl ログ / Prometheus / Astryx + recharts 管理画面 |
 | [go-ssr-web](./boilerplates/go-ssr-web) | Batteries-included な Go SSR Web（gin + html/template + 各種 Make ターゲット） |
 | [mcp-server](./boilerplates/mcp-server) | MCP Server (stdio) template with TypeScript, Vitest, and @modelcontextprotocol/sdk |
 | [python-cli](./boilerplates/python-cli) | uv + Typer + ruff + mypy + pytest の Python CLI |
@@ -91,7 +90,6 @@ make stop-all
 | Project | Port | Usage |
 |---------|------|-------|
 | go-ssr-web | 8082 | SSR Web |
-| go-react-admin | 8084 / 5175 | Admin console (Go API / Vite dev) |
 | react-spa | 5173 | Vite dev |
 
 ### New Project Checklist
