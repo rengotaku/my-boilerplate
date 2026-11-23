@@ -1,11 +1,14 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { VStack } from "@astryxdesign/core/VStack";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useGreetingStore } from "@/hooks/useGreetingStore";
 
 const nameSchema = z.object({
@@ -19,57 +22,60 @@ export function GreetingForm() {
   const { visitCount, lastVisitor } = useGreetingStore();
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<NameFormData>({
     resolver: zodResolver(nameSchema),
+    defaultValues: { name: "" },
   });
 
   const onSubmit = (data: NameFormData) => {
     navigate(`/greeting/${encodeURIComponent(data.name)}`);
   };
 
-  const nameErrorId = errors.name ? "name-error" : undefined;
-
   return (
-    <div>
-      <h1 className="mb-3 text-3xl font-bold tracking-tight">Greeting Demo</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Enter your name to receive a personalized greeting.
-      </p>
+    <VStack gap={6}>
+      <VStack gap={2}>
+        <Heading level={1}>Greeting Demo</Heading>
+        <Text type="supporting">Enter your name to receive a personalized greeting.</Text>
+      </VStack>
 
       {visitCount > 0 && (
-        <Card className="mb-6 bg-primary text-primary-foreground">
-          <CardContent className="p-4">
-            <p className="text-sm">
-              Total visits: {visitCount}
-              {lastVisitor && ` | Last visitor: ${lastVisitor}`}
-            </p>
-          </CardContent>
-        </Card>
+        <Banner
+          status="info"
+          title={`Total visits: ${visitCount}`}
+          description={lastVisitor ? `Last visitor: ${lastVisitor}` : undefined}
+        />
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-sm space-y-4" noValidate>
-        <div className="space-y-1.5">
-          <label htmlFor="name" className="text-sm font-medium">
-            Your Name
-          </label>
-          <Input
-            id="name"
-            autoFocus
-            aria-invalid={errors.name ? "true" : "false"}
-            aria-describedby={nameErrorId}
-            {...register("name")}
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <VStack gap={4} maxWidth={420}>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field }) => (
+              <TextInput
+                label="Your Name"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                ref={field.ref}
+                hasAutoFocus
+                autoComplete="off"
+                status={
+                  errors.name
+                    ? { type: "error", message: errors.name.message }
+                    : undefined
+                }
+              />
+            )}
           />
-          {errors.name && (
-            <p id={nameErrorId} className="text-xs text-destructive">
-              {errors.name.message}
-            </p>
-          )}
-        </div>
-        <Button type="submit">Say Hello</Button>
+          <div>
+            <Button label="Say Hello" type="submit" variant="primary" />
+          </div>
+        </VStack>
       </form>
-    </div>
+    </VStack>
   );
 }

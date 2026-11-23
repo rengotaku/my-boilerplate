@@ -39,19 +39,6 @@ jobs:
             boilerplates/react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
 
-      - name: Compose shared-react-ui into React templates
-        run: |
-          for dir in boilerplates/react-spa-cloudflare; do
-            src="boilerplates/shared-react-ui/src/ui"
-            dest="${dir}/src/components/ui"
-            if [ -d "$src" ]; then
-              echo "[compose-ui] $src -> $dest (excl. *.stories.tsx)"
-              mkdir -p "$dest"
-              find "$src" -maxdepth 1 \( -name "*.ts" -o -name "*.tsx" \) ! -name "*.stories.tsx" \
-                -exec cp {} "$dest/" \;
-            fi
-          done
-
       - name: Install React SPA dependencies
         working-directory: boilerplates/react-spa
         run: npm ci --prefer-offline --no-audit --no-fund

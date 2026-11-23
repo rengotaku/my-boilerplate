@@ -1,4 +1,4 @@
 name = "react-spa-cloudflare"
 language = "React"
-description = "Cloudflare Pages デプロイ向けに最適化された React SPA"
-tags = ["spa", "vite", "react", "cloudflare"]
+description = "Cloudflare Pages デプロイ向けに最適化された Astryx ベースの React SPA"
+tags = ["spa", "vite", "react", "cloudflare", "astryx"]

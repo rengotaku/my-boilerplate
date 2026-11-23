@@ -1,15 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { render as rtlRender, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, it, expect } from "vitest";
+import { AstryxWrapper } from "@/test/test-utils";
 import { GreetingPage } from "./GreetingPage";
 
 const renderGreetingPage = (name: string) => {
-  return render(
-    <MemoryRouter initialEntries={[`/greeting/${name}`]}>
-      <Routes>
-        <Route path="/greeting/:name" element={<GreetingPage />} />
-      </Routes>
-    </MemoryRouter>
+  return rtlRender(
+    <AstryxWrapper>
+      <MemoryRouter initialEntries={[`/greeting/${name}`]}>
+        <Routes>
+          <Route path="/greeting/:name" element={<GreetingPage />} />
+        </Routes>
+      </MemoryRouter>
+    </AstryxWrapper>
   );
 };
 

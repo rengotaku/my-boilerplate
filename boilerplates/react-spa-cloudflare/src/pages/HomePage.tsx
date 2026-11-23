@@ -1,14 +1,15 @@
-import { Link as RouterLink } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
-
-import { TailwindDemo } from "@/components";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@astryxdesign/core/Button";
+import { Card } from "@astryxdesign/core/Card";
+import { Heading } from "@astryxdesign/core/Heading";
+import { HStack } from "@astryxdesign/core/HStack";
+import { List, ListItem } from "@astryxdesign/core/List";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 
 const FEATURES = [
   "Vite 8 + TypeScript 5.9",
   "React 19 + React Router",
-  "Tailwind CSS v4 + shadcn/ui",
+  "Astryx (design system)",
   "Zustand (state management)",
   "React Hook Form + Zod (forms)",
   "Vitest + Testing Library",
@@ -17,43 +18,29 @@ const FEATURES = [
 
 export function HomePage() {
   return (
-    <div>
-      <h1 className="mb-3 text-3xl font-bold tracking-tight">React SPA Boilerplate</h1>
+    <VStack gap={6}>
+      <VStack gap={2}>
+        <Heading level={1}>React SPA Boilerplate</Heading>
+        <Text type="supporting">
+          A standalone SPA boilerplate optimized for Cloudflare Pages deployment.
+        </Text>
+      </VStack>
 
-      <p className="mb-6 text-muted-foreground">
-        A standalone SPA boilerplate optimized for Cloudflare Pages deployment.
-      </p>
-
-      <Card className="mb-6 max-w-md">
-        <CardHeader>
-          <h2 className="text-lg font-semibold leading-none tracking-tight">Features</h2>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
+      <Card maxWidth={520} padding={4}>
+        <VStack gap={3}>
+          <Heading level={2}>Features</Heading>
+          <List listStyle="disc">
             {FEATURES.map((feature) => (
-              <li key={feature} className="flex items-start gap-2 text-sm">
-                <CheckCircle
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
-                  aria-hidden="true"
-                />
-                <span>{feature}</span>
-              </li>
+              <ListItem key={feature} label={feature} />
             ))}
-          </ul>
-        </CardContent>
+          </List>
+        </VStack>
       </Card>
 
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <RouterLink to="/about">About</RouterLink>
-        </Button>
-        <Button asChild variant="outline">
-          <RouterLink to="/greeting">Greeting Demo</RouterLink>
-        </Button>
-      </div>
-
-      <TailwindDemo />
-    </div>
+      <HStack gap={2} wrap="wrap">
+        <Button label="About" href="/about" variant="primary" />
+        <Button label="Greeting Demo" href="/greeting" variant="secondary" />
+      </HStack>
+    </VStack>
   );
 }
