@@ -10,7 +10,7 @@
 set -euo pipefail
 
 IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.58.2-noble}"
-GO_VERSION="${GO_VERSION:-1.25.0}"
+GO_VERSION="${GO_VERSION:-1.26.0}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST_UID="$(id -u)"
 HOST_GID="$(id -g)"

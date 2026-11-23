@@ -14,7 +14,7 @@ Batteries-included Go CLI ボイラープレート。スキャフォールド直
 
 ## Prerequisites
 
-- [Go](https://go.dev/dl/) 1.24+
+- [Go](https://go.dev/dl/) 1.25+
 - [golangci-lint](https://golangci-lint.run/welcome/install/)
 
 ## Quick Start

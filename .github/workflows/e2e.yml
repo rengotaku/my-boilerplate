@@ -32,7 +32,9 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.25"
+          # go-ssr-web の go.mod の `go` 行に追従する（固定値を置くと乖離して
+          # `go.mod requires go >= X` で webServer が起動しなくなる）
+          go-version-file: boilerplates/go-ssr-web/go.mod
           cache-dependency-path: |
             boilerplates/go-ssr-web/go.sum
 
