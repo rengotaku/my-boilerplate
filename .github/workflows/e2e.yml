@@ -39,9 +39,9 @@ jobs:
             boilerplates/react-spa-cloudflare/package-lock.json
             e2e/package-lock.json
 
-      - name: Compose shared-react-ui into all React templates
+      - name: Compose shared-react-ui into React templates
         run: |
-          for dir in boilerplates/react-spa boilerplates/react-spa-cloudflare; do
+          for dir in boilerplates/react-spa-cloudflare; do
             src="boilerplates/shared-react-ui/src/ui"
             dest="${dir}/src/components/ui"
             if [ -d "$src" ]; then

@@ -1,37 +1,24 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { render, screen } from "@/test/test-utils";
 import { describe, it, expect } from "vitest";
 import { Layout } from "./Layout";
 
 describe("Layout", () => {
   it("renders navigation links", () => {
-    render(
-      <MemoryRouter>
-        <Layout />
-      </MemoryRouter>
-    );
+    render(<Layout />);
 
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Users" })).toBeInTheDocument();
   });
 
-  it("renders header and main sections", () => {
-    render(
-      <MemoryRouter>
-        <Layout />
-      </MemoryRouter>
-    );
+  it("renders banner and main landmarks", () => {
+    render(<Layout />);
 
-    expect(screen.getByRole("banner")).toBeInTheDocument(); // header
+    expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
   });
 
   it("has correct link hrefs", () => {
-    render(
-      <MemoryRouter>
-        <Layout />
-      </MemoryRouter>
-    );
+    render(<Layout />);
 
     expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("href", "/users");

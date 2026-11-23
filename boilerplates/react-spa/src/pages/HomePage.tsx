@@ -1,9 +1,10 @@
-import { Link as RouterLink } from "react-router-dom";
-import { CircleCheck } from "lucide-react";
-
-import { TailwindDemo } from "@/components";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@astryxdesign/core/Button";
+import { Card } from "@astryxdesign/core/Card";
+import { Heading } from "@astryxdesign/core/Heading";
+import { HStack } from "@astryxdesign/core/HStack";
+import { List, ListItem } from "@astryxdesign/core/List";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 
 const features = [
   "Vite + TypeScript",
@@ -12,35 +13,34 @@ const features = [
   "Zustand (UI state)",
   "ky (HTTP client)",
   "Vitest + Testing Library",
-  "Tailwind CSS + shadcn/ui",
+  "Astryx (design system)",
 ];
 
 export function HomePage() {
   return (
-    <div>
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">React SPA Boilerplate</h1>
+    <VStack gap={6}>
+      <VStack gap={2}>
+        <Heading level={1}>React SPA Boilerplate</Heading>
+        <Text type="supporting">
+          A minimal React SPA with client-side routing, server state and UI state split
+          apart.
+        </Text>
+      </VStack>
 
-      <Card className="mb-6 max-w-md">
-        <CardHeader>
-          <CardTitle>Features</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
+      <Card maxWidth={520} padding={4}>
+        <VStack gap={3}>
+          <Heading level={2}>Features</Heading>
+          <List listStyle="disc">
             {features.map((feature) => (
-              <li key={feature} className="flex items-center gap-2 text-sm">
-                <CircleCheck className="size-4 shrink-0 text-primary" />
-                <span>{feature}</span>
-              </li>
+              <ListItem key={feature} label={feature} />
             ))}
-          </ul>
-        </CardContent>
+          </List>
+        </VStack>
       </Card>
 
-      <Button asChild>
-        <RouterLink to="/users">Users</RouterLink>
-      </Button>
-
-      <TailwindDemo />
-    </div>
+      <HStack gap={2}>
+        <Button label="Users" href="/users" variant="primary" />
+      </HStack>
+    </VStack>
   );
 }

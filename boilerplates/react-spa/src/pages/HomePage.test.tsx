@@ -1,25 +1,24 @@
-import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { render, screen } from "@/test/test-utils";
 import { describe, it, expect } from "vitest";
 import { HomePage } from "./HomePage";
 
 describe("HomePage", () => {
   it("renders the title", () => {
-    render(
-      <BrowserRouter>
-        <HomePage />
-      </BrowserRouter>
-    );
+    render(<HomePage />);
 
-    expect(screen.getByText("React SPA Boilerplate")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "React SPA Boilerplate"
+    );
+  });
+
+  it("lists the template features", () => {
+    render(<HomePage />);
+
+    expect(screen.getByText("Astryx (design system)")).toBeInTheDocument();
   });
 
   it("renders navigation link to users", () => {
-    render(
-      <BrowserRouter>
-        <HomePage />
-      </BrowserRouter>
-    );
+    render(<HomePage />);
 
     const link = screen.getByRole("link", { name: "Users" });
     expect(link).toHaveAttribute("href", "/users");
