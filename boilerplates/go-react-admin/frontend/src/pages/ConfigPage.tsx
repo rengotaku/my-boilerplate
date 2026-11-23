@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { Card } from "@astryxdesign/core/Card";
+import { Divider } from "@astryxdesign/core/Divider";
+import { Heading } from "@astryxdesign/core/Heading";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Text } from "@astryxdesign/core/Text";
+import { TextInput } from "@astryxdesign/core/TextInput";
+import { VStack } from "@astryxdesign/core/VStack";
 import { KindBadge } from "@/components/admin/kind-badge";
 import { useConfig, useRestart, useUpdateConfig } from "@/hooks/useConfig";
 import type { ConfigItem, UpdateConfigInput } from "@/types/run";
@@ -8,9 +16,9 @@ import type { ConfigItem, UpdateConfigInput } from "@/types/run";
 // toml = editable from this screen.
 function SourceBadge({ source }: { source: ConfigItem["source"] }) {
   return source === "env" ? (
-    <KindBadge label="env" color="#64748b" />
+    <KindBadge label="env" tone="neutral" />
   ) : (
-    <KindBadge label="toml" color="#4f46e5" />
+    <KindBadge label="toml" tone="info" />
   );
 }
 
@@ -65,99 +73,111 @@ export function ConfigPage() {
   };
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold">Config</h1>
+    <VStack gap={6} maxWidth={900}>
+      <VStack gap={1}>
+        <Heading level={1}>Config</Heading>
         {data?.configPath && (
-          <p className="mt-1 text-sm text-slate-500">
-            Editable values are stored in{" "}
-            <span className="font-mono text-xs">{data.configPath}</span> and applied on
-            restart.
-          </p>
+          <Text type="supporting">
+            Editable values are stored in <Text type="code">{data.configPath}</Text> and
+            applied on restart.
+          </Text>
         )}
-      </div>
+      </VStack>
 
       {isError && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Failed to load config: {(error as Error)?.message}
-        </div>
+        <Banner
+          status="error"
+          title="Failed to load config"
+          description={(error as Error)?.message}
+        />
       )}
-      {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
+      {isLoading && <Text type="supporting">Loading…</Text>}
 
       {/* Environment — read-only */}
       {envItems.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-slate-700">
-            Environment (read-only)
-          </h2>
-          <div className="overflow-hidden rounded-md border border-slate-200">
-            {envItems.map((item) => (
-              <div
-                key={item.key}
-                className="flex items-center justify-between gap-4 border-b border-slate-100 bg-slate-50 px-3 py-2 last:border-b-0"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-700">{item.label}</span>
-                  <SourceBadge source={item.source} />
-                </div>
-                <span className="font-mono text-xs text-slate-600">{item.value}</span>
+        <VStack gap={2}>
+          <Text weight="semibold">Environment (read-only)</Text>
+          <Card padding={0}>
+            {envItems.map((item, index) => (
+              <div key={item.key}>
+                {index > 0 && <Divider />}
+                <HStack
+                  justify="between"
+                  align="center"
+                  gap={4}
+                  paddingInline={3}
+                  paddingBlock={2}
+                >
+                  <HStack gap={2} align="center">
+                    <Text weight="medium">{item.label}</Text>
+                    <SourceBadge source={item.source} />
+                  </HStack>
+                  <Text type="code">{item.value}</Text>
+                </HStack>
               </div>
             ))}
-          </div>
-        </section>
+          </Card>
+        </VStack>
       )}
 
       {/* File (toml) — editable */}
       {editableItems.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-slate-700">File (editable)</h2>
-          <div className="flex flex-col gap-3 rounded-md border border-slate-200 p-3">
-            {editableItems.map((item) => (
-              <label key={item.key} className="flex items-center justify-between gap-4">
-                <span className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-700">{item.label}</span>
-                  <SourceBadge source={item.source} />
-                </span>
-                <input
-                  className="w-40 rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-sm focus:border-indigo-400 focus:outline-none"
-                  value={valueFor(item.key, item.value)}
-                  onChange={(e) => onChange(item.key, e.target.value)}
+        <VStack gap={3}>
+          <Text weight="semibold">File (editable)</Text>
+          <Card>
+            <VStack gap={3}>
+              {editableItems.map((item) => (
+                <HStack key={item.key} justify="between" align="center" gap={4}>
+                  <HStack gap={2} align="center">
+                    <Text weight="medium">{item.label}</Text>
+                    <SourceBadge source={item.source} />
+                  </HStack>
+                  <TextInput
+                    label={item.label}
+                    isLabelHidden
+                    size="sm"
+                    width={160}
+                    value={valueFor(item.key, item.value)}
+                    onChange={(value) => onChange(item.key, value)}
+                  />
+                </HStack>
+              ))}
+
+              <Text type="supporting">Durations use Go syntax, e.g. 15s, 2m.</Text>
+
+              {updateConfig.isError && (
+                <Banner
+                  status="error"
+                  title="Failed to save"
+                  description={(updateConfig.error as Error)?.message ?? "Failed to save"}
                 />
-              </label>
-            ))}
+              )}
 
-            <p className="text-xs text-slate-400">
-              Durations use Go syntax, e.g. <span className="font-mono">15s</span>,{" "}
-              <span className="font-mono">2m</span>.
-            </p>
-
-            {updateConfig.isError && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                {(updateConfig.error as Error)?.message ?? "Failed to save"}
-              </div>
-            )}
-
-            <div className="flex items-center gap-3">
-              <Button onClick={onSave} disabled={!dirty || updateConfig.isPending}>
-                {updateConfig.isPending ? "Saving…" : "Save"}
-              </Button>
-            </div>
-          </div>
-        </section>
+              <HStack gap={3} align="center">
+                <Button
+                  label="Save"
+                  variant="primary"
+                  onClick={onSave}
+                  isDisabled={!dirty || updateConfig.isPending}
+                  isLoading={updateConfig.isPending}
+                />
+              </HStack>
+            </VStack>
+          </Card>
+        </VStack>
       )}
 
       {/* Restart banner — shown once a save lands, since changes need a restart */}
       {saved && (
-        <div className="flex items-center justify-between gap-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-3">
-          <span className="text-sm text-amber-800">
-            Saved. Restart to apply the new values to the running server.
-          </span>
-          <Button variant="default" onClick={onRestart} disabled={restarting}>
-            {restarting ? "Restarting…" : "Restart & apply"}
-          </Button>
-        </div>
+        <Banner
+          status="warning"
+          title="Saved. Restart to apply the new values to the running server."
+          endContent={
+            <Button label="Restart & apply" onClick={onRestart} isLoading={restarting} />
+          }
+        />
       )}
-    </div>
+    </VStack>
   );
 }
 

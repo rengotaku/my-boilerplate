@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { Grid } from "@astryxdesign/core/Grid";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { Pagination } from "@/components/admin/pagination";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { Button } from "@/components/ui/button";
 import { useJob, useDeleteJob } from "@/hooks/useJobs";
 import { useRuns } from "@/hooks/useRuns";
 import { useTimeZone } from "@/hooks/useConfig";
@@ -29,13 +35,15 @@ export function JobDetailContent({
   const { data, isLoading, isError, error } = useJob(jobId);
 
   if (isLoading) {
-    return <div className="text-sm text-slate-500">Loading…</div>;
+    return <Text type="supporting">Loading…</Text>;
   }
   if (isError || !data) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        Failed to load job: {(error as Error)?.message ?? "not found"}
-      </div>
+      <Banner
+        status="error"
+        title="Failed to load job"
+        description={(error as Error)?.message ?? "not found"}
+      />
     );
   }
 
@@ -91,43 +99,40 @@ function JobBody({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold">{job.name}</h2>
+    <VStack gap={6}>
+      <HStack justify="between" align="center" gap={3} wrap="wrap">
+        <HStack gap={3} align="center" wrap="wrap">
+          <Heading level={2}>{job.name}</Heading>
           <StatusBadge
             tone={job.enabled ? "success" : "neutral"}
             label={job.enabled ? "enabled" : "disabled"}
           />
-        </div>
-        <div className="flex items-center gap-2">
+        </HStack>
+        <HStack gap={2} align="center">
           {onEdit && (
-            <Button variant="outline" size="sm" onClick={onEdit}>
-              Edit
-            </Button>
+            <Button label="Edit" variant="secondary" size="sm" onClick={onEdit} />
           )}
           <Button
-            variant="outline"
+            label="Delete"
+            variant="secondary"
             size="sm"
             onClick={onDelete}
-            disabled={deleteJob.isPending}
-          >
-            Delete
-          </Button>
-        </div>
-      </header>
+            isLoading={deleteJob.isPending}
+          />
+        </HStack>
+      </HStack>
 
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+      <Grid columns={{ minWidth: 140 }} gap={4}>
         <Field label="Kind" value={job.kind} />
         <Field label="Schedule" value={job.schedule} mono />
         <Field label="Runs" value={String(job.runCount)} />
         <Field label="Last run" value={formatInstant(job.lastRunAt, tz)} />
         <Field label="Next run" value={formatInstant(job.nextRunAt, tz)} />
         <Field label="Created" value={formatInstant(job.createdAt, tz)} />
-      </dl>
+      </Grid>
 
-      <section className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-slate-700">Run history</h3>
+      <VStack gap={3}>
+        <Text weight="semibold">Run history</Text>
         <DataTable<Run>
           columns={columns}
           rows={runs?.items ?? []}
@@ -141,18 +146,16 @@ function JobBody({
           total={runs?.total ?? 0}
           onPageChange={setPage}
         />
-      </section>
-    </div>
+      </VStack>
+    </VStack>
   );
 }
 
 function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className={mono ? "font-mono text-xs text-slate-700" : "text-slate-700"}>
-        {value}
-      </dd>
-    </div>
+    <VStack gap={0.5}>
+      <Text type="supporting">{label}</Text>
+      {mono ? <Text type="code">{value}</Text> : <Text>{value}</Text>}
+    </VStack>
   );
 }

@@ -21,8 +21,8 @@ describe("JobFormPage (create)", () => {
 
     expect(screen.getByText("New job")).toBeInTheDocument();
 
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "new-job");
-    await user.type(screen.getByRole("textbox", { name: "Schedule" }), "@hourly");
+    await user.type(screen.getByRole("textbox", { name: /Name/ }), "new-job");
+    await user.type(screen.getByRole("textbox", { name: /Schedule/ }), "@hourly");
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {

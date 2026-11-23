@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { KindBadge } from "@/components/admin/kind-badge";
 import { Drawer } from "@/components/admin/drawer";
-import { Button } from "@/components/ui/button";
 import { JobDetailContent } from "@/components/JobDetailContent";
 import { useJobs } from "@/hooks/useJobs";
 import { useTimeZone } from "@/hooks/useConfig";
@@ -43,7 +48,7 @@ export function JobsPage() {
       key: "schedule",
       header: "Schedule",
       width: "12rem",
-      cell: (row) => <span className="font-mono text-xs">{row.schedule}</span>,
+      cell: (row) => <Text type="code">{row.schedule}</Text>,
       title: (row) => row.schedule,
     },
     {
@@ -84,21 +89,18 @@ export function JobsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Jobs</h1>
-        <Button asChild>
-          <Link to="/jobs/new">
-            <Plus className="h-4 w-4" />
-            New job
-          </Link>
-        </Button>
-      </header>
+    <VStack gap={4}>
+      <HStack justify="between" align="center" gap={3} wrap="wrap">
+        <Heading level={1}>Jobs</Heading>
+        <Button label="New job" href="/jobs/new" icon={<Plus />} variant="primary" />
+      </HStack>
 
       {isError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Failed to load jobs: {(error as Error)?.message}
-        </div>
+        <Banner
+          status="error"
+          title="Failed to load jobs"
+          description={(error as Error)?.message}
+        />
       ) : (
         <DataTable<JobView>
           columns={columns}
@@ -122,6 +124,6 @@ export function JobsPage() {
           />
         )}
       </Drawer>
-    </div>
+    </VStack>
   );
 }

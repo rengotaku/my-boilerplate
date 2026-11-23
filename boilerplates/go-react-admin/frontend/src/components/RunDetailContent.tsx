@@ -1,3 +1,8 @@
+import { Banner } from "@astryxdesign/core/Banner";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { PhaseTimeline } from "@/components/admin/phase-timeline";
 import { EventTimeline } from "@/components/admin/event-timeline";
@@ -16,32 +21,34 @@ export function RunDetailContent({ runId }: { runId: number }) {
   const tz = useTimeZone();
 
   if (isLoading) {
-    return <div className="text-sm text-slate-500">Loading…</div>;
+    return <Text type="supporting">Loading…</Text>;
   }
   if (isError || !data) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        Failed to load run: {(error as Error)?.message ?? "not found"}
-      </div>
+      <Banner
+        status="error"
+        title="Failed to load run"
+        description={(error as Error)?.message ?? "not found"}
+      />
     );
   }
 
   const { run, phases, events, logs } = data;
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center gap-3">
-        <h2 className="text-lg font-semibold">
-          Run #{run.id} &middot; {run.jobName}
-        </h2>
+    <VStack gap={6}>
+      <HStack gap={3} align="center" wrap="wrap">
+        <Heading level={2}>
+          Run #{run.id} · {run.jobName}
+        </Heading>
         <StatusBadge tone={statusTone(run.status)} label={run.status} />
-        <span className="text-sm text-slate-500">
-          {formatDuration(run.startedAt, run.finishedAt)}
-        </span>
-      </header>
+        <Text type="supporting">{formatDuration(run.startedAt, run.finishedAt)}</Text>
+      </HStack>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-slate-500">Phases</h3>
+      <VStack gap={2}>
+        <Text weight="medium" color="secondary">
+          Phases
+        </Text>
         <PhaseTimeline<Phase>
           phases={phases}
           getKey={(p) => p.id}
@@ -49,10 +56,12 @@ export function RunDetailContent({ runId }: { runId: number }) {
           getTone={(p) => statusTone(p.status)}
           getDuration={(p) => formatDuration(p.startedAt, p.finishedAt)}
         />
-      </section>
+      </VStack>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-slate-500">Events</h3>
+      <VStack gap={2}>
+        <Text weight="medium" color="secondary">
+          Events
+        </Text>
         <EventTimeline<AdminEvent>
           items={events}
           getKey={(e, i) => `${e.ts}-${i}`}
@@ -60,12 +69,14 @@ export function RunDetailContent({ runId }: { runId: number }) {
           getTitle={(e) => `${e.type} · ${e.phase}`}
           getTone={(e) => statusTone(e.status)}
         />
-      </section>
+      </VStack>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-slate-500">Logs</h3>
+      <VStack gap={2}>
+        <Text weight="medium" color="secondary">
+          Logs
+        </Text>
         <LogViewer logs={logs} timeZone={tz} />
-      </section>
-    </div>
+      </VStack>
+    </VStack>
   );
 }

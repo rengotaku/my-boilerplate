@@ -1,5 +1,8 @@
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Button } from "@astryxdesign/core/Button";
+import { VStack } from "@astryxdesign/core/VStack";
 import { RunDetailContent } from "@/components/RunDetailContent";
 
 // Full-page route for /runs/:id (deep link). The list view opens the same
@@ -9,19 +12,21 @@ export function RunDetailPage() {
   const id = params.id ? Number(params.id) : undefined;
 
   return (
-    <div className="flex flex-col gap-6">
-      <Link
-        to="/runs"
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to runs
-      </Link>
+    <VStack gap={4}>
+      <div>
+        <Button
+          label="Back to runs"
+          href="/runs"
+          variant="ghost"
+          size="sm"
+          icon={<ArrowLeft />}
+        />
+      </div>
       {id === undefined ? (
-        <div className="text-sm text-red-700">Invalid run id</div>
+        <Banner status="error" title="Invalid run id" />
       ) : (
         <RunDetailContent runId={id} />
       )}
-    </div>
+    </VStack>
   );
 }

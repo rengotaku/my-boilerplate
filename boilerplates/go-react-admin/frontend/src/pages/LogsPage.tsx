@@ -1,4 +1,8 @@
 import { useMemo, useState } from "react";
+import { HStack } from "@astryxdesign/core/HStack";
+import { Heading } from "@astryxdesign/core/Heading";
+import { Text } from "@astryxdesign/core/Text";
+import { VStack } from "@astryxdesign/core/VStack";
 import { MetricsFilters } from "@/components/admin/metrics-filters";
 import { LogViewer } from "@/components/LogViewer";
 import { useRuns, useRun } from "@/hooks/useRuns";
@@ -44,9 +48,9 @@ export function LogsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-xl font-semibold">Logs</h1>
+    <VStack gap={4}>
+      <HStack justify="between" align="end" gap={3} wrap="wrap">
+        <Heading level={1}>Logs</Heading>
         <MetricsFilters
           fields={[
             {
@@ -70,18 +74,18 @@ export function LogsPage() {
             }
           }}
         />
-      </header>
+      </HStack>
 
       {runsLoading ? (
-        <div className="text-sm text-slate-500">Loading runs…</div>
+        <Text type="supporting">Loading runs…</Text>
       ) : activeRunId == null ? (
-        <div className="text-sm text-slate-500">No runs available.</div>
+        <Text type="supporting">No runs available.</Text>
       ) : (
         <LogViewer
           logs={filteredLogs}
           emptyMessage={detailLoading ? "Loading logs…" : "No logs"}
         />
       )}
-    </div>
+    </VStack>
   );
 }

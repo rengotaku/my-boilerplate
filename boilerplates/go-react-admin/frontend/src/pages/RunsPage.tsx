@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Banner } from "@astryxdesign/core/Banner";
+import { Heading } from "@astryxdesign/core/Heading";
+import { VStack } from "@astryxdesign/core/VStack";
 import { DataTable, type DataTableColumn } from "@/components/admin/data-table";
 import { Pagination } from "@/components/admin/pagination";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -59,15 +62,15 @@ export function RunsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Runs</h1>
-      </header>
+    <VStack gap={4}>
+      <Heading level={1}>Runs</Heading>
 
       {isError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Failed to load runs: {(error as Error)?.message}
-        </div>
+        <Banner
+          status="error"
+          title="Failed to load runs"
+          description={(error as Error)?.message}
+        />
       ) : (
         <>
           <DataTable<Run>
@@ -93,6 +96,6 @@ export function RunsPage() {
       >
         {selectedId !== null && <RunDetailContent runId={selectedId} />}
       </Drawer>
-    </div>
+    </VStack>
   );
 }
