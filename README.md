@@ -114,7 +114,7 @@ curl -sSL https://raw.githubusercontent.com/rengotaku/my-boilerplate/main/script
 | Option | Description |
 |--------|-------------|
 | `--name=NAME` | プロジェクト名。省略時は `basename(<dest>)` |
-| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`react-spa` は認証（ログイン画面・ユーザー一覧・JWT）を除きます。バックエンドを持たない `react-spa` の単体アプリは、これを付けます |
+| `--no-auth` | 認証を scaffold 時に外します。`python-web` は login / register / JWT / users を、`react-spa` は認証（ログイン画面・ユーザー一覧・JWT）を除きます。バックエンドを持たない `react-spa` の単体アプリは、これを付けます。この 2 つ以外のテンプレートには実装が無く、指定するとコピーの前にエラーで終了します |
 | `--no-sample` | `python-web` のみ。items の CRUD サンプルを scaffold 時に外します。`--no-auth` とは独立しており、同時に指定できます |
 | `--no-github-templates` | `.github/` の PR・Issue テンプレートを入れません |
 

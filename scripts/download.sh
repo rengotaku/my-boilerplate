@@ -36,7 +36,9 @@
 #                             .github/ISSUE_TEMPLATE/*.md into the scaffolded project.
 #   --no-auth                 Strip auth at scaffold time. python-web: login /
 #                             register / JWT / users. react-spa: login, users,
-#                             JWT auth.
+#                             JWT auth. These two templates are the only ones
+#                             that implement it; any other template is rejected
+#                             before the copy.
 #   --no-sample               (python-web only) Strip the items CRUD sample at
 #                             scaffold time. Independent of --no-auth, so both
 #                             flags can be combined.

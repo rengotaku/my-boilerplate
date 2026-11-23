@@ -50,11 +50,11 @@ README の表は `make readme-list` で `template.toml` から生成します。
 
 | フラグ | 対象 | 効き方 |
 |---|---|---|
-| `--no-auth` | `python-web` と `react-spa` | `python-web` は login / register / JWT / users を除きます。`react-spa` は React SPA の認証（ログイン、ユーザー）を除きます。`react-spa-cloudflare` は、指定すると壊れた生成物になる既知の不具合があります（#333、ADR 0003） |
+| `--no-auth` | `python-web` と `react-spa` | `python-web` は login / register / JWT / users を除きます。`react-spa` は React SPA の認証（ログイン、ユーザー）を除きます。`react-spa-cloudflare` など実装の無いテンプレートは、コピーの前にエラーで終了します（#333） |
 | `--no-sample` | `python-web` のみ | items の CRUD サンプルを除きます。`--no-auth` とは独立しています |
 | `--no-github-templates` | すべて | `meta/github-workflow/` の PR / Issue テンプレートを生成物へ入れません |
 
-`--no-auth` の `react-spa` 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`react-spa-cloudflare` は、#333 のとおり壊れています。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
+`--no-auth` の `react-spa` 側は、`scripts/scaffold/lib/noauth.sh` が `.noauth-remove` の一覧でファイルを消します。残る参照はヒアドキュメントで書き換えます。`react-spa` と `python-web` 以外のテンプレートは、コピーの前に拒否します（#333）。`python-web` 側は、`python_features.sh` が `.noauth-remove` / `.nosample-remove` と `@scaffold:remove-if` の目印を使います。
 
 ## どこを触れば何が変わるか
 
